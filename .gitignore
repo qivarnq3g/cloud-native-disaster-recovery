@@ -1,0 +1,20 @@
+# Secrets and local credentials
+.env
+.env.*
+*.key
+*.pem
+kubeconfig*
+credentials*
+
+# Local backup output and temporary files
+backups/
+*.tar
+*.tar.gz
+tmp/
+
+# Tooling
+__pycache__/
+.venv/
+node_modules/
+.DS_Store
+Thumbs.db
