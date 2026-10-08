@@ -4,7 +4,7 @@
 
 Câu hỏi nghiên cứu: kế hoạch phục hồi có thực sự đạt mục tiêu về lượng dữ liệu được phép mất (RPO) và thời gian được phép ngừng (RTO) hay không, nếu chưa từng thử khôi phục ứng dụng, cấu hình và dữ liệu?
 
-Cách làm: một web nhỏ đăng ảnh kèm mô tả (có cơ sở dữ liệu và kho ảnh) chạy trên hai cụm Kubernetes ở máy cá nhân, một cụm chính và một cụm dự phòng. Nhóm sao lưu, cố tình phá cụm chính, khôi phục sang cụm dự phòng theo hướng dẫn, rồi đo thời gian từng bước và kiểm tra dữ liệu còn đủ hay không.
+Cách làm: một web nhỏ đăng ảnh kèm mô tả (có cơ sở dữ liệu và kho ảnh) chạy trên hai cụm Kubernetes trên Azure, một cụm chính và một cụm dự phòng; bản sao lưu đặt ở khu vực Azure khác. Thiết kế chi tiết: [`docs/thiet-ke.md`](docs/thiet-ke.md). Nhóm sao lưu, cố tình phá cụm chính, khôi phục sang cụm dự phòng theo hướng dẫn, rồi đo thời gian từng bước và kiểm tra dữ liệu còn đủ hay không.
 
 ## Thành viên
 
@@ -25,6 +25,7 @@ Cả ba người đều phải hiểu toàn bộ hệ thống để trả lời 
 | `backup/` | Cấu hình sao lưu | Quang |
 | `scripts/` | Script đo thời gian, kiểm tra dữ liệu, vẽ biểu đồ | Quang |
 | `data/` | Số liệu đo thô từ các lần diễn tập | Quang |
+| `docs/thiet-ke.md` | Thiết kế hệ thống và kế hoạch diễn tập | Quang |
 | `docs/ly-thuyet.md` | Phần lý thuyết | Lan Hương |
 | `docs/danh-gia-anh-huong.md` | Đánh giá ảnh hưởng khi web ngừng | Lan Hương |
 | `docs/runbook.md` | Hướng dẫn khôi phục | Lan Hương viết nháp, Quang duyệt |
