@@ -333,12 +333,14 @@ Toàn bộ kết quả lưu thành CSV/JSON trong `data/<mã lần diễn tập>
 | D1 | Xóa nhầm namespace của web | Khôi phục ngay trên cụm chính, đưa cơ sở dữ liệu về thời điểm ngay trước lúc xóa | `kubectl delete namespace` |
 | D2 | Mất cụm chính | Lạnh. Kho ảnh chính vẫn còn nên dùng lại, không cần chép ảnh | Xóa cụm chính |
 | D3 | Mất cụm chính | Ấm | Xóa cụm chính |
-| D4 | Mất vùng | Lạnh. Chép ảnh từ bản chép ở Nhật | Xóa cả nhóm `rg-dr-primary` (cụm và kho ảnh chính) |
-| D5 | Mất vùng | Ấm | Như D4 |
+| D4 | Mất nhóm tài nguyên chính (giả lập mất vùng) | Lạnh. Chép ảnh từ bản chép ở Nhật | Xóa cả nhóm `rg-dr-primary` (cụm và kho ảnh chính) |
+| D5 | Mất nhóm tài nguyên chính (giả lập mất vùng) | Ấm | Như D4 |
 | D6 | Thử xóa két | — | Dùng khóa tài khoản để xóa và ghi đè một file trong két. Kết quả đúng là bị từ chối |
 | D7 | Khôi phục từ két và từ server bạn | — | Giải mã gói trong két rồi khôi phục vào một namespace thử. Khôi phục từ bản ở server bạn vào Postgres chạy trên laptop, để chứng minh không cần Azure. Sau đó chạy bước kiểm tra ở mục 5.3 |
 
 Trình tự hai cách chuyển được vẽ ở mục 6.1.
+
+**Giới hạn của D4 và D5:** hai cụm cùng ở `koreacentral` (mục 1), nên D4 và D5 chứng minh khôi phục được khi mất cả cụm chính lẫn kho ảnh chính, với dữ liệu lấy thật từ Nhật. Chúng **không** chứng minh hệ thống chịu được mất vùng thật: mất cả `koreacentral` thì cụm dự phòng của cách ấm cũng mất theo. Báo cáo nêu rõ điều này, và ước tính chi phí của cách ấm thật cho mất vùng, tức cụm dự phòng đặt ở vùng thứ hai.
 
 **Hai vòng:**
 - **Vòng thử:** D1–D7, mỗi tình huống một lần. Sửa runbook sau mỗi lần.

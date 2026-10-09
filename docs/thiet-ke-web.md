@@ -63,7 +63,7 @@ Văn bản được chuẩn hóa Unicode NFC; ký tự điều khiển bị từ
 
 Kho ảnh, một container tên `anh`:
 - `goc/{id}`: ảnh gốc, đúng các byte nhận được.
-- `nho/{id}.avif`: ảnh nhỏ, cạnh dài nhất 800 px. Đây là dữ liệu dẫn xuất: mất thì API tạo lại từ ảnh gốc, không tính là mất dữ liệu.
+- `nho/{id}.avif`: ảnh nhỏ, cạnh dài nhất 800 px, tạo lần đầu có người xem (mục 2.7). Ảnh gốc không quá 800 px mỗi cạnh thì không có ảnh nhỏ, dùng luôn ảnh gốc. Đây là dữ liệu dẫn xuất: mất thì API tạo lại từ ảnh gốc, không tính là mất dữ liệu.
 
 Bước kiểm tra sau khôi phục (mục 5.3 thiết kế chính) đối chiếu từng dòng `bai` với `goc/{id}` và mã SHA-256. Ảnh gốc không có dòng `bai` tương ứng (do lần đăng hỏng giữa chừng) được báo riêng, không tính là mất dữ liệu.
 
@@ -76,7 +76,7 @@ Tất cả nằm dưới `/v1`, trừ ba lệnh vận hành ở cuối bảng.
 | `GET /v1/bai?truoc={id}&so={n}` | Danh sách, mới nhất trước. `so` mặc định 24, tối đa 60. `truoc` là `id` cuối của trang trước | `{ bai: [...], tiep: id hoặc null }` |
 | `GET /v1/bai/{id}` | Một bài | Bài, gồm `rong`, `cao`, `anh_sha256`, `tao_luc` |
 | `GET /v1/bai/{id}/anh` | Ảnh gốc | Byte ảnh; `ETag` là mã SHA-256; `Cache-Control: public, max-age=31536000, immutable` |
-| `GET /v1/bai/{id}/anh-nho` | Ảnh nhỏ AVIF; thiếu thì tạo rồi cất lại | Như trên |
+| `GET /v1/bai/{id}/anh-nho` | Ảnh nhỏ, theo mục 2.7 | Như trên |
 | `POST /v1/ma/kiem-tra` | Kiểm tra mã bí mật, gửi trong `Authorization: Bearer` | 204 hoặc lỗi |
 | `POST /v1/bai` | Đăng bài. `multipart/form-data`: `ma_lan_dang`, `tieu_de`, `mo_ta`, `anh`; mã bí mật trong `Authorization: Bearer` | 201 kèm bài; 200 kèm bài cũ nếu `ma_lan_dang` đã có |
 | `GET /healthz` | Sẵn sàng phục vụ thật | Xem 2.5 |
@@ -90,9 +90,10 @@ Không có lệnh sửa hay xóa bài: đồ án không cần, và thêm vào l�
 2. Kiểm tra ảnh: tối đa 1 MiB (1 048 576 byte); nhận dạng kiểu bằng các byte đầu tệp, không tin tên đuôi hay `Content-Type`; đọc được thật; tối đa 50 triệu điểm ảnh để chặn ảnh nén bất thường.
 3. Tính SHA-256, cất `goc/{id}`.
 4. Ghi dòng `bai`. Trùng `ma_lan_dang` do hai yêu cầu chạy song song thì trả bài của yêu cầu thắng.
-5. Tạo và cất ảnh nhỏ. Lỗi ở bước này không làm hỏng lần đăng; ảnh nhỏ sẽ được tạo lúc có người xem.
 
 Nhờ cất ảnh trước rồi mới ghi bài, không bao giờ có bài trỏ tới ảnh chưa có.
+
+Lúc đăng không tạo ảnh nhỏ: mỗi lần đăng chỉ tốn công tính mã băm và cất ảnh. Script đo đăng 1 bài mỗi giây suốt buổi diễn tập (mục 5.1 và 5.4 thiết kế chính), nên mọi việc nặng hơn ở bước này sẽ chiếm CPU của máy ảo B-series và làm lệch chính thời gian khôi phục đang đo. Kho ảnh ở chế độ chỉ đọc (mục 2.7) thì lệnh đăng trả 503 `chi_doc` ngay từ đầu.
 
 ### 2.4 Mã bí mật
 
@@ -106,16 +107,34 @@ Nhờ cất ảnh trước rồi mới ghi bài, không bao giờ có bài trỏ
 - chạy `SELECT 1` trên Postgres;
 - đọc một khóa cố định không tồn tại trong kho ảnh và nhận về "không có". Cách này chứng minh kho ảnh trả lời và mã SAS còn đọc được, mà không cần quyền liệt kê hay ghi gì vào kho.
 
-Nội dung: `{ "trang_thai": "on", "cum": "chinh", "vung": "koreacentral", "phien_ban": "<git sha>" }`. Hỏng thì trả 503 với `trang_thai: "loi"` và phần hỏng (`csdl` hoặc `kho_anh`).
+Nội dung: `{ "trang_thai": "on", "cum": "chinh", "vung": "koreacentral", "phien_ban": "<git sha>", "chi_doc": false }`. Hỏng thì trả 503 với `trang_thai: "loi"` và phần hỏng (`csdl` hoặc `kho_anh`).
 
 `cum` và `vung` lấy từ biến môi trường do cấu hình từng cụm đặt (`chinh` hoặc `du-phong`). `/healthz` cũng là readiness probe; `/livez` là liveness probe, để Kubernetes không khởi động lại API chỉ vì cơ sở dữ liệu đang được khôi phục.
 
 ### 2.6 Lỗi, CORS và nhật ký
 
-- Lỗi có dạng `{ "loi": "<mã>", "thong_bao": "<câu tiếng Việt>" }`. Các mã: `ma_sai` (401), `khong_tim_thay` (404), `anh_qua_lon` (413), `khong_phai_anh` (415), `du_lieu_sai` (422), `thu_qua_nhieu` (429), `tam_ngung` (503).
+- Lỗi có dạng `{ "loi": "<mã>", "thong_bao": "<câu tiếng Việt>" }`. Các mã: `ma_sai` (401), `khong_tim_thay` (404), `anh_qua_lon` (413), `khong_phai_anh` (415), `du_lieu_sai` (422), `thu_qua_nhieu` (429), `tam_ngung` (503), `chi_doc` (503).
 - CORS chỉ cho phép `https://dr.qivarn.id.vn`; khi chạy thử thêm địa chỉ máy cá nhân qua cấu hình. Chỉ `GET`, `POST`, các header `Authorization` và `Content-Type`.
 - Giới hạn thân yêu cầu 1,2 MiB. Mọi phản hồi có `X-Content-Type-Options: nosniff`.
 - Nhật ký dạng JSON qua `tracing`, mỗi yêu cầu một dòng. Không thu thập số liệu theo dõi riêng: script đo đo từ bên ngoài.
+
+### 2.7 Ảnh nhỏ và chế độ chỉ đọc
+
+**Ảnh nhỏ tạo khi có người xem.** Khi có `GET /v1/bai/{id}/anh-nho`, API làm theo thứ tự:
+1. Ảnh gốc không quá 800 px mỗi cạnh: trả luôn ảnh gốc.
+2. Có `nho/{id}.avif` trong kho: trả nó.
+3. Có trong bộ nhớ đệm của API (tối đa 64 MB, bỏ ảnh lâu không dùng trước): trả nó.
+4. Còn lại thì tạo:
+   - mỗi `id` chỉ tạo một lần dù nhiều yêu cầu đến cùng lúc; các yêu cầu sau chờ kết quả của lần đó;
+   - cả API chỉ tạo một ảnh nhỏ tại một thời điểm, trên luồng riêng ngoài luồng phục vụ yêu cầu, nên nhiều người xem cùng lúc cũng không chiếm hết hai nhân của máy và không làm chậm các lệnh khác;
+   - tạo xong thì đưa vào bộ nhớ đệm, rồi cất vào kho nếu kho cho ghi. Cất lỗi chỉ ghi cảnh báo vào nhật ký, vẫn trả ảnh cho người xem.
+
+**Chế độ chỉ đọc.** Bật bằng biến môi trường `KHO_ANH_CHI_DOC=true` khi API chạy với mã chỉ đọc, như lúc diễn tập lạnh mỗi ngày đọc thẳng bản chép ảnh ở Nhật (mục 4.6 thiết kế chính). Khi đó:
+- API không gửi lệnh ghi nào tới kho; ảnh nhỏ chỉ nằm trong bộ nhớ đệm;
+- `POST /v1/bai` trả 503 `chi_doc` với câu "Hệ thống đang ở chế độ chỉ đọc.";
+- `/healthz` trả `chi_doc: true` và vẫn chỉ cần quyền đọc (mục 2.5).
+
+Hai lớp này độc lập: quên bật chế độ chỉ đọc khi dùng mã chỉ đọc thì việc xem vẫn chạy, chỉ có cảnh báo trong nhật ký.
 
 ## 3. Trang web
 
@@ -132,7 +151,7 @@ Nội dung: `{ "trang_thai": "on", "cum": "chinh", "vung": "koreacentral", "phie
 
 ### 3.2 Trang dùng
 
-- **Thanh trên** bằng kính: tên trang, nhãn trạng thái, nút "Đăng ảnh", đường dẫn "Giới thiệu" (`/?gioi-thieu`).
+- **Thanh trên** bằng kính: tên trang, nhãn trạng thái, nút "Đăng ảnh" (ẩn khi `/healthz` báo `chi_doc: true`), đường dẫn "Giới thiệu" (`/?gioi-thieu`).
 - **Lưới ảnh:** xếp hàng đều theo tỉ lệ thật của ảnh, không cắt; chiều cao hàng khoảng 240 px trên máy tính, khoảng 2 ảnh mỗi hàng trên điện thoại. Dùng `rong` và `cao` để dựng khung xám đúng kích thước trước khi ảnh tải, nên trang không nhảy. Tiêu đề màu xám dưới ảnh. Ảnh nhỏ tải dần khi cuộn tới; cuộn gần cuối thì tải trang tiếp theo.
 - **Xem một bài:** hộp thoại `<dialog>` toàn màn hình với ảnh gốc, tiêu đề, mô tả, giờ đăng. Phím mũi tên hoặc vuốt để sang bài khác; ảnh gốc của bài kề bên được tải trước. Esc hoặc nút Quay lại của trình duyệt để đóng; địa chỉ đổi theo bài nên gửi được cho người khác.
 - **Đăng ảnh:**
@@ -165,7 +184,9 @@ Tất cả chạy trong `ci` mỗi lần đẩy code; trang web chỉ được �
 - Kiểm thử chạy thật với Postgres, Azurite (giả lập Azure Blob) và SeaweedFS trong Docker, chạy cùng bộ kiểm thử cho cả hai loại kho:
   - đăng, xem, lấy ảnh gốc và so SHA-256 với ảnh đã gửi;
   - gửi lại cùng `ma_lan_dang`, kể cả hai yêu cầu song song, chỉ ra một bài;
-  - xóa ảnh nhỏ thì lần xem sau tạo lại;
+  - ảnh nhỏ: ảnh gốc không quá 800 px thì trả ảnh gốc; xóa ảnh nhỏ thì lần xem sau tạo lại; 20 yêu cầu cùng lúc cho cùng một ảnh chỉ tạo một lần;
+  - chế độ chỉ đọc, chạy với mã chỉ đọc của Azurite và của SeaweedFS: xem bài và ảnh nhỏ vẫn chạy, không lệnh ghi nào tới kho, đăng bài trả 503 `chi_doc`; bật ghi nhầm với mã chỉ đọc thì việc xem vẫn chạy, lỗi cất ảnh nhỏ chỉ nằm trong nhật ký;
+  - đăng 1 bài mỗi giây trong 5 phút với ảnh giống ảnh của script đo: CPU trung bình của API không quá 10% một nhân;
   - dừng kho ảnh hoặc Postgres: `/healthz` trả 503 đúng phần hỏng, `/livez` vẫn 204, lần đăng thất bại không để lại dòng `bai` nào thiếu ảnh.
 - Đo kích thước image và thời gian từ lúc container chạy tới lúc `/healthz` trả 200; ghi vào báo cáo của `ci`.
 
