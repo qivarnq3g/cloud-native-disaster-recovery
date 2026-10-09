@@ -26,6 +26,7 @@ Cả ba người đều phải hiểu toàn bộ hệ thống để trả lời 
 | `scripts/` | Script đo thời gian, kiểm tra dữ liệu, vẽ biểu đồ | Quang |
 | `data/` | Số liệu đo thô từ các lần diễn tập | Quang |
 | `docs/thiet-ke.md` | Thiết kế hệ thống và kế hoạch diễn tập | Quang |
+| `docs/thiet-ke-web.md` | Thiết kế web: API và trang dùng | Quang |
 | `docs/ly-thuyet.md` | Phần lý thuyết | Lan Hương |
 | `docs/danh-gia-anh-huong.md` | Đánh giá ảnh hưởng khi web ngừng | Lan Hương |
 | `docs/runbook.md` | Hướng dẫn khôi phục | Lan Hương viết nháp, Quang duyệt |
