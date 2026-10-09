@@ -27,6 +27,7 @@ Cả ba người đều phải hiểu toàn bộ hệ thống để trả lời 
 | `data/` | Số liệu đo thô từ các lần diễn tập | Quang |
 | `docs/thiet-ke.md` | Thiết kế hệ thống và kế hoạch diễn tập | Quang |
 | `docs/thiet-ke-web.md` | Thiết kế web: API và trang dùng | Quang |
+| `docs/ke-hoach/` | Kế hoạch làm từng phần: chạy thử Azure, API, trang web | Quang |
 | `docs/ly-thuyet.md` | Phần lý thuyết | Huong-19 |
 | `docs/danh-gia-anh-huong.md` | Đánh giá ảnh hưởng khi web ngừng | Huong-19 |
 | `docs/runbook.md` | Hướng dẫn khôi phục | Huong-19 viết nháp, Quang duyệt |
