@@ -34,25 +34,13 @@ Số đo ví dụ `do-anh-nho` trên máy làm (4 nhân, bản release, chưa b�
 
 `clippy` 1.97 báo `collapsible_if` ở `DichVuAnhNho::tao` (code Task 6). Gộp thành `if !self.chi_doc && let Err(e) = ...`, hành vi không đổi.
 
-## Dừng ở Task 11, Step 2: kiểm thử tải lệch thiết kế
+## Task 11, Step 2: kiểm thử tải chạy 5 phút theo thiết kế
 
-Mục 5 [thiết kế web](../thiet-ke-web.md) ghi: "đăng 1 bài mỗi giây **trong 5 phút** với ảnh giống ảnh của script đo: CPU trung bình của API không quá 10% một nhân". `tests/tai.rs` trong kế hoạch chỉ đăng 60 bài (1 phút), tên kiểm thử cũng là `..._trong_mot_phut_...`. Theo quy ước của đợt làm này (kế hoạch mâu thuẫn thiết kế thì dừng, không tự sửa), `tests/tai.rs` **chưa được commit** và Task 12 chưa làm, vì job `api` trong `ci` chạy `cargo test --release --test tai`.
+Mục 5 [thiết kế web](../thiet-ke-web.md) (dòng 189) ghi: "đăng 1 bài mỗi giây **trong 5 phút** với ảnh giống ảnh của script đo: CPU trung bình của API không quá 10% một nhân". Bản đầu của `tests/tai.rs` trong kế hoạch chỉ đăng 60 bài (1 phút). Đợt làm dừng ở đây, Quang chọn giữ thiết kế; kế hoạch đã sửa thành 300 bài và đổi tên kiểm thử thành `dang_mot_bai_moi_giay_trong_nam_phut_ton_duoi_10_phan_tram_mot_nhan`.
 
-Một điểm nữa để Quang cân nhắc cùng lúc: kiểm thử đo `cpu_time::ProcessTime` của cả tiến trình kiểm thử, gồm cả API, máy khách `reqwest` và việc tạo ảnh PNG, không riêng API. Số đo vì vậy cao hơn CPU thật của API, tức là chặt hơn ngưỡng.
+Lưu ý: kiểm thử đo `cpu_time::ProcessTime` của cả tiến trình kiểm thử, gồm cả API, máy khách `reqwest` và việc tạo ảnh PNG, không riêng API. Số đo vì vậy cao hơn CPU thật của API, tức là chặt hơn ngưỡng.
 
-Để có số liệu, đã chạy bản 1 phút đúng như kế hoạch một lần từ tệp tạm (đã xóa, không commit), với SeaweedFS:
-
-```
-cargo test --release --test tai -- --ignored --nocapture
-cpu_tren_thoi_gian=0.003
-test dang_mot_bai_moi_giay_trong_mot_phut_ton_duoi_10_phan_tram_mot_nhan ... ok
-```
-
-Cần Quang chọn một trong hai:
-1. Sửa kế hoạch cho khớp thiết kế: vòng lặp 300 lần (5 phút), đổi tên kiểm thử; job `ci` dài thêm khoảng 4 phút.
-2. Sửa thiết kế mục 5 thành 1 phút nếu 1 phút là đủ.
-
-Sau khi chọn thì làm tiếp: commit `tests/tai.rs`, rồi Task 12 (Dockerfile, đo image và thời gian khởi động, workflow `ci`, hướng dẫn trong `app/README.md`).
+Lần chạy bản 1 phút trước khi sửa (tệp tạm, không commit): `cpu_tren_thoi_gian=0.003`.
 
 ## Việc khác thấy khi đối chiếu thiết kế
 
