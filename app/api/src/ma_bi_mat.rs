@@ -22,10 +22,20 @@ impl KiemTraMa {
     }
 
     pub fn voi_gioi_han(ma: &str, toi_da: usize, cua_so: Duration) -> Self {
-        Self { ma: ma.as_bytes().to_vec(), sai: Mutex::new(HashMap::new()), toi_da, cua_so }
+        Self {
+            ma: ma.as_bytes().to_vec(),
+            sai: Mutex::new(HashMap::new()),
+            toi_da,
+            cua_so,
+        }
     }
 
-    pub fn kiem_tra(&self, ip: IpAddr, ma_gui: Option<&str>, bay_gio: Instant) -> Result<(), ApiLoi> {
+    pub fn kiem_tra(
+        &self,
+        ip: IpAddr,
+        ma_gui: Option<&str>,
+        bay_gio: Instant,
+    ) -> Result<(), ApiLoi> {
         let mut sai = self.sai.lock().expect("khoa bo dem sai ma");
         if sai.len() > 10_000 {
             sai.retain(|_, hang| {
@@ -39,7 +49,9 @@ impl KiemTraMa {
             let con_lai = self.cua_so.saturating_sub(bay_gio.duration_since(hang[0]));
             return Err(ApiLoi::ThuQuaNhieu(con_lai.as_secs().max(1)));
         }
-        let dung: bool = ma_gui.map(|m| bool::from(m.as_bytes().ct_eq(&self.ma))).unwrap_or(false);
+        let dung: bool = ma_gui
+            .map(|m| bool::from(m.as_bytes().ct_eq(&self.ma)))
+            .unwrap_or(false);
         if dung {
             let khong_con = hang.is_empty();
             if khong_con {
@@ -54,7 +66,10 @@ impl KiemTraMa {
 }
 
 fn bo_cu(hang: &mut VecDeque<Instant>, bay_gio: Instant, cua_so: Duration) {
-    while hang.front().is_some_and(|t| bay_gio.duration_since(*t) >= cua_so) {
+    while hang
+        .front()
+        .is_some_and(|t| bay_gio.duration_since(*t) >= cua_so)
+    {
         hang.pop_front();
     }
 }
@@ -75,7 +90,11 @@ pub fn ip_khach(nguon: SocketAddr, headers: &HeaderMap, tin_cay: &[IpNet]) -> Ip
 }
 
 pub fn ma_tu_header(headers: &HeaderMap) -> Option<&str> {
-    headers.get(header::AUTHORIZATION)?.to_str().ok()?.strip_prefix("Bearer ")
+    headers
+        .get(header::AUTHORIZATION)?
+        .to_str()
+        .ok()?
+        .strip_prefix("Bearer ")
 }
 
 #[cfg(test)]
@@ -94,8 +113,14 @@ mod tests {
         let k = KiemTraMa::moi(MA);
         let t = Instant::now();
         assert_eq!(k.kiem_tra(ip("1.2.3.4"), Some(MA), t), Ok(()));
-        assert_eq!(k.kiem_tra(ip("1.2.3.4"), Some("sai"), t), Err(ApiLoi::MaSai));
-        assert_eq!(k.kiem_tra(ip("1.2.3.4"), Some("0123456789abcdeX"), t), Err(ApiLoi::MaSai));
+        assert_eq!(
+            k.kiem_tra(ip("1.2.3.4"), Some("sai"), t),
+            Err(ApiLoi::MaSai)
+        );
+        assert_eq!(
+            k.kiem_tra(ip("1.2.3.4"), Some("0123456789abcdeX"), t),
+            Err(ApiLoi::MaSai)
+        );
         assert_eq!(k.kiem_tra(ip("1.2.3.4"), None, t), Err(ApiLoi::MaSai));
     }
 
@@ -104,27 +129,54 @@ mod tests {
         let k = KiemTraMa::voi_gioi_han(MA, 10, Duration::from_secs(600));
         let t0 = Instant::now();
         for i in 0..10 {
-            assert_eq!(k.kiem_tra(ip("1.2.3.4"), Some("sai"), t0 + Duration::from_secs(i)), Err(ApiLoi::MaSai));
+            assert_eq!(
+                k.kiem_tra(ip("1.2.3.4"), Some("sai"), t0 + Duration::from_secs(i)),
+                Err(ApiLoi::MaSai)
+            );
         }
-        assert_eq!(k.kiem_tra(ip("1.2.3.4"), Some(MA), t0 + Duration::from_secs(100)), Err(ApiLoi::ThuQuaNhieu(500)));
-        assert_eq!(k.kiem_tra(ip("5.6.7.8"), Some(MA), t0 + Duration::from_secs(100)), Ok(()));
-        assert_eq!(k.kiem_tra(ip("1.2.3.4"), Some(MA), t0 + Duration::from_secs(611)), Ok(()));
+        assert_eq!(
+            k.kiem_tra(ip("1.2.3.4"), Some(MA), t0 + Duration::from_secs(100)),
+            Err(ApiLoi::ThuQuaNhieu(500))
+        );
+        assert_eq!(
+            k.kiem_tra(ip("5.6.7.8"), Some(MA), t0 + Duration::from_secs(100)),
+            Ok(())
+        );
+        assert_eq!(
+            k.kiem_tra(ip("1.2.3.4"), Some(MA), t0 + Duration::from_secs(611)),
+            Ok(())
+        );
     }
 
     #[test]
     fn chi_tin_x_forwarded_for_tu_proxy() {
         let tin: Vec<IpNet> = vec!["10.42.0.0/16".parse().unwrap()];
         let mut h = HeaderMap::new();
-        h.insert("x-forwarded-for", HeaderValue::from_static("9.9.9.9, 203.0.113.7"));
-        assert_eq!(ip_khach("10.42.0.5:1234".parse().unwrap(), &h, &tin), ip("203.0.113.7"));
-        assert_eq!(ip_khach("198.51.100.1:1234".parse().unwrap(), &h, &tin), ip("198.51.100.1"));
-        assert_eq!(ip_khach("10.42.0.5:1234".parse().unwrap(), &HeaderMap::new(), &tin), ip("10.42.0.5"));
+        h.insert(
+            "x-forwarded-for",
+            HeaderValue::from_static("9.9.9.9, 203.0.113.7"),
+        );
+        assert_eq!(
+            ip_khach("10.42.0.5:1234".parse().unwrap(), &h, &tin),
+            ip("203.0.113.7")
+        );
+        assert_eq!(
+            ip_khach("198.51.100.1:1234".parse().unwrap(), &h, &tin),
+            ip("198.51.100.1")
+        );
+        assert_eq!(
+            ip_khach("10.42.0.5:1234".parse().unwrap(), &HeaderMap::new(), &tin),
+            ip("10.42.0.5")
+        );
     }
 
     #[test]
     fn doc_ma_tu_bearer() {
         let mut h = HeaderMap::new();
-        h.insert(header::AUTHORIZATION, HeaderValue::from_static("Bearer abc"));
+        h.insert(
+            header::AUTHORIZATION,
+            HeaderValue::from_static("Bearer abc"),
+        );
         assert_eq!(ma_tu_header(&h), Some("abc"));
         h.insert(header::AUTHORIZATION, HeaderValue::from_static("Basic abc"));
         assert_eq!(ma_tu_header(&h), None);

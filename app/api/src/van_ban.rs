@@ -15,18 +15,27 @@ pub fn tieu_de(dau_vao: &str) -> Result<String, ApiLoi> {
         return Err(ApiLoi::DuLieuSai("Tiêu đề không được để trống.".into()));
     }
     if n > TIEU_DE_TOI_DA {
-        return Err(ApiLoi::DuLieuSai(format!("Tiêu đề tối đa {TIEU_DE_TOI_DA} ký tự.")));
+        return Err(ApiLoi::DuLieuSai(format!(
+            "Tiêu đề tối đa {TIEU_DE_TOI_DA} ký tự."
+        )));
     }
     Ok(s)
 }
 
 pub fn mo_ta(dau_vao: &str) -> Result<String, ApiLoi> {
-    let s = dau_vao.replace("\r\n", "\n").nfc().collect::<String>().trim().to_string();
+    let s = dau_vao
+        .replace("\r\n", "\n")
+        .nfc()
+        .collect::<String>()
+        .trim()
+        .to_string();
     if s.chars().any(|c| c.is_control() && c != '\n') {
         return Err(ApiLoi::DuLieuSai("Mô tả có ký tự không hợp lệ.".into()));
     }
     if s.chars().count() > MO_TA_TOI_DA {
-        return Err(ApiLoi::DuLieuSai(format!("Mô tả tối đa {MO_TA_TOI_DA} ký tự.")));
+        return Err(ApiLoi::DuLieuSai(format!(
+            "Mô tả tối đa {MO_TA_TOI_DA} ký tự."
+        )));
     }
     Ok(s)
 }
@@ -51,14 +60,20 @@ mod tests {
     #[test]
     fn gioi_han_do_dai_tieu_de() {
         assert!(tieu_de(&"a".repeat(100)).is_ok());
-        assert!(matches!(tieu_de(&"a".repeat(101)), Err(ApiLoi::DuLieuSai(_))));
+        assert!(matches!(
+            tieu_de(&"a".repeat(101)),
+            Err(ApiLoi::DuLieuSai(_))
+        ));
         assert!(matches!(tieu_de("   "), Err(ApiLoi::DuLieuSai(_))));
     }
 
     #[test]
     fn tu_choi_ky_tu_dieu_khien_trong_tieu_de() {
         assert!(matches!(tieu_de("a\u{7}b"), Err(ApiLoi::DuLieuSai(_))));
-        assert!(matches!(tieu_de("dòng 1\ndòng 2"), Err(ApiLoi::DuLieuSai(_))));
+        assert!(matches!(
+            tieu_de("dòng 1\ndòng 2"),
+            Err(ApiLoi::DuLieuSai(_))
+        ));
     }
 
     #[test]
@@ -71,6 +86,9 @@ mod tests {
     #[test]
     fn gioi_han_do_dai_mo_ta() {
         assert!(mo_ta(&"ă".repeat(1000)).is_ok());
-        assert!(matches!(mo_ta(&"ă".repeat(1001)), Err(ApiLoi::DuLieuSai(_))));
+        assert!(matches!(
+            mo_ta(&"ă".repeat(1001)),
+            Err(ApiLoi::DuLieuSai(_))
+        ));
     }
 }

@@ -66,7 +66,10 @@ impl CauHinh {
         };
         let proxy_tin_cay = danh_sach("PROXY_TIN_CAY", "")
             .iter()
-            .map(|s| s.parse::<IpNet>().with_context(|| format!("PROXY_TIN_CAY sai: {s}")))
+            .map(|s| {
+                s.parse::<IpNet>()
+                    .with_context(|| format!("PROXY_TIN_CAY sai: {s}"))
+            })
             .collect::<anyhow::Result<Vec<_>>>()?;
         let cong = doc("CONG")
             .map(|s| s.parse::<u16>())
@@ -101,7 +104,10 @@ mod tests {
     ];
 
     fn tu(cap: &[(&str, &str)]) -> anyhow::Result<CauHinh> {
-        let m: HashMap<String, String> = cap.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect();
+        let m: HashMap<String, String> = cap
+            .iter()
+            .map(|(k, v)| (k.to_string(), v.to_string()))
+            .collect();
         CauHinh::tu_ham(|k| m.get(k).cloned())
     }
 
@@ -127,7 +133,14 @@ mod tests {
 
     #[test]
     fn gia_tri_sai_thi_loi() {
-        for (k, v) in [("MA_BI_MAT", "ngan"), ("KHO_ANH", "gcs"), ("CUM", "phu"), ("KHO_ANH_CHI_DOC", "co"), ("CONG", "abc"), ("PROXY_TIN_CAY", "10.0.0.0/99")] {
+        for (k, v) in [
+            ("MA_BI_MAT", "ngan"),
+            ("KHO_ANH", "gcs"),
+            ("CUM", "phu"),
+            ("KHO_ANH_CHI_DOC", "co"),
+            ("CONG", "abc"),
+            ("PROXY_TIN_CAY", "10.0.0.0/99"),
+        ] {
             let mut sai: Vec<_> = DU.iter().copied().filter(|(x, _)| *x != k).collect();
             sai.push((k, v));
             assert!(tu(&sai).is_err(), "{k}={v} phải lỗi");
@@ -145,7 +158,13 @@ mod tests {
             ("CUM", "du-phong"),
         ]);
         let c = tu(&v).unwrap();
-        assert_eq!(c.cors_nguon, vec!["https://a.vn".to_string(), "http://localhost:4321".to_string()]);
+        assert_eq!(
+            c.cors_nguon,
+            vec![
+                "https://a.vn".to_string(),
+                "http://localhost:4321".to_string()
+            ]
+        );
         assert!(c.proxy_tin_cay[0].contains(&"10.42.3.4".parse::<std::net::IpAddr>().unwrap()));
         assert!(c.chi_doc);
         assert_eq!(c.loai_kho, LoaiKho::Azure);

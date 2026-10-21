@@ -12,8 +12,16 @@ async fn cat_va_lay_anh_goc_va_anh_nho() {
         assert_eq!(kho.lay_goc(id).await.unwrap(), None, "{loai:?}");
         kho.cat_goc(id, Bytes::from_static(b"goc")).await.unwrap();
         kho.cat_nho(id, Bytes::from_static(b"nho")).await.unwrap();
-        assert_eq!(kho.lay_goc(id).await.unwrap(), Some(Bytes::from_static(b"goc")), "{loai:?}");
-        assert_eq!(kho.lay_nho(id).await.unwrap(), Some(Bytes::from_static(b"nho")), "{loai:?}");
+        assert_eq!(
+            kho.lay_goc(id).await.unwrap(),
+            Some(Bytes::from_static(b"goc")),
+            "{loai:?}"
+        );
+        assert_eq!(
+            kho.lay_nho(id).await.unwrap(),
+            Some(Bytes::from_static(b"nho")),
+            "{loai:?}"
+        );
         kho.xoa_nho(id).await.unwrap();
         assert_eq!(kho.lay_nho(id).await.unwrap(), None, "{loai:?}");
     }
@@ -31,7 +39,13 @@ async fn tham_do_chi_can_quyen_doc() {
 async fn ma_chi_doc_khong_ghi_duoc() {
     for loai in CAC_KHO {
         let id = Uuid::now_v7();
-        assert!(kho_doc(loai).cat_nho(id, Bytes::from_static(b"x")).await.is_err(), "{loai:?}");
+        assert!(
+            kho_doc(loai)
+                .cat_nho(id, Bytes::from_static(b"x"))
+                .await
+                .is_err(),
+            "{loai:?}"
+        );
         assert_eq!(kho_ghi(loai).lay_nho(id).await.unwrap(), None, "{loai:?}");
     }
 }

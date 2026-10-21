@@ -37,7 +37,11 @@ pub async fn healthz(State(tt): State<Arc<TrangThai>>) -> impl IntoResponse {
     if !matches!(kho, Ok(Ok(()))) {
         hong.push("kho_anh".to_string());
     }
-    let trang_thai = if hong.is_empty() { StatusCode::OK } else { StatusCode::SERVICE_UNAVAILABLE };
+    let trang_thai = if hong.is_empty() {
+        StatusCode::OK
+    } else {
+        StatusCode::SERVICE_UNAVAILABLE
+    };
     let than = SucKhoe {
         trang_thai: if hong.is_empty() { "on" } else { "loi" }.to_string(),
         cum: tt.cau_hinh.cum.clone(),
@@ -46,7 +50,11 @@ pub async fn healthz(State(tt): State<Arc<TrangThai>>) -> impl IntoResponse {
         chi_doc: tt.cau_hinh.chi_doc,
         hong,
     };
-    (trang_thai, [(header::CACHE_CONTROL, "no-store")], Json(than))
+    (
+        trang_thai,
+        [(header::CACHE_CONTROL, "no-store")],
+        Json(than),
+    )
 }
 
 #[utoipa::path(get, path = "/livez", responses((status = 204)))]

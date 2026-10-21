@@ -17,7 +17,9 @@ async fn main() -> anyhow::Result<()> {
     }
     tracing_subscriber::fmt()
         .json()
-        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
+        .with_env_filter(
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
+        )
         .init();
     let cau_hinh = CauHinh::tu_moi_truong()?;
     let cong = cau_hinh.cong;
@@ -25,9 +27,12 @@ async fn main() -> anyhow::Result<()> {
     api::trang_thai::chay_migrate_nen(tt.clone());
     let nghe = tokio::net::TcpListener::bind(("0.0.0.0", cong)).await?;
     tracing::info!(cong, "api dang nghe");
-    axum::serve(nghe, api::ung_dung(tt).into_make_service_with_connect_info::<SocketAddr>())
-        .with_graceful_shutdown(cho_tat())
-        .await?;
+    axum::serve(
+        nghe,
+        api::ung_dung(tt).into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .with_graceful_shutdown(cho_tat())
+    .await?;
     Ok(())
 }
 
@@ -37,7 +42,8 @@ async fn cho_tat() {
     };
     #[cfg(unix)]
     let term = async {
-        if let Ok(mut s) = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()) {
+        if let Ok(mut s) = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+        {
             s.recv().await;
         }
     };

@@ -17,7 +17,10 @@ struct BaoMat;
 impl Modify for BaoMat {
     fn modify(&self, api: &mut utoipa::openapi::OpenApi) {
         let c = api.components.get_or_insert_with(Default::default);
-        c.add_security_scheme("ma_bi_mat", SecurityScheme::Http(HttpBuilder::new().scheme(HttpAuthScheme::Bearer).build()));
+        c.add_security_scheme(
+            "ma_bi_mat",
+            SecurityScheme::Http(HttpBuilder::new().scheme(HttpAuthScheme::Bearer).build()),
+        );
     }
 }
 

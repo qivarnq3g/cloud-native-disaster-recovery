@@ -22,7 +22,8 @@ pub fn can_anh_nho(rong: u32, cao: u32) -> bool {
 
 pub fn kich_thuoc_nho(rong: u32, cao: u32) -> (u32, u32) {
     let thu_nho = |canh: u32, canh_dai: u32| -> u32 {
-        ((u64::from(canh) * u64::from(CANH_TOI_DA) + u64::from(canh_dai) / 2) / u64::from(canh_dai)).max(1) as u32
+        ((u64::from(canh) * u64::from(CANH_TOI_DA) + u64::from(canh_dai) / 2) / u64::from(canh_dai))
+            .max(1) as u32
     };
     if rong >= cao {
         (CANH_TOI_DA, thu_nho(cao, rong))
@@ -51,7 +52,11 @@ pub fn tao_anh_nho(goc: &[u8], kieu: KieuAnh) -> anyhow::Result<Vec<u8>> {
         .with_quality(60.0)
         .with_alpha_quality(60.0)
         .with_speed(6)
-        .encode_rgba(ravif::Img::new(diem.as_slice(), rong_nho as usize, cao_nho as usize))?;
+        .encode_rgba(ravif::Img::new(
+            diem.as_slice(),
+            rong_nho as usize,
+            cao_nho as usize,
+        ))?;
     Ok(ket_qua.avif_file)
 }
 
@@ -63,7 +68,11 @@ pub struct BoNhoDem {
 
 impl BoNhoDem {
     pub fn moi(gioi_han: usize) -> Self {
-        Self { ds: LruCache::unbounded(), tong: 0, gioi_han }
+        Self {
+            ds: LruCache::unbounded(),
+            tong: 0,
+            gioi_han,
+        }
     }
 
     pub fn lay(&mut self, id: &Uuid) -> Option<Bytes> {
@@ -122,10 +131,19 @@ impl DichVuAnhNho {
         self.so_lan_tao.load(Ordering::Relaxed)
     }
 
-    pub async fn lay(&self, id: Uuid, kieu_goc: KieuAnh, rong: u32, cao: u32) -> Result<AnhTraVe, ApiLoi> {
+    pub async fn lay(
+        &self,
+        id: Uuid,
+        kieu_goc: KieuAnh,
+        rong: u32,
+        cao: u32,
+    ) -> Result<AnhTraVe, ApiLoi> {
         if !can_anh_nho(rong, cao) {
             let goc = self.kho.lay_goc(id).await?.ok_or(ApiLoi::KhongTimThay)?;
-            return Ok(AnhTraVe { du_lieu: goc, kieu: kieu_goc.mime() });
+            return Ok(AnhTraVe {
+                du_lieu: goc,
+                kieu: kieu_goc.mime(),
+            });
         }
         let tu_dem = self.dem.lock().expect("khoa bo nho dem").lay(&id);
         if let Some(b) = tu_dem {
@@ -168,7 +186,10 @@ impl DichVuAnhNho {
             })?;
         let du_lieu = Bytes::from(du_lieu);
         self.so_lan_tao.fetch_add(1, Ordering::Relaxed);
-        self.dem.lock().expect("khoa bo nho dem").dat(id, du_lieu.clone());
+        self.dem
+            .lock()
+            .expect("khoa bo nho dem")
+            .dat(id, du_lieu.clone());
         if !self.chi_doc {
             if let Err(e) = self.kho.cat_nho(id, du_lieu.clone()).await {
                 tracing::warn!(%id, loi = %e, "khong cat duoc anh nho vao kho");
@@ -179,7 +200,10 @@ impl DichVuAnhNho {
 }
 
 fn avif(du_lieu: Bytes) -> AnhTraVe {
-    AnhTraVe { du_lieu, kieu: "image/avif" }
+    AnhTraVe {
+        du_lieu,
+        kieu: "image/avif",
+    }
 }
 
 #[cfg(test)]
@@ -191,7 +215,9 @@ mod tests {
     use object_store::memory::InMemory;
 
     fn png(rong: u32, cao: u32) -> Bytes {
-        let anh = DynamicImage::ImageRgb8(RgbImage::from_fn(rong, cao, |x, y| image::Rgb([(x % 256) as u8, (y % 256) as u8, 40])));
+        let anh = DynamicImage::ImageRgb8(RgbImage::from_fn(rong, cao, |x, y| {
+            image::Rgb([(x % 256) as u8, (y % 256) as u8, 40])
+        }));
         let mut ra = Cursor::new(Vec::new());
         anh.write_to(&mut ra, ImageFormat::Png).unwrap();
         Bytes::from(ra.into_inner())
@@ -253,7 +279,9 @@ mod tests {
         let mut nv = Vec::new();
         for _ in 0..20 {
             let dv = dv.clone();
-            nv.push(tokio::spawn(async move { dv.lay(id, KieuAnh::Png, 1200, 900).await }));
+            nv.push(tokio::spawn(async move {
+                dv.lay(id, KieuAnh::Png, 1200, 900).await
+            }));
         }
         for n in nv {
             let ra = n.await.unwrap().unwrap();
@@ -280,7 +308,10 @@ mod tests {
         let kho = kho_trong();
         let id = Uuid::now_v7();
         kho.cat_goc(id, png(1200, 900)).await.unwrap();
-        DichVuAnhNho::moi(kho.clone(), false).lay(id, KieuAnh::Png, 1200, 900).await.unwrap();
+        DichVuAnhNho::moi(kho.clone(), false)
+            .lay(id, KieuAnh::Png, 1200, 900)
+            .await
+            .unwrap();
         kho.xoa_nho(id).await.unwrap();
         let dv_moi = DichVuAnhNho::moi(kho.clone(), false);
         dv_moi.lay(id, KieuAnh::Png, 1200, 900).await.unwrap();
@@ -291,6 +322,11 @@ mod tests {
     #[tokio::test]
     async fn thieu_anh_goc_thi_khong_tim_thay() {
         let dv = DichVuAnhNho::moi(kho_trong(), false);
-        assert_eq!(dv.lay(Uuid::now_v7(), KieuAnh::Png, 1200, 900).await.unwrap_err(), ApiLoi::KhongTimThay);
+        assert_eq!(
+            dv.lay(Uuid::now_v7(), KieuAnh::Png, 1200, 900)
+                .await
+                .unwrap_err(),
+            ApiLoi::KhongTimThay
+        );
     }
 }

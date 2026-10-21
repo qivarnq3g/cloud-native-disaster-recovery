@@ -28,7 +28,9 @@ pub fn tuy_chon_mang() -> (ClientOptions, RetryConfig) {
 }
 
 fn bien_moi_truong(tien_to: &'static str) -> impl Iterator<Item = (String, String)> {
-    std::env::vars().filter(move |(k, _)| k.starts_with(tien_to)).map(|(k, v)| (k.to_ascii_lowercase(), v))
+    std::env::vars()
+        .filter(move |(k, _)| k.starts_with(tien_to))
+        .map(|(k, v)| (k.to_ascii_lowercase(), v))
 }
 
 impl KhoAnh {
@@ -40,7 +42,9 @@ impl KhoAnh {
         let (tuy_chon, thu_lai) = tuy_chon_mang();
         let kho: Arc<dyn ObjectStore> = match c.loai_kho {
             LoaiKho::Azure => {
-                let mut b = MicrosoftAzureBuilder::new().with_client_options(tuy_chon).with_retry(thu_lai);
+                let mut b = MicrosoftAzureBuilder::new()
+                    .with_client_options(tuy_chon)
+                    .with_retry(thu_lai);
                 for (k, v) in bien_moi_truong("AZURE_") {
                     if let Ok(khoa) = k.parse() {
                         b = b.with_config(khoa, v);
@@ -49,7 +53,9 @@ impl KhoAnh {
                 Arc::new(b.with_container_name(&c.ten_container).build()?)
             }
             LoaiKho::S3 => {
-                let mut b = AmazonS3Builder::new().with_client_options(tuy_chon).with_retry(thu_lai);
+                let mut b = AmazonS3Builder::new()
+                    .with_client_options(tuy_chon)
+                    .with_retry(thu_lai);
                 for (k, v) in bien_moi_truong("AWS_") {
                     if let Ok(khoa) = k.parse() {
                         b = b.with_config(khoa, v);
@@ -70,7 +76,10 @@ impl KhoAnh {
     }
 
     pub async fn cat_goc(&self, id: Uuid, du_lieu: Bytes) -> object_store::Result<()> {
-        self.kho.put(&Self::duong_goc(id), PutPayload::from(du_lieu)).await.map(|_| ())
+        self.kho
+            .put(&Self::duong_goc(id), PutPayload::from(du_lieu))
+            .await
+            .map(|_| ())
     }
 
     pub async fn lay_goc(&self, id: Uuid) -> object_store::Result<Option<Bytes>> {
@@ -78,7 +87,10 @@ impl KhoAnh {
     }
 
     pub async fn cat_nho(&self, id: Uuid, du_lieu: Bytes) -> object_store::Result<()> {
-        self.kho.put(&Self::duong_nho(id), PutPayload::from(du_lieu)).await.map(|_| ())
+        self.kho
+            .put(&Self::duong_nho(id), PutPayload::from(du_lieu))
+            .await
+            .map(|_| ())
     }
 
     pub async fn lay_nho(&self, id: Uuid) -> object_store::Result<Option<Bytes>> {
