@@ -190,10 +190,10 @@ impl DichVuAnhNho {
             .lock()
             .expect("khoa bo nho dem")
             .dat(id, du_lieu.clone());
-        if !self.chi_doc {
-            if let Err(e) = self.kho.cat_nho(id, du_lieu.clone()).await {
-                tracing::warn!(%id, loi = %e, "khong cat duoc anh nho vao kho");
-            }
+        if !self.chi_doc
+            && let Err(e) = self.kho.cat_nho(id, du_lieu.clone()).await
+        {
+            tracing::warn!(%id, loi = %e, "khong cat duoc anh nho vao kho");
         }
         Ok(du_lieu)
     }
