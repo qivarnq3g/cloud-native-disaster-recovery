@@ -21,3 +21,25 @@ services:
     volumes:
       - ./thu/s3.json:/etc/seaweedfs/s3.json:ro
     ports: ["8333:8333"]
+  api:
+    profiles: ["api"]
+    build:
+      context: ./api
+    environment:
+      DATABASE_URL: postgres://postgres:thu@csdl:5432/dr
+      KHO_ANH: s3
+      AWS_ENDPOINT: http://seaweedfs:8333
+      AWS_ALLOW_HTTP: "true"
+      AWS_ACCESS_KEY_ID: ghi
+      AWS_SECRET_ACCESS_KEY: ghi-bi-mat
+      AWS_REGION: us-east-1
+      MA_BI_MAT: ma-thu-0123456789
+      CUM: chinh
+      VUNG: thu
+      CORS_NGUON: http://localhost:4321,http://127.0.0.1:4321
+    ports: ["8080:8080"]
+    depends_on:
+      csdl:
+        condition: service_healthy
+      seaweedfs:
+        condition: service_started
