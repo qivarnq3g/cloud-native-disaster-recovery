@@ -17,3 +17,11 @@ Ngày 21/10/2026. Ghi lại các chỗ khác với [kế hoạch API](2026-10-09
 - `KhoAnh::tu_cau_hinh` gọi `from_env()` rồi `.with_client_options(...)`, nên `AWS_ALLOW_HTTP` (và mọi biến cấu hình mạng khác của `object_store`) bị bỏ qua.
 
 Sửa: đặt `with_client_options` và `with_retry` trước; trong `tu_cau_hinh` tạo builder trống, đặt tùy chọn mạng, rồi mới đọc các biến `AZURE_*` hoặc `AWS_*` giống cách `from_env()` làm. Các biến môi trường dùng vẫn đúng như kế hoạch ghi.
+
+### Task 6: `AnhTraVe` thêm `Debug`
+
+Kiểm thử `thieu_anh_goc_thi_khong_tim_thay` gọi `unwrap_err()` trên `Result<AnhTraVe, ApiLoi>`, cần `AnhTraVe: Debug`. Thêm `#[derive(Debug)]`.
+
+Kiểm thử `anh_nho` ở bản debug mất khoảng 90 giây vì mã hóa AVIF không tối ưu; không đổi gì.
+
+Số đo ví dụ `do-anh-nho` trên máy làm (4 nhân, bản release, chưa bật `phat_hanh`): `n=5 trung_vi_ms=958 p95_ms=973 jpeg_byte=1151764`. Đây chưa phải số đo trên B2als v2 mà mục 7 thiết kế web yêu cầu (ngưỡng phân vị 95 không quá 500 ms); đo lại ở bước chạy thử Azure, nhớ bật `--features phat_hanh`.
