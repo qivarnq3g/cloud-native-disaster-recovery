@@ -288,13 +288,13 @@ az storage account blob-service-properties update -n "$KHO_ANH_NHAT" -g "$RG_NHA
 for c in cnpg velero; do
   az storage container create -n "$c" --account-name "$KHO_SAO_LUU" --account-key "$(cat "$THU_MUC_RIENG/khoa-$KHO_SAO_LUU")" -o none
 done
-az storage container create -n anh --account-name "$KHO_ANH_CHINH" --account-key "$(cat "$THU_MUC_RIENG/khoa-$KHO_ANH_CHINH")" -o none
-az storage container create -n anh --account-name "$KHO_ANH_NHAT" --account-key "$(cat "$THU_MUC_RIENG/khoa-$KHO_ANH_NHAT")" -o none
+az storage container create -n images --account-name "$KHO_ANH_CHINH" --account-key "$(cat "$THU_MUC_RIENG/khoa-$KHO_ANH_CHINH")" -o none
+az storage container create -n images --account-name "$KHO_ANH_NHAT" --account-key "$(cat "$THU_MUC_RIENG/khoa-$KHO_ANH_NHAT")" -o none
 NGUON_ID=$(az storage account show -n "$KHO_ANH_CHINH" -g "$RG_CHINH" --query id -o tsv)
 DICH_ID=$(az storage account show -n "$KHO_ANH_NHAT" -g "$RG_NHAT" --query id -o tsv)
 az storage account or-policy create -g "$RG_NHAT" -n "$KHO_ANH_NHAT" \
   --source-account "$NGUON_ID" --destination-account "$DICH_ID" \
-  --source-container anh --destination-container anh -o json > "$THU_MUC_RIENG/or-policy.json"
+  --source-container images --destination-container images -o json > "$THU_MUC_RIENG/or-policy.json"
 az storage account or-policy create -g "$RG_CHINH" -n "$KHO_ANH_CHINH" --policy "@$THU_MUC_RIENG/or-policy.json" -o none
 az storage account or-policy list -g "$RG_CHINH" -n "$KHO_ANH_CHINH" --query "[].rules[].sourceContainer" -o tsv
 ```
@@ -303,7 +303,7 @@ az storage account or-policy list -g "$RG_CHINH" -n "$KHO_ANH_CHINH" --query "[]
 chmod +x scripts/thu/tao-kho.sh && scripts/thu/tao-kho.sh
 ```
 
-Expected: dòng cuối in `anh`.
+Expected: dòng cuối in `images`.
 
 - [ ] **Step 2: Script đo độ trễ chép ảnh**
 
@@ -332,7 +332,7 @@ RA = Path(os.environ["DU_LIEU"]) / "chep-anh.csv"
 
 def client(ten):
     khoa = (RIENG / f"khoa-{ten}").read_text().strip()
-    return BlobServiceClient(f"https://{ten}.blob.core.windows.net", credential=khoa).get_container_client("anh")
+    return BlobServiceClient(f"https://{ten}.blob.core.windows.net", credential=khoa).get_container_client("images")
 
 
 def utc(t):
@@ -1029,18 +1029,18 @@ git branch -D thu/kind
 
 ### Task 10: Thời gian tạo ảnh nhỏ AVIF trên B2als v2 (chỉ khi API đã có)
 
-Bỏ qua task này nếu kế hoạch API (`docs/ke-hoach/2026-10-09-api.md`) chưa làm tới Task 6 (ví dụ `do-anh-nho`).
+Bỏ qua task này nếu kế hoạch API (`docs/ke-hoach/2026-10-09-api.md`) chưa làm tới Task 6 (ví dụ `bench-thumbnail`).
 
 - [ ] **Step 1: Biên dịch ví dụ đo và chạy trên máy ảo**
 
 ```bash
 source scripts/thu/bien.sh
-MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W)/app/api:/src" -w /src rust:1.97.1-alpine \n  sh -c 'apk add --no-cache build-base nasm >/dev/null && cargo build --release --features phat_hanh --example do-anh-nho --target-dir /src/target-musl'
-scp -i "$KHOA_SSH" app/api/target-musl/release/examples/do-anh-nho "dr@$FQDN_CHINH:/tmp/"
-ssh -i "$KHOA_SSH" "dr@$FQDN_CHINH" /tmp/do-anh-nho 50
+MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W)/app/api:/src" -w /src rust:1.97.1-alpine \n  sh -c 'apk add --no-cache build-base nasm >/dev/null && cargo build --release --features production --example bench-thumbnail --target-dir /src/target-musl'
+scp -i "$KHOA_SSH" app/api/target-musl/release/examples/bench-thumbnail "dr@$FQDN_CHINH:/tmp/"
+ssh -i "$KHOA_SSH" "dr@$FQDN_CHINH" /tmp/bench-thumbnail 50
 ```
 
-Expected: dòng `n=50 trung_vi_ms=… p95_ms=…`. Ghi vào dòng 11. Ngưỡng: p95 không quá 500 ms; vượt thì đổi ảnh nhỏ sang WebP (mục 7 thiết kế web).
+Expected: dòng `n=50 median_ms=… p95_ms=…`. Ghi vào dòng 11. Ngưỡng: p95 không quá 500 ms; vượt thì đổi ảnh nhỏ sang WebP (mục 7 thiết kế web).
 
 ### Task 11: Dọn sạch
 
