@@ -74,6 +74,17 @@ Ghi chú về kích thước: Docker trên máy làm dùng containerd snapshotte
 
 Thời gian tạo ảnh nhỏ 0,75 giây là một lần đo trên máy làm, chưa phải phân vị 95 trên B2als v2; vẫn cần đo ở bước chạy thử Azure.
 
+### Step 5: toàn bộ kiểm tra trước khi commit
+
+Chạy trên máy làm, cùng thứ tự với job `api` trong `ci` (trừ bước dựng và đẩy image):
+- `cargo fmt --check`: qua.
+- `cargo clippy --all-targets -- -D warnings`: qua, không cảnh báo.
+- `cargo sqlx prepare --check -- --all-targets`: qua.
+- `cargo run -- --in-openapi` so với `openapi.json` đã commit: khớp.
+- `cargo test --all-targets`: 52 kiểm thử qua, 1 bỏ qua có chủ ý (`tai`, chạy riêng ở trên).
+
+Các tệp Task 12 commit trước khi có kết quả này (commit "đang kiểm"); sau khi kiểm không phải sửa gì.
+
 ### Rủi ro của `ci` chưa kiểm được
 
 - Chưa chạy trên GitHub Actions: workflow chỉ chạy khi đẩy vào `main` hoặc mở PR, cả hai chưa làm (kế hoạch ghi "chỉ làm khi Quang cho phép").
