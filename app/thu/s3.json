@@ -1,0 +1,14 @@
+{
+  "identities": [
+    {
+      "name": "ghi",
+      "credentials": [{ "accessKey": "ghi", "secretKey": "ghi-bi-mat" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    },
+    {
+      "name": "doc",
+      "credentials": [{ "accessKey": "doc", "secretKey": "doc-bi-mat" }],
+      "actions": ["Read"]
+    }
+  ]
+}
