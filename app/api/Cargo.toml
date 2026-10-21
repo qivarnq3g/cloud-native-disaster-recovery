@@ -1,0 +1,46 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97"
+publish = false
+
+[features]
+phat_hanh = ["ravif/asm", "dep:mimalloc"]
+
+[dependencies]
+anyhow = "1.0.104"
+axum = { version = "0.8.9", features = ["multipart", "macros"] }
+bytes = "1.12"
+fast_image_resize = "5.5"
+hex = "0.4.3"
+image = { version = "0.25.10", default-features = false, features = ["jpeg", "png", "webp"] }
+ipnet = "2.12"
+lru = "0.12"
+mimalloc = { version = "0.1.52", optional = true }
+object_store = { version = "0.12.5", features = ["azure", "aws"] }
+ravif = { version = "0.11.20", default-features = false, features = ["threading"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+sha2 = "0.10"
+sqlx = { version = "0.8.6", default-features = false, features = ["runtime-tokio", "postgres", "uuid", "time", "macros", "migrate"] }
+subtle = "2.6.1"
+thiserror = "2.0.21"
+time = { version = "0.3.55", features = ["serde", "formatting", "parsing"] }
+tokio = { version = "1.53", features = ["macros", "rt-multi-thread", "net", "signal", "sync", "time"] }
+tower-http = { version = "0.6.11", features = ["cors", "trace", "set-header"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter", "json"] }
+unicode-normalization = "0.1.25"
+utoipa = { version = "5.5.0", features = ["axum_extras", "uuid", "time"] }
+utoipa-axum = "0.2.0"
+uuid = { version = "1.27", features = ["v7", "serde"] }
+
+[dev-dependencies]
+cpu-time = "1.0.0"
+reqwest = { version = "0.12.28", default-features = false, features = ["json", "multipart", "rustls-tls"] }
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"
