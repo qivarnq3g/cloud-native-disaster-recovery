@@ -85,7 +85,9 @@ pub async fn them(pool: &PgPool, b: &BaiMoi<'_>) -> sqlx::Result<KetQuaThem> {
     match dong {
         Some(d) => Ok(KetQuaThem::Moi(d.into())),
         None => {
-            let cu = tim_theo_ma_lan_dang(pool, b.ma_lan_dang).await?.ok_or(sqlx::Error::RowNotFound)?;
+            let cu = tim_theo_ma_lan_dang(pool, b.ma_lan_dang)
+                .await?
+                .ok_or(sqlx::Error::RowNotFound)?;
             Ok(KetQuaThem::DaCo(cu))
         }
     }

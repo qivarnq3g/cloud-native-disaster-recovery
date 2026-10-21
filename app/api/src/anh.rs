@@ -80,7 +80,13 @@ pub fn kiem_tra(du_lieu: Bytes) -> Result<AnhHopLe, ApiLoi> {
     }
     giai_ma(&du_lieu, kieu).map_err(|_| ApiLoi::KhongPhaiAnh)?;
     let sha256: [u8; 32] = Sha256::digest(&du_lieu).into();
-    Ok(AnhHopLe { kieu, rong, cao, sha256, du_lieu })
+    Ok(AnhHopLe {
+        kieu,
+        rong,
+        cao,
+        sha256,
+        du_lieu,
+    })
 }
 
 pub fn giai_ma(du_lieu: &[u8], kieu: KieuAnh) -> image::ImageResult<image::DynamicImage> {
@@ -103,12 +109,18 @@ mod tests {
     }
 
     fn mau(rong: u32, cao: u32) -> DynamicImage {
-        DynamicImage::ImageRgb8(RgbImage::from_fn(rong, cao, |x, y| image::Rgb([(x % 256) as u8, (y % 256) as u8, 90])))
+        DynamicImage::ImageRgb8(RgbImage::from_fn(rong, cao, |x, y| {
+            image::Rgb([(x % 256) as u8, (y % 256) as u8, 90])
+        }))
     }
 
     #[test]
     fn nhan_png_jpeg_webp_va_doc_kich_thuoc() {
-        for (dd, kieu) in [(ImageFormat::Png, KieuAnh::Png), (ImageFormat::Jpeg, KieuAnh::Jpeg), (ImageFormat::WebP, KieuAnh::Webp)] {
+        for (dd, kieu) in [
+            (ImageFormat::Png, KieuAnh::Png),
+            (ImageFormat::Jpeg, KieuAnh::Jpeg),
+            (ImageFormat::WebP, KieuAnh::Webp),
+        ] {
             let b = ma_hoa(mau(64, 48), dd);
             let a = kiem_tra(b.clone()).unwrap();
             assert_eq!(a.kieu, kieu);
@@ -121,7 +133,10 @@ mod tests {
 
     #[test]
     fn tep_doi_duoi_khong_phai_anh() {
-        assert_eq!(kiem_tra(Bytes::from_static("xin chào".as_bytes())).unwrap_err(), ApiLoi::KhongPhaiAnh);
+        assert_eq!(
+            kiem_tra(Bytes::from_static("xin chào".as_bytes())).unwrap_err(),
+            ApiLoi::KhongPhaiAnh
+        );
     }
 
     #[test]
@@ -134,12 +149,18 @@ mod tests {
     fn qua_1_mib_thi_qua_lon() {
         let mut v = b"\x89PNG\r\n\x1a\n".to_vec();
         v.resize(BYTE_TOI_DA + 1, 0);
-        assert!(matches!(kiem_tra(Bytes::from(v)).unwrap_err(), ApiLoi::AnhQuaLon(_)));
+        assert!(matches!(
+            kiem_tra(Bytes::from(v)).unwrap_err(),
+            ApiLoi::AnhQuaLon(_)
+        ));
     }
 
     #[test]
     fn qua_50_trieu_diem_anh_thi_qua_lon() {
-        let b = ma_hoa(DynamicImage::ImageLuma8(GrayImage::new(8000, 7000)), ImageFormat::Png);
+        let b = ma_hoa(
+            DynamicImage::ImageLuma8(GrayImage::new(8000, 7000)),
+            ImageFormat::Png,
+        );
         assert!(b.len() <= BYTE_TOI_DA);
         assert!(matches!(kiem_tra(b).unwrap_err(), ApiLoi::AnhQuaLon(_)));
     }

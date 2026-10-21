@@ -59,10 +59,14 @@ impl ApiLoi {
 
 impl IntoResponse for ApiLoi {
     fn into_response(self) -> Response {
-        let than = ThanLoi { loi: self.ma().to_string(), thong_bao: self.to_string() };
+        let than = ThanLoi {
+            loi: self.ma().to_string(),
+            thong_bao: self.to_string(),
+        };
         let mut r = (self.trang_thai(), Json(than)).into_response();
         if let ApiLoi::ThuQuaNhieu(giay) = self {
-            r.headers_mut().insert(header::RETRY_AFTER, HeaderValue::from(giay));
+            r.headers_mut()
+                .insert(header::RETRY_AFTER, HeaderValue::from(giay));
         }
         r
     }
