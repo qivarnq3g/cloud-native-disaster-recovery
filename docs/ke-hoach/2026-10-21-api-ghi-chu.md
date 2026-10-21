@@ -42,6 +42,44 @@ Lưu ý: kiểm thử đo `cpu_time::ProcessTime` của cả tiến trình kiể
 
 Lần chạy bản 1 phút trước khi sửa (tệp tạm, không commit): `cpu_tren_thoi_gian=0.003`.
 
+Lần chạy bản 5 phút đã commit (`cargo test --release --test tai -- --ignored --nocapture`, SeaweedFS): `cpu_tren_thoi_gian=0.003`, PASS sau 300,51 giây.
+
+## Task 12: image và `ci`
+
+`Dockerfile`, `.dockerignore`, dịch vụ `api` trong `app/compose.yaml`, `.github/workflows/ci.yml` và phần thêm vào `app/README.md` đúng như kế hoạch, không sửa gì.
+
+### Dựng image trên máy làm
+
+Máy làm đi ra mạng qua proxy có CA riêng, nên bản dựng trong Docker không tải được crate nếu dùng thẳng `docker compose build`. Để không phải sửa `Dockerfile` (GitHub Actions không cần proxy), chỉ ở máy làm đã:
+- dựng một image nền cục bộ từ `rust:1.97.1-alpine` có thêm CA của proxy và `CARGO_HTTP_CAINFO`;
+- dựng bằng `docker buildx build --network host --build-context rust:1.97.1-alpine=docker-image://<image nền cục bộ> --build-arg HTTPS_PROXY=... -t dr-app-api app/api`.
+
+Image cuối dựng từ `distroless/static-debian12:nonroot`, chỉ chép tệp `/api` sang, nên không mang CA hay biến proxy nào.
+
+### Số đo (máy làm, 4 nhân)
+
+| Việc | Kết quả | Ngưỡng ở mục 7 thiết kế web |
+|---|---|---|
+| Dựng image (`--features phat_hanh`, musl, LTO) | 8 phút 26 giây, thành công | |
+| Biên dịch tĩnh musl cùng `ravif` (bật asm) | Tệp `/api` là `static-pie`, chạy được trên `distroless/static`; `--in-openapi` in ra OpenAPI 3.1 | Chạy được trên `distroless/static` |
+| Kích thước image, lệnh của kế hoạch (`docker image inspect .Size`) | `image_mb=21.4` | Khoảng 10-15 MB, ghi số thật |
+| Kích thước tệp chạy `/api` | 10,8 MB | |
+| Kích thước nén khi đẩy lên registry | 5,66 MB | |
+| Khởi động, lệnh của kế hoạch (tính cả `docker compose up`) | `khoi_dong_ms=1114` | |
+| Từ lúc container chạy tới `/healthz` 200 (3 lần `docker start`) | 224, 189, 206 ms | Dưới 1 giây |
+| Bộ nhớ lúc nghỉ | 13,4 MiB | |
+| Ảnh nhỏ từ JPEG 2560x1920 (898 KB) trong image | AVIF 800x600, 12 KB; lần đầu 0,75 giây (gồm đọc ảnh gốc từ SeaweedFS), lần sau 2 ms từ bộ nhớ đệm | Phân vị 95 không quá 500 ms trên B2als v2 |
+
+Ghi chú về kích thước: Docker trên máy làm dùng containerd snapshotter, `.Size` cộng cả lớp nén lẫn lớp đã giải nén (image nền `distroless/static` báo 5,9 MB). Kích thước thật khi chạy gần với tệp chạy cộng nền, khoảng 13 MB; trên GitHub Actions số `image_mb` có thể khác.
+
+Thời gian tạo ảnh nhỏ 0,75 giây là một lần đo trên máy làm, chưa phải phân vị 95 trên B2als v2; vẫn cần đo ở bước chạy thử Azure.
+
+### Rủi ro của `ci` chưa kiểm được
+
+- Chưa chạy trên GitHub Actions: workflow chỉ chạy khi đẩy vào `main` hoặc mở PR, cả hai chưa làm (kế hoạch ghi "chỉ làm khi Quang cho phép").
+- Ước lượng theo máy làm: biên dịch kiểm thử khoảng 2 phút, `cargo test --all-targets` khoảng 3,5 phút, bản release cho `tai` khoảng 8 phút cộng 5 phút chạy, dựng image khoảng 8,5 phút. Tổng khoảng 30-35 phút trên máy 4 nhân, sát `timeout-minutes: 45` ở lần chạy đầu chưa có bộ nhớ đệm.
+- Vòng `until curl ... /healthz` trong bước đo image không có giới hạn, nếu API không lên thì job treo tới hết 45 phút.
+
 ## Việc khác thấy khi đối chiếu thiết kế
 
 - Mục 2.1 thiết kế web ghi "Phiên bản cụ thể của mọi thư viện ghi trong `docs/phien-ban.md`". Kế hoạch API không có bước tạo tệp này, nên chưa làm. Phiên bản thật đang ghim trong `app/api/Cargo.lock` (ví dụ axum 0.8.9, sqlx 0.8.6, object_store 0.12.5, utoipa 5.5.0, image 0.25.10, ravif 0.11.20, fast_image_resize 5.5.0, tokio 1.54.0).
