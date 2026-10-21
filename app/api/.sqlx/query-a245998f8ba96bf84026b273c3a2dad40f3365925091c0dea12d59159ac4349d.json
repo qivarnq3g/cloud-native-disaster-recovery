@@ -1,0 +1,78 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO bai (id, ma_lan_dang, tieu_de, mo_ta, anh_sha256, anh_kieu, anh_byte, rong, cao)\n           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)\n           ON CONFLICT (ma_lan_dang) DO NOTHING\n           RETURNING id AS \"id!\", tieu_de AS \"tieu_de!\", mo_ta AS \"mo_ta!\", anh_sha256 AS \"anh_sha256!\",\n                     anh_kieu AS \"anh_kieu!\", anh_byte AS \"anh_byte!\", rong AS \"rong!\", cao AS \"cao!\", tao_luc AS \"tao_luc!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "tieu_de!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "mo_ta!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "anh_sha256!",
+        "type_info": "Bytea"
+      },
+      {
+        "ordinal": 4,
+        "name": "anh_kieu!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "anh_byte!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "rong!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "cao!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "tao_luc!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Text",
+        "Bytea",
+        "Text",
+        "Int4",
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "a245998f8ba96bf84026b273c3a2dad40f3365925091c0dea12d59159ac4349d"
+}

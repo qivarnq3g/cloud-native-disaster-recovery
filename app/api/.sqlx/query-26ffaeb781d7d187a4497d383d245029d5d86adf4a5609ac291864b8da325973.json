@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, tieu_de, mo_ta, anh_sha256, anh_kieu, anh_byte, rong, cao, tao_luc FROM bai WHERE ma_lan_dang = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "tieu_de",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "mo_ta",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "anh_sha256",
+        "type_info": "Bytea"
+      },
+      {
+        "ordinal": 4,
+        "name": "anh_kieu",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "anh_byte",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "rong",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "cao",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "tao_luc",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "26ffaeb781d7d187a4497d383d245029d5d86adf4a5609ac291864b8da325973"
+}
