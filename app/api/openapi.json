@@ -1,0 +1,504 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "API web đăng ảnh của đồ án DR",
+    "description": "",
+    "license": {
+      "name": ""
+    },
+    "version": "1"
+  },
+  "paths": {
+    "/healthz": {
+      "get": {
+        "operationId": "healthz",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucKhoe"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucKhoe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/livez": {
+      "get": {
+        "operationId": "livez",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/bai": {
+      "get": {
+        "operationId": "danh_sach",
+        "parameters": [
+          {
+            "name": "truoc",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "so",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangBai"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "dang_bai",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/FormDangBai"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bai"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bai"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ma_bi_mat": []
+          }
+        ]
+      }
+    },
+    "/v1/bai/{id}": {
+      "get": {
+        "operationId": "mot_bai",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bai"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bai/{id}/anh": {
+      "get": {
+        "operationId": "anh_goc",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ảnh gốc, kiểu theo anh_kieu"
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bai/{id}/anh-nho": {
+      "get": {
+        "operationId": "anh_nho",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ảnh nhỏ AVIF, hoặc ảnh gốc nếu ảnh đã nhỏ"
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/ma/kiem-tra": {
+      "post": {
+        "operationId": "kiem_tra_ma",
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanLoi"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ma_bi_mat": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Bai": {
+        "type": "object",
+        "required": [
+          "id",
+          "tieu_de",
+          "mo_ta",
+          "anh_sha256",
+          "anh_kieu",
+          "anh_byte",
+          "rong",
+          "cao",
+          "tao_luc"
+        ],
+        "properties": {
+          "anh_byte": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "anh_kieu": {
+            "type": "string"
+          },
+          "anh_sha256": {
+            "type": "string"
+          },
+          "cao": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mo_ta": {
+            "type": "string"
+          },
+          "rong": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tao_luc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "tieu_de": {
+            "type": "string"
+          }
+        }
+      },
+      "FormDangBai": {
+        "type": "object",
+        "required": [
+          "ma_lan_dang",
+          "tieu_de",
+          "mo_ta",
+          "anh"
+        ],
+        "properties": {
+          "anh": {
+            "type": "string",
+            "format": "binary"
+          },
+          "ma_lan_dang": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mo_ta": {
+            "type": "string"
+          },
+          "tieu_de": {
+            "type": "string"
+          }
+        }
+      },
+      "SucKhoe": {
+        "type": "object",
+        "required": [
+          "trang_thai",
+          "cum",
+          "vung",
+          "phien_ban",
+          "chi_doc"
+        ],
+        "properties": {
+          "chi_doc": {
+            "type": "boolean"
+          },
+          "cum": {
+            "type": "string"
+          },
+          "hong": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "phien_ban": {
+            "type": "string"
+          },
+          "trang_thai": {
+            "type": "string"
+          },
+          "vung": {
+            "type": "string"
+          }
+        }
+      },
+      "ThanLoi": {
+        "type": "object",
+        "required": [
+          "loi",
+          "thong_bao"
+        ],
+        "properties": {
+          "loi": {
+            "type": "string"
+          },
+          "thong_bao": {
+            "type": "string"
+          }
+        }
+      },
+      "TrangBai": {
+        "type": "object",
+        "required": [
+          "bai"
+        ],
+        "properties": {
+          "bai": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Bai"
+            }
+          },
+          "tiep": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ma_bi_mat": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
