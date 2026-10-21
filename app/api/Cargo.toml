@@ -6,7 +6,7 @@ rust-version = "1.97"
 publish = false
 
 [features]
-phat_hanh = ["ravif/asm", "dep:mimalloc"]
+production = ["ravif/asm", "dep:mimalloc"]
 
 [dependencies]
 anyhow = "1.0.104"

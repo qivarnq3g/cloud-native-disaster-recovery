@@ -18,7 +18,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SucKhoe"
+                  "$ref": "#/components/schemas/Health"
                 }
               }
             }
@@ -28,7 +28,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SucKhoe"
+                  "$ref": "#/components/schemas/Health"
                 }
               }
             }
@@ -46,12 +46,12 @@
         }
       }
     },
-    "/v1/bai": {
+    "/v1/posts": {
       "get": {
-        "operationId": "danh_sach",
+        "operationId": "list_posts",
         "parameters": [
           {
-            "name": "truoc",
+            "name": "before",
             "in": "query",
             "required": false,
             "schema": {
@@ -60,7 +60,7 @@
             }
           },
           {
-            "name": "so",
+            "name": "limit",
             "in": "query",
             "required": false,
             "schema": {
@@ -75,7 +75,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TrangBai"
+                  "$ref": "#/components/schemas/PostPage"
                 }
               }
             }
@@ -85,7 +85,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -95,7 +95,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -103,12 +103,12 @@
         }
       },
       "post": {
-        "operationId": "dang_bai",
+        "operationId": "create_post",
         "requestBody": {
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/FormDangBai"
+                "$ref": "#/components/schemas/CreatePostForm"
               }
             }
           },
@@ -120,7 +120,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Bai"
+                  "$ref": "#/components/schemas/Post"
                 }
               }
             }
@@ -130,7 +130,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Bai"
+                  "$ref": "#/components/schemas/Post"
                 }
               }
             }
@@ -140,7 +140,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -150,7 +150,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -160,7 +160,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -170,7 +170,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -180,7 +180,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -190,7 +190,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -198,14 +198,14 @@
         },
         "security": [
           {
-            "ma_bi_mat": []
+            "secret_code": []
           }
         ]
       }
     },
-    "/v1/bai/{id}": {
+    "/v1/posts/{id}": {
       "get": {
-        "operationId": "mot_bai",
+        "operationId": "get_post",
         "parameters": [
           {
             "name": "id",
@@ -223,7 +223,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Bai"
+                  "$ref": "#/components/schemas/Post"
                 }
               }
             }
@@ -233,7 +233,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -243,7 +243,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -251,9 +251,9 @@
         }
       }
     },
-    "/v1/bai/{id}/anh": {
+    "/v1/posts/{id}/image": {
       "get": {
-        "operationId": "anh_goc",
+        "operationId": "get_post_image",
         "parameters": [
           {
             "name": "id",
@@ -267,14 +267,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Ảnh gốc, kiểu theo anh_kieu"
+            "description": "Ảnh gốc, kiểu theo image_type"
           },
           "404": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -282,9 +282,9 @@
         }
       }
     },
-    "/v1/bai/{id}/anh-nho": {
+    "/v1/posts/{id}/thumbnail": {
       "get": {
-        "operationId": "anh_nho",
+        "operationId": "get_post_thumbnail",
         "parameters": [
           {
             "name": "id",
@@ -305,7 +305,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -313,9 +313,9 @@
         }
       }
     },
-    "/v1/ma/kiem-tra": {
+    "/v1/secret-code/verify": {
       "post": {
-        "operationId": "kiem_tra_ma",
+        "operationId": "verify_secret_code",
         "responses": {
           "204": {
             "description": ""
@@ -325,7 +325,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -335,7 +335,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThanLoi"
+                  "$ref": "#/components/schemas/ErrorBody"
                 }
               }
             }
@@ -343,7 +343,7 @@
         },
         "security": [
           {
-            "ma_bi_mat": []
+            "secret_code": []
           }
         ]
       }
@@ -351,31 +351,101 @@
   },
   "components": {
     "schemas": {
-      "Bai": {
+      "CreatePostForm": {
+        "type": "object",
+        "required": [
+          "idempotency_key",
+          "title",
+          "description",
+          "image"
+        ],
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "image": {
+            "type": "string",
+            "format": "binary"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "ErrorBody": {
+        "type": "object",
+        "required": [
+          "error",
+          "message"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Health": {
+        "type": "object",
+        "required": [
+          "status",
+          "cluster",
+          "region",
+          "version",
+          "read_only"
+        ],
+        "properties": {
+          "cluster": {
+            "type": "string"
+          },
+          "failing": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "read_only": {
+            "type": "boolean"
+          },
+          "region": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "Post": {
         "type": "object",
         "required": [
           "id",
-          "tieu_de",
-          "mo_ta",
-          "anh_sha256",
-          "anh_kieu",
-          "anh_byte",
-          "rong",
-          "cao",
-          "tao_luc"
+          "title",
+          "description",
+          "image_sha256",
+          "image_type",
+          "image_bytes",
+          "width",
+          "height",
+          "created_at"
         ],
         "properties": {
-          "anh_byte": {
-            "type": "integer",
-            "format": "int32"
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
           },
-          "anh_kieu": {
+          "description": {
             "type": "string"
           },
-          "anh_sha256": {
-            "type": "string"
-          },
-          "cao": {
+          "height": {
             "type": "integer",
             "format": "int32"
           },
@@ -383,119 +453,49 @@
             "type": "string",
             "format": "uuid"
           },
-          "mo_ta": {
-            "type": "string"
-          },
-          "rong": {
+          "image_bytes": {
             "type": "integer",
             "format": "int32"
           },
-          "tao_luc": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "tieu_de": {
+          "image_sha256": {
             "type": "string"
+          },
+          "image_type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
-      "FormDangBai": {
+      "PostPage": {
         "type": "object",
         "required": [
-          "ma_lan_dang",
-          "tieu_de",
-          "mo_ta",
-          "anh"
+          "posts"
         ],
         "properties": {
-          "anh": {
-            "type": "string",
-            "format": "binary"
-          },
-          "ma_lan_dang": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "mo_ta": {
-            "type": "string"
-          },
-          "tieu_de": {
-            "type": "string"
-          }
-        }
-      },
-      "SucKhoe": {
-        "type": "object",
-        "required": [
-          "trang_thai",
-          "cum",
-          "vung",
-          "phien_ban",
-          "chi_doc"
-        ],
-        "properties": {
-          "chi_doc": {
-            "type": "boolean"
-          },
-          "cum": {
-            "type": "string"
-          },
-          "hong": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "phien_ban": {
-            "type": "string"
-          },
-          "trang_thai": {
-            "type": "string"
-          },
-          "vung": {
-            "type": "string"
-          }
-        }
-      },
-      "ThanLoi": {
-        "type": "object",
-        "required": [
-          "loi",
-          "thong_bao"
-        ],
-        "properties": {
-          "loi": {
-            "type": "string"
-          },
-          "thong_bao": {
-            "type": "string"
-          }
-        }
-      },
-      "TrangBai": {
-        "type": "object",
-        "required": [
-          "bai"
-        ],
-        "properties": {
-          "bai": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Bai"
-            }
-          },
-          "tiep": {
+          "next": {
             "type": [
               "string",
               "null"
             ],
             "format": "uuid"
+          },
+          "posts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Post"
+            }
           }
         }
       }
     },
     "securitySchemes": {
-      "ma_bi_mat": {
+      "secret_code": {
         "type": "http",
         "scheme": "bearer"
       }
