@@ -7,8 +7,8 @@ Web đăng ảnh kèm mô tả: cơ sở dữ liệu lưu bài viết, kho objec
 Cần Docker, Rust 1.97.1 và Azure CLI (để tạo container trong Azurite).
 
 ```bash
-app/thu/chuan-bi.sh            # Postgres, Azurite, SeaweedFS; in AZURITE_SAS_DOC
-export AZURITE_SAS_DOC='<giá trị in ra>'
+app/dev/setup.sh               # Postgres, Azurite, SeaweedFS; in AZURITE_READ_SAS
+export AZURITE_READ_SAS='<giá trị in ra>'
 cd app/api
 cargo test --all-targets       # kiểm thử, cần các dịch vụ trên
 cd .. && docker compose --profile api up --build api   # API ở http://127.0.0.1:8080

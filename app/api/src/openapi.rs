@@ -2,28 +2,28 @@ use utoipa::Modify;
 use utoipa::OpenApi;
 use utoipa::openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme};
 
-use crate::loi::ThanLoi;
+use crate::error::ErrorBody;
 
 #[derive(OpenApi)]
 #[openapi(
     info(title = "API web đăng ảnh của đồ án DR", version = "1"),
-    components(schemas(ThanLoi)),
-    modifiers(&BaoMat)
+    components(schemas(ErrorBody)),
+    modifiers(&SecurityAddon)
 )]
-pub struct TaiLieu;
+pub struct ApiDoc;
 
-struct BaoMat;
+struct SecurityAddon;
 
-impl Modify for BaoMat {
+impl Modify for SecurityAddon {
     fn modify(&self, api: &mut utoipa::openapi::OpenApi) {
         let c = api.components.get_or_insert_with(Default::default);
         c.add_security_scheme(
-            "ma_bi_mat",
+            "secret_code",
             SecurityScheme::Http(HttpBuilder::new().scheme(HttpAuthScheme::Bearer).build()),
         );
     }
 }
 
-pub fn tai_lieu() -> utoipa::openapi::OpenApi {
-    crate::dinh_tuyen::cac_tuyen().split_for_parts().1
+pub fn spec() -> utoipa::openapi::OpenApi {
+    crate::routes::api_router().split_for_parts().1
 }

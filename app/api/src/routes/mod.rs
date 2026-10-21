@@ -1,6 +1,6 @@
-pub mod bai;
-pub mod ma;
-pub mod suc_khoe;
+pub mod health;
+pub mod posts;
+pub mod secret_code;
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -17,32 +17,32 @@ use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::TrangThai;
-use crate::openapi::TaiLieu;
+use crate::AppState;
+use crate::openapi::ApiDoc;
 
-pub const GIOI_HAN_THAN: usize = 1_258_291;
+pub const BODY_LIMIT: usize = 1_258_291;
 
-pub fn cac_tuyen() -> OpenApiRouter<Arc<TrangThai>> {
-    OpenApiRouter::with_openapi(TaiLieu::openapi())
-        .routes(routes!(bai::danh_sach, bai::dang_bai))
-        .routes(routes!(bai::mot_bai))
-        .routes(routes!(bai::anh_goc))
-        .routes(routes!(bai::anh_nho))
-        .routes(routes!(ma::kiem_tra_ma))
-        .routes(routes!(suc_khoe::healthz))
-        .routes(routes!(suc_khoe::livez))
+pub fn api_router() -> OpenApiRouter<Arc<AppState>> {
+    OpenApiRouter::with_openapi(ApiDoc::openapi())
+        .routes(routes!(posts::list_posts, posts::create_post))
+        .routes(routes!(posts::get_post))
+        .routes(routes!(posts::get_post_image))
+        .routes(routes!(posts::get_post_thumbnail))
+        .routes(routes!(secret_code::verify_secret_code))
+        .routes(routes!(health::healthz))
+        .routes(routes!(health::livez))
 }
 
-pub fn ung_dung(tt: Arc<TrangThai>) -> Router {
-    let (router, api) = cac_tuyen().split_for_parts();
-    let nguon: Vec<HeaderValue> = tt
-        .cau_hinh
-        .cors_nguon
+pub fn app(state: Arc<AppState>) -> Router {
+    let (router, api) = api_router().split_for_parts();
+    let origins: Vec<HeaderValue> = state
+        .config
+        .cors_origins
         .iter()
         .filter_map(|s| HeaderValue::from_str(s).ok())
         .collect();
     let cors = CorsLayer::new()
-        .allow_origin(AllowOrigin::list(nguon))
+        .allow_origin(AllowOrigin::list(origins))
         .allow_methods([Method::GET, Method::POST])
         .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE])
         .max_age(Duration::from_secs(600));
@@ -54,8 +54,8 @@ pub fn ung_dung(tt: Arc<TrangThai>) -> Router {
                 async move { Json(api) }
             }),
         )
-        .with_state(tt)
-        .layer(DefaultBodyLimit::max(GIOI_HAN_THAN))
+        .with_state(state)
+        .layer(DefaultBodyLimit::max(BODY_LIMIT))
         .layer(SetResponseHeaderLayer::overriding(
             HeaderName::from_static("x-content-type-options"),
             HeaderValue::from_static("nosniff"),

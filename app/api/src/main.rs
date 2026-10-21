@@ -1,18 +1,18 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use api::TrangThai;
-use api::cau_hinh::CauHinh;
+use api::AppState;
+use api::config::Config;
 use tracing_subscriber::EnvFilter;
 
-#[cfg(feature = "phat_hanh")]
+#[cfg(feature = "production")]
 #[global_allocator]
-static CAP_PHAT: mimalloc::MiMalloc = mimalloc::MiMalloc;
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    if std::env::args().nth(1).as_deref() == Some("--in-openapi") {
-        println!("{}", api::openapi::tai_lieu().to_pretty_json()?);
+    if std::env::args().nth(1).as_deref() == Some("--print-openapi") {
+        println!("{}", api::openapi::spec().to_pretty_json()?);
         return Ok(());
     }
     tracing_subscriber::fmt()
@@ -21,22 +21,22 @@ async fn main() -> anyhow::Result<()> {
             EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
         )
         .init();
-    let cau_hinh = CauHinh::tu_moi_truong()?;
-    let cong = cau_hinh.cong;
-    let tt = Arc::new(TrangThai::tu_cau_hinh(cau_hinh)?);
-    api::trang_thai::chay_migrate_nen(tt.clone());
-    let nghe = tokio::net::TcpListener::bind(("0.0.0.0", cong)).await?;
-    tracing::info!(cong, "api dang nghe");
+    let config = Config::from_env()?;
+    let port = config.port;
+    let state = Arc::new(AppState::from_config(config)?);
+    api::state::spawn_migrations(state.clone());
+    let listener = tokio::net::TcpListener::bind(("0.0.0.0", port)).await?;
+    tracing::info!(port, "api listening");
     axum::serve(
-        nghe,
-        api::ung_dung(tt).into_make_service_with_connect_info::<SocketAddr>(),
+        listener,
+        api::app(state).into_make_service_with_connect_info::<SocketAddr>(),
     )
-    .with_graceful_shutdown(cho_tat())
+    .with_graceful_shutdown(shutdown_signal())
     .await?;
     Ok(())
 }
 
-async fn cho_tat() {
+async fn shutdown_signal() {
     let ctrl_c = async {
         let _ = tokio::signal::ctrl_c().await;
     };

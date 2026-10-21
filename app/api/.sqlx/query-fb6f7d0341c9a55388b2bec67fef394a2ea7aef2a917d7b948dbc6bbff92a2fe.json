@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO bai (id, ma_lan_dang, tieu_de, mo_ta, anh_sha256, anh_kieu, anh_byte, rong, cao)\n           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)\n           ON CONFLICT (ma_lan_dang) DO NOTHING\n           RETURNING id AS \"id!\", tieu_de AS \"tieu_de!\", mo_ta AS \"mo_ta!\", anh_sha256 AS \"anh_sha256!\",\n                     anh_kieu AS \"anh_kieu!\", anh_byte AS \"anh_byte!\", rong AS \"rong!\", cao AS \"cao!\", tao_luc AS \"tao_luc!\"",
+  "query": "INSERT INTO posts (id, idempotency_key, title, description, image_sha256, image_type, image_bytes, width, height)\n           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)\n           ON CONFLICT (idempotency_key) DO NOTHING\n           RETURNING id AS \"id!\", title AS \"title!\", description AS \"description!\", image_sha256 AS \"image_sha256!\",\n                     image_type AS \"image_type!\", image_bytes AS \"image_bytes!\", width AS \"width!\", height AS \"height!\", created_at AS \"created_at!\"",
   "describe": {
     "columns": [
       {
@@ -10,42 +10,42 @@
       },
       {
         "ordinal": 1,
-        "name": "tieu_de!",
+        "name": "title!",
         "type_info": "Text"
       },
       {
         "ordinal": 2,
-        "name": "mo_ta!",
+        "name": "description!",
         "type_info": "Text"
       },
       {
         "ordinal": 3,
-        "name": "anh_sha256!",
+        "name": "image_sha256!",
         "type_info": "Bytea"
       },
       {
         "ordinal": 4,
-        "name": "anh_kieu!",
+        "name": "image_type!",
         "type_info": "Text"
       },
       {
         "ordinal": 5,
-        "name": "anh_byte!",
+        "name": "image_bytes!",
         "type_info": "Int4"
       },
       {
         "ordinal": 6,
-        "name": "rong!",
+        "name": "width!",
         "type_info": "Int4"
       },
       {
         "ordinal": 7,
-        "name": "cao!",
+        "name": "height!",
         "type_info": "Int4"
       },
       {
         "ordinal": 8,
-        "name": "tao_luc!",
+        "name": "created_at!",
         "type_info": "Timestamptz"
       }
     ],
@@ -74,5 +74,5 @@
       false
     ]
   },
-  "hash": "a245998f8ba96bf84026b273c3a2dad40f3365925091c0dea12d59159ac4349d"
+  "hash": "fb6f7d0341c9a55388b2bec67fef394a2ea7aef2a917d7b948dbc6bbff92a2fe"
 }

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, tieu_de, mo_ta, anh_sha256, anh_kieu, anh_byte, rong, cao, tao_luc FROM bai WHERE ma_lan_dang = $1",
+  "query": "SELECT id, title, description, image_sha256, image_type, image_bytes, width, height, created_at FROM posts WHERE id = $1",
   "describe": {
     "columns": [
       {
@@ -10,42 +10,42 @@
       },
       {
         "ordinal": 1,
-        "name": "tieu_de",
+        "name": "title",
         "type_info": "Text"
       },
       {
         "ordinal": 2,
-        "name": "mo_ta",
+        "name": "description",
         "type_info": "Text"
       },
       {
         "ordinal": 3,
-        "name": "anh_sha256",
+        "name": "image_sha256",
         "type_info": "Bytea"
       },
       {
         "ordinal": 4,
-        "name": "anh_kieu",
+        "name": "image_type",
         "type_info": "Text"
       },
       {
         "ordinal": 5,
-        "name": "anh_byte",
+        "name": "image_bytes",
         "type_info": "Int4"
       },
       {
         "ordinal": 6,
-        "name": "rong",
+        "name": "width",
         "type_info": "Int4"
       },
       {
         "ordinal": 7,
-        "name": "cao",
+        "name": "height",
         "type_info": "Int4"
       },
       {
         "ordinal": 8,
-        "name": "tao_luc",
+        "name": "created_at",
         "type_info": "Timestamptz"
       }
     ],
@@ -66,5 +66,5 @@
       false
     ]
   },
-  "hash": "26ffaeb781d7d187a4497d383d245029d5d86adf4a5609ac291864b8da325973"
+  "hash": "957a17cedff0c91a8797634f2ad11fff741f5b4068f81937fdab22a94f62ae21"
 }

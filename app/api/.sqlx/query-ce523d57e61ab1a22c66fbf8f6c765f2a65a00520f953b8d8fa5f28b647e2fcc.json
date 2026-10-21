@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, tieu_de, mo_ta, anh_sha256, anh_kieu, anh_byte, rong, cao, tao_luc FROM bai WHERE id = $1",
+  "query": "SELECT id, title, description, image_sha256, image_type, image_bytes, width, height, created_at FROM posts\n         WHERE ($1::uuid IS NULL OR id < $1) ORDER BY id DESC LIMIT $2",
   "describe": {
     "columns": [
       {
@@ -10,48 +10,49 @@
       },
       {
         "ordinal": 1,
-        "name": "tieu_de",
+        "name": "title",
         "type_info": "Text"
       },
       {
         "ordinal": 2,
-        "name": "mo_ta",
+        "name": "description",
         "type_info": "Text"
       },
       {
         "ordinal": 3,
-        "name": "anh_sha256",
+        "name": "image_sha256",
         "type_info": "Bytea"
       },
       {
         "ordinal": 4,
-        "name": "anh_kieu",
+        "name": "image_type",
         "type_info": "Text"
       },
       {
         "ordinal": 5,
-        "name": "anh_byte",
+        "name": "image_bytes",
         "type_info": "Int4"
       },
       {
         "ordinal": 6,
-        "name": "rong",
+        "name": "width",
         "type_info": "Int4"
       },
       {
         "ordinal": 7,
-        "name": "cao",
+        "name": "height",
         "type_info": "Int4"
       },
       {
         "ordinal": 8,
-        "name": "tao_luc",
+        "name": "created_at",
         "type_info": "Timestamptz"
       }
     ],
     "parameters": {
       "Left": [
-        "Uuid"
+        "Uuid",
+        "Int8"
       ]
     },
     "nullable": [
@@ -66,5 +67,5 @@
       false
     ]
   },
-  "hash": "7d9630c12e4a35b17befa147c7c4aabff48b18984b92d9e0130942028ff5140f"
+  "hash": "ce523d57e61ab1a22c66fbf8f6c765f2a65a00520f953b8d8fa5f28b647e2fcc"
 }
