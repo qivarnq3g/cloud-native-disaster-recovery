@@ -1,0 +1,45 @@
+name: dr-app
+services:
+  db:
+    image: postgres:18.6
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: dr
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dr"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.37.0
+    command: azurite-blob --blobHost 0.0.0.0 --skipApiVersionCheck --loose
+    ports: ["10000:10000"]
+  seaweedfs:
+    image: chrislusf/seaweedfs:4.48
+    command: server -s3 -s3.config=/etc/seaweedfs/s3.json -dir=/data -master.volumeSizeLimitMB=64
+    volumes:
+      - ./dev/s3.json:/etc/seaweedfs/s3.json:ro
+    ports: ["8333:8333"]
+  api:
+    profiles: ["api"]
+    build:
+      context: ./api
+    environment:
+      DATABASE_URL: postgres://postgres:test@db:5432/dr
+      IMAGE_STORE: s3
+      AWS_ENDPOINT: http://seaweedfs:8333
+      AWS_ALLOW_HTTP: "true"
+      AWS_ACCESS_KEY_ID: writer
+      AWS_SECRET_ACCESS_KEY: writer-secret
+      AWS_REGION: us-east-1
+      SECRET_CODE: test-code-0123456789
+      CLUSTER: primary
+      REGION: test
+      CORS_ORIGINS: http://localhost:4321,http://127.0.0.1:4321
+    ports: ["8080:8080"]
+    depends_on:
+      db:
+        condition: service_healthy
+      seaweedfs:
+        condition: service_started
