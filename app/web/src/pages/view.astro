@@ -4,6 +4,7 @@ import '../styles/global.css';
 
 const apiReady = import.meta.env.PUBLIC_API_READY === 'true';
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'https://api.dr.qivarn.id.vn';
+const FONT_CSS = 'https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap';
 ---
 <!doctype html>
 <html lang="vi">
@@ -14,7 +15,8 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'https://api.dr.qivarn.id.vn';
     <title>Ảnh của nhóm · DR Nhóm 23</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" />
+    <link rel="preload" as="style" href={FONT_CSS} onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href={FONT_CSS} /></noscript>
     {apiReady && <link rel="preconnect" href={apiUrl} crossorigin />}
   </head>
   <body>
