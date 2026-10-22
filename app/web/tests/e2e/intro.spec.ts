@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test('nút Vào xem mở trang dùng, lần sau vào thẳng, ?intro vẫn xem được giới thiệu', async ({ page }) => {
-  test.setTimeout(90_000);
+  await page.route(/cdn\.jsdelivr\.net\/npm\/(three|cannon-es)@/, (r) => r.abort());
   await page.goto('/?intro');
   await page.evaluate(() => localStorage.clear());
   await page.goto('/');
