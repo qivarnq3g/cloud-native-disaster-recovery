@@ -51,6 +51,14 @@ jobs:
           docker compose --profile api up -d api
           until curl -fsS http://127.0.0.1:8080/healthz >/dev/null 2>&1; do sleep 0.1; done
           echo "startup_ms=$(( $(date +%s%3N) - T0 ))" >> "$GITHUB_STEP_SUMMARY"
+      - name: Lưu image cho job web
+        working-directory: app
+        run: docker save dr-app-api | gzip > /tmp/dr-app-api.tar.gz
+      - uses: actions/upload-artifact@v5
+        with:
+          name: api-image
+          path: /tmp/dr-app-api.tar.gz
+          retention-days: 1
       - name: Đẩy image
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         working-directory: app/api
@@ -60,3 +68,99 @@ jobs:
           docker tag dr-app-api "ghcr.io/${{ github.repository_owner }}/dr-api:main"
           docker push "ghcr.io/${{ github.repository_owner }}/dr-api:${GITHUB_SHA}"
           docker push "ghcr.io/${{ github.repository_owner }}/dr-api:main"
+
+  web:
+    needs: api
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: app/web
+    env:
+      PUBLIC_API_URL: http://127.0.0.1:8080
+      PUBLIC_API_READY: "true"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/web/package-lock.json
+      - run: npm ci
+      - name: Kiểu sinh từ OpenAPI khớp với tệp đã commit
+        run: |
+          npm run gen-types
+          git diff --exit-code src/lib/api/schema.d.ts
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+      - uses: actions/download-artifact@v5
+        with:
+          name: api-image
+          path: /tmp
+      - name: API thử trong Docker
+        working-directory: app
+        run: |
+          gunzip -c /tmp/dr-app-api.tar.gz | docker load
+          dev/setup.sh
+          docker compose --profile api up -d --no-build api
+          until curl -fsS http://127.0.0.1:8080/healthz >/dev/null 2>&1; do sleep 1; done
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+      - run: npm run lighthouse
+      - uses: actions/upload-artifact@v5
+        if: failure()
+        with:
+          name: web-report
+          path: |
+            app/web/playwright-report
+            app/web/test-results
+            app/web/.lighthouseci
+
+  deploy:
+    needs: [api, web]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app/web
+    env:
+      PUBLIC_API_URL: https://api.dr.qivarn.id.vn
+      PUBLIC_API_READY: ${{ vars.API_READY == 'true' && 'true' || 'false' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/web/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Đẩy bản dựng sang dr-preview
+        env:
+          DEPLOY_KEY: ${{ secrets.DR_PREVIEW_DEPLOY_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/dr_preview
+          chmod 600 ~/.ssh/dr_preview
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/dr_preview -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+          git clone --depth 1 git@github.com:qivarnq3g/dr-preview.git /tmp/dr-preview
+          rsync -a --delete --exclude .git --exclude README.md dist/ /tmp/dr-preview/
+          cd /tmp/dr-preview
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "nothing new"; exit 0; fi
+          git commit -m "Dựng từ ${GITHUB_SHA::7}"
+          git push origin main
+      - name: Kiểm tra trang đã lên
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS https://dr.qivarn.id.vn/ready.json | grep -q "\"ready\":${PUBLIC_API_READY}"; then
+              curl -fsS -o /dev/null -w '%{http_code}\n' https://dr.qivarn.id.vn/view/
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 1
