@@ -85,11 +85,22 @@ Chạy trên máy làm, cùng thứ tự với job `api` trong `ci` (trừ bư�
 
 Các tệp Task 12 commit trước khi có kết quả này (commit "đang kiểm"); sau khi kiểm không phải sửa gì.
 
-### Rủi ro của `ci` chưa kiểm được
+### `ci` trên GitHub Actions: nâng giới hạn lên 60 phút
 
-- Chưa chạy trên GitHub Actions: workflow chỉ chạy khi đẩy vào `main` hoặc mở PR, cả hai chưa làm (kế hoạch ghi "chỉ làm khi Quang cho phép").
-- Ước lượng theo máy làm: biên dịch kiểm thử khoảng 2 phút, `cargo test --all-targets` khoảng 3,5 phút, bản release cho `tai` khoảng 8 phút cộng 5 phút chạy, dựng image khoảng 8,5 phút. Tổng khoảng 30-35 phút trên máy 4 nhân, sát `timeout-minutes: 45` ở lần chạy đầu chưa có bộ nhớ đệm.
-- Vòng `until curl ... /healthz` trong bước đo image không có giới hạn, nếu API không lên thì job treo tới hết 45 phút.
+PR #1 mở ngày 21/10 cho `ci` chạy. Ba lần chạy đầu đều qua mọi bước kiểm thử nhưng bị dừng ở bước dựng image khi chạm `timeout-minutes: 45`. Thời gian từng bước ở lần chạy với code đã đổi tên (máy GitHub, chưa có bộ nhớ đệm):
+
+| Bước | Thời gian |
+|---|---|
+| `clippy` | 1 phút 53 giây |
+| Cài `sqlx-cli` | 2 phút |
+| `cargo test --all-targets` | 13 phút 21 giây |
+| `cargo test --release --test load` | 13 phút 51 giây |
+| So OpenAPI | 22 giây |
+| Dựng image | bị dừng sau 12 phút 56 giây, đang biên dịch crate cuối `api` (LTO) |
+
+Tổng ước tính khoảng 50 phút, nên nâng `timeout-minutes` lên 60 trong `ci.yml` và trong kế hoạch. Job bị dừng thì bước lưu bộ nhớ đệm Rust cũng bị bỏ, nên trước khi sửa lần nào cũng biên dịch lại từ đầu. Không tách bước image ra job riêng vì kế hoạch trang web cho job `web` chạy sau job `api` và lấy image từ đó.
+
+Còn lại: vòng `until curl ... /healthz` trong bước đo image không có giới hạn, nếu API không lên thì job treo tới hết 60 phút.
 
 ## Việc khác thấy khi đối chiếu thiết kế
 
