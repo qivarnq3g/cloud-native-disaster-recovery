@@ -1,0 +1,1158 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="description" content="Bản xem thử trang giới thiệu đồ án khôi phục sau thảm hoạ của Nhóm 23.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%23000%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%276%27 fill=%27%23f5f5f7%27/%3E%3C/svg%3E">
+<title>Ảnh Nhóm 23</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#000; --bg2:#1d1d1f; --fg:#f5f5f7; --grey:#86868b; --blue:#0071e3; --link:#2997ff;
+  --green:#30d158; --red:#ff453a; --amber:#ff9f0a;
+  --font:"Be Vietnam Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg)}
+body{color:var(--fg);font-family:var(--font);-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+
+/* ---- liquid glass (control layer only; glass.js adds edge refraction in Chromium) ---- */
+.glass{position:relative;isolation:isolate;border-radius:999px;color:var(--fg);
+  background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.035));
+  -webkit-backdrop-filter:blur(16px) saturate(1.8);backdrop-filter:blur(16px) saturate(1.8);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.26),inset 0 -1px 1px rgba(255,255,255,.05),
+    inset 0 0 0 1px rgba(255,255,255,.09),0 12px 32px rgba(0,0,0,.38)}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:radial-gradient(180px 100px at var(--gx,28%) var(--gy,-20%),rgba(255,255,255,.8),rgba(255,255,255,.1) 55%,rgba(255,255,255,.04) 80%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.glass::after{content:"";position:absolute;inset:1px;border-radius:inherit;pointer-events:none;z-index:-1;
+  background:radial-gradient(130% 90% at 50% -30%,rgba(255,255,255,.16),transparent 62%)}
+.glass.tint{color:#fff;background:linear-gradient(180deg,rgba(41,151,255,.72),rgba(0,113,227,.62))}
+.glass.dim{background:linear-gradient(180deg,rgba(28,28,30,.62),rgba(18,18,20,.5))}
+
+/* ---- nav ---- */
+.nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:20;width:min(880px,calc(100% - 32px));height:52px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 7px 0 22px}
+.nav b{font-size:17px;font-weight:600;letter-spacing:-.02em}
+.nav .links{display:flex;align-items:center;gap:4px}
+.nav a{font-size:14px;color:var(--fg);text-decoration:none;height:38px;display:inline-flex;align-items:center;padding:0 15px;border-radius:999px;opacity:.82;transition:opacity .3s,background .3s}
+.nav a:hover{opacity:1;background:rgba(255,255,255,.08)}
+.nav a.buy{opacity:1;background:var(--blue);color:#fff;font-weight:500}
+.nav a.buy:hover{background:#0077ed}
+
+/* ---- story ---- */
+.story{position:relative;height:1300vh}   /* about 0.046 of a beat per 100 px wheel notch */
+.stage{position:sticky;top:0;height:100vh;overflow:hidden}
+canvas{display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab}
+canvas.drag{cursor:grabbing}
+.scrim{position:absolute;left:0;right:0;top:0;height:66vh;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(0,0,0,.88) 0%,rgba(0,0,0,.74) 46%,rgba(0,0,0,0) 100%)}
+.copy{position:absolute;left:0;right:0;top:15vh;pointer-events:none}
+.step{position:absolute;left:0;right:0;padding:0 16px;text-align:center;opacity:0;visibility:hidden}
+.step.cta{pointer-events:auto}
+.eyebrow{font-size:clamp(17px,1.9vw,21px);font-weight:600;color:var(--grey);margin-bottom:12px}
+h1,h2{text-wrap:balance;font-size:clamp(40px,6.2vw,80px);font-weight:600;line-height:1.05;letter-spacing:-.03em}
+.lede{text-wrap:balance;max-width:640px;margin:20px auto 0;font-size:clamp(17px,1.8vw,21px);font-weight:500;line-height:1.42;color:var(--grey)}
+.lede strong{color:var(--fg);font-weight:600}
+.actions{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin-top:34px}
+.btn{display:inline-flex;align-items:center;height:50px;padding:0 28px;font-size:17px;font-weight:500;text-decoration:none;color:var(--fg);cursor:pointer;transition:transform .35s var(--ease)}
+.btn:hover{transform:scale(1.03)}
+.btn:active{transform:scale(.98)}
+
+/* status chips over the scene */
+.label{position:absolute;top:0;left:0;display:flex;align-items:center;gap:8px;height:34px;padding:0 15px 0 13px;white-space:nowrap;font-size:13px;pointer-events:none;opacity:0}
+.label i{font-style:normal;font-weight:600}
+.label .rg,.label .st{color:#c7c7cc}
+.label .rg::after{content:" ·"}
+.label .dot{width:7px;height:7px;border-radius:50%;background:var(--st,var(--grey));box-shadow:0 0 10px var(--st,transparent)}
+
+/* chapter bar, iOS-style */
+.chapters{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);display:flex;align-items:center;height:46px;padding:4px;gap:2px;opacity:0;visibility:hidden}
+.chapters button{position:relative;z-index:2;white-space:nowrap;font:inherit;font-size:14px;font-weight:500;color:var(--fg);background:none;border:0;height:38px;padding:0 18px;border-radius:999px;cursor:pointer;opacity:.78;transition:color .4s var(--ease),opacity .4s}
+.chapters button.on{color:#000;opacity:1}
+.chapters .thumb{position:absolute;z-index:1;top:4px;bottom:4px;left:4px;width:0;border-radius:999px;background:#f5f5f7;opacity:0;
+  box-shadow:0 2px 12px rgba(0,0,0,.28);transition:left .55s var(--ease),width .55s var(--ease),opacity .3s}
+.hint{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);font-size:13px;color:var(--grey);pointer-events:none;transition:opacity .4s}
+
+footer{background:#000;border-top:1px solid #1d1d1f;padding:26px 16px 36px;color:var(--grey);font-size:12px;text-align:center;line-height:1.9}
+footer b{color:#d2d2d7;font-weight:500}
+@media (max-width:640px){
+  .nav a:not(.buy){display:none}
+  .chapters button{padding:0 11px;font-size:13px}
+  .hint{bottom:84px}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="kinetic-apple.js" defer></script>
+<script src="glass.js" defer></script>
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.177.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.177.0/examples/jsm/",
+  "cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"
+}}
+</script>
+</head>
+<body>
+<nav class="nav glass" data-bend="22"><b>Ảnh Nhóm 23</b><div class="links"><a href="#" data-go="1.45">Tìm hiểu</a><a class="buy" href="#" data-go="4.75">Vào xem</a></div></nav>
+
+<section class="story" id="story">
+  <div class="stage">
+    <canvas aria-label="Cảnh 3D: hai tủ máy chủ và một két sắt sao lưu"></canvas>
+    <div class="scrim"></div>
+    <div class="copy">
+      <div class="step"><p class="eyebrow">Đồ án Điện toán đám mây</p><h1>Ảnh của bạn.<br>Luôn còn đó.</h1>
+        <p class="lede">Hai cụm máy chủ ở <strong>Hàn Quốc</strong>. Một két sao lưu ở <strong>Nhật Bản</strong>.</p></div>
+      <div class="step"><p class="eyebrow">Sao lưu</p><h2>Mọi ảnh đều có bản sao.<br>Ở một nước khác.</h2>
+        <p class="lede">Dữ liệu được chép sang <strong>két chỉ ghi</strong>: ghi vào được, nhưng không ai xoá hay sửa được.</p></div>
+      <div class="step"><p class="eyebrow">Sự cố</p><h2>Cụm chính sập.</h2>
+        <p class="lede">Máy chủ, ổ đĩa, cấu hình. <strong>Mất sạch.</strong></p></div>
+      <div class="step"><p class="eyebrow">Khôi phục</p><h2>Cụm dự phòng lên thay.<br>Không mất một ảnh.</h2>
+        <p class="lede">Dữ liệu từ két được <strong>khôi phục về cụm dự phòng</strong>, web chạy lại như cũ.</p></div>
+      <div class="step cta"><p class="eyebrow">Thử ngay</p><h2>Xem ảnh của cả nhóm.</h2>
+        <p class="lede">Đăng một tấm, rồi xem nó <strong>sống sót</strong> qua lần phá cụm tiếp theo.</p>
+        <div class="actions"><span class="btn glass tint" aria-disabled="true" title="Trang dùng đang được làm">Vào xem · sắp có</span><a class="btn glass" href="#" data-go="0">Xem lại từ đầu</a></div></div>
+    </div>
+    <div class="label glass dim" data-bend="14" data-blur="10"><span class="dot"></span><i>Cụm chính</i><span class="rg">Hàn Quốc</span><span class="st"></span></div>
+    <div class="label glass dim" data-bend="14" data-blur="10"><span class="dot"></span><i>Két sao lưu</i><span class="rg">Nhật Bản</span><span class="st"></span></div>
+    <div class="label glass dim" data-bend="14" data-blur="10"><span class="dot"></span><i>Cụm dự phòng</i><span class="rg">Hàn Quốc</span><span class="st"></span></div>
+    <div class="chapters glass" data-bend="20"><span class="thumb"></span><button data-go="1.45">Sao lưu</button><button data-go="2.6">Sự cố</button><button data-go="3.55">Khôi phục</button></div>
+    <p class="hint">Cuộn để xem</p>
+  </div>
+</section>
+
+<footer><b>Ảnh Nhóm 23</b> · Đồ án môn Điện toán đám mây · UTH, học kỳ I 2026–2027<br>Bản xem thử cho nhóm · cảnh 3D dựng hoàn toàn bằng code</footer>
+
+<script type="module">
+import * as THREE from 'three';
+import * as CANNON from 'cannon-es';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { Reflector } from 'three/addons/objects/Reflector.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches || location.search.includes('reduce');   // ?reduce for testing
+const hi = matchMedia('(min-width: 701px)').matches;   // phones skip the mirror floor and ambient occlusion
+const story = document.getElementById('story');
+const canvas = document.querySelector('canvas');
+const steps = [...document.querySelectorAll('.step')];
+const labels = [...document.querySelectorAll('.label')];
+const hint = document.querySelector('.hint');
+
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const lerp = (a, b, t) => a + (b - a) * t;
+let seed = 23;
+const rand = () => (seed = (seed * 16807) % 2147483647, (seed - 1) / 2147483646);
+const jit = m => (rand() * 2 - 1) * m;
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+
+// ================================================================ renderer
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+const DPR = Math.min(devicePixelRatio, 2);
+let PR = DPR;   // lowered by the quality governor on slow machines
+renderer.setPixelRatio(PR);
+renderer.toneMapping = THREE.AgXToneMapping;
+renderer.toneMappingExposure = 1.08;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.autoUpdate = false;   // redrawn only when something that casts a shadow moves (see draw)
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+scene.fog = new THREE.Fog(0x000000, 16, 32);
+const camera = new THREE.PerspectiveCamera(30, 1, .1, 100);
+const FX = 1; camera.layers.enable(FX);          // effects: seen by the main camera, ignored by the AO pass and the mirror
+const fx = o => { o.traverse(c => c.layers.set(FX)); return o; };
+
+// ================================================================ studio environment: dark room, large softboxes
+function studioEnv() {
+  const env = new THREE.Scene();
+  env.add(new THREE.Mesh(new THREE.BoxGeometry(30, 16, 30), new THREE.MeshBasicMaterial({ color: 0x040405, side: THREE.BackSide })));
+  const box = (w, h, x, y, z, k, rx = 0, ry = 0) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(k, k, k * 1.02), side: THREE.DoubleSide }));
+    m.position.set(x, y, z); m.rotation.set(rx, ry, 0); env.add(m);
+  };
+  box(10, 6, 0, 7.5, 1, 4.5, Math.PI / 2);
+  box(1.2, 9, -9, 3, 2, 3.5, 0, Math.PI / 2);
+  box(1.2, 9, 9, 3, -1, 3, 0, -Math.PI / 2);
+  box(12, 1, 0, 4, -11, 3);
+  box(6, 2, 4, 1, 12, 1.2, 0, Math.PI);
+  return env;
+}
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(studioEnv(), .02).texture;
+scene.environmentIntensity = .8;
+
+const key = new THREE.SpotLight(0xffffff, 260, 0, .55, .85, 2);
+key.position.set(-3.5, 10, 7.5);
+key.target.position.set(0, .8, 0);
+key.castShadow = true;
+key.shadow.mapSize.set(hi ? 2048 : 1024, hi ? 2048 : 1024);
+key.shadow.bias = -.0003; key.shadow.normalBias = .02;
+key.shadow.camera.near = 4; key.shadow.camera.far = 22;
+scene.add(key, key.target, new THREE.HemisphereLight(0x8899aa, 0x000000, .25));
+
+// ================================================================ textures drawn in code
+const maxAniso = renderer.capabilities.getMaxAnisotropy();
+function makeCanvas(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); return c; }
+function tex(c, srgb = true, rx = 1, ry = 1) {
+  const t = new THREE.CanvasTexture(c);
+  if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = maxAniso;
+  if (rx !== 1 || ry !== 1) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); }
+  return t;
+}
+// normal map from a drawing's luminance: lighter paint = lower surface (holes, slots)
+function normalTex(src, k = 3) {
+  const w = src.width, h = src.height, d = src.getContext('2d').getImageData(0, 0, w, h).data;
+  const L = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) L[i] = -(d[i * 4] * .299 + d[i * 4 + 1] * .587 + d[i * 4 + 2] * .114) / 255;
+  const out = makeCanvas(w, h, () => {}), g = out.getContext('2d'), img = g.createImageData(w, h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const l = L[y * w + Math.max(0, x - 1)], r = L[y * w + Math.min(w - 1, x + 1)];
+    const u = L[Math.max(0, y - 1) * w + x], dn = L[Math.min(h - 1, y + 1) * w + x];
+    let nx = (l - r) * k, ny = (dn - u) * k, nz = 1; const n = Math.hypot(nx, ny, nz);
+    const o = (y * w + x) * 4;
+    img.data[o] = (nx / n * .5 + .5) * 255; img.data[o + 1] = (ny / n * .5 + .5) * 255; img.data[o + 2] = (nz / n * .5 + .5) * 255; img.data[o + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  return tex(out, false);
+}
+const radial = stops => (g, w, h) => {
+  const r = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+  stops.forEach(([o, c]) => r.addColorStop(o, c)); g.fillStyle = r; g.fillRect(0, 0, w, h);
+};
+// brushed metal: fine horizontal streaks in the roughness
+const brushed = tex(makeCanvas(512, 512, (g, w, h) => {
+  g.fillStyle = '#d8d8d8'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 2600; i++) {
+    const v = 175 + Math.random() * 80; g.fillStyle = `rgba(${v},${v},${v},${.25 + Math.random() * .4})`;
+    g.fillRect(Math.random() * w - 100, Math.random() * h, 60 + Math.random() * 380, 1);
+  }
+}), false, 2, 2);
+const grain = tex(makeCanvas(256, 256, (g, w, h) => {
+  const id = g.createImageData(w, h);
+  for (let i = 0; i < w * h; i++) { const v = 205 + Math.random() * 50; id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = v; id.data[i * 4 + 3] = 255; }
+  g.putImageData(id, 0, 0);
+}), false, 3, 3);
+
+const perforate = (g, x0, y0, w, h, step = 13, r = 3.4, col = '#3a3a42') => {
+  g.fillStyle = col;
+  for (let y = y0 + step / 2, row = 0; y < y0 + h; y += step * .87, row++)
+    for (let x = x0 + step / 2 + (row % 2) * step / 2; x < x0 + w - 2; x += step) { g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); }
+};
+const panelBase = (g, w, h) => {
+  const gr = g.createLinearGradient(0, 0, 0, h);
+  gr.addColorStop(0, '#2a2a30'); gr.addColorStop(.12, '#17171a'); gr.addColorStop(.88, '#131316'); gr.addColorStop(1, '#26262b');
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+};
+const panelDraw = {
+  vent: (g, w, h) => { panelBase(g, w, h); perforate(g, 120, 14, w - 240, h - 28); },
+  drives: (g, w, h) => {
+    panelBase(g, w, h);
+    const n = 8, cw = (w - 24) / n;
+    for (let i = 0; i < n; i++) {
+      const x = 12 + i * cw + 4, y = 12, ww = cw - 8, hh = h - 24;
+      g.fillStyle = '#1c1c20'; g.fillRect(x, y, ww, hh);
+      g.strokeStyle = '#55555e'; g.lineWidth = 3; g.strokeRect(x + 1.5, y + 1.5, ww - 3, hh - 3);
+      perforate(g, x + 8, y + 8, ww * .62, hh - 32, 9, 2.4, '#40404a');
+      g.fillStyle = '#62626c'; g.fillRect(x + 8, y + hh - 20, ww - 16, 10);
+    }
+  },
+  net: (g, w, h) => {
+    panelBase(g, w, h); perforate(g, 16, 14, 150, h - 28);
+    for (let row = 0; row < 2; row++) for (let i = 0; i < 24; i++) {
+      const x = 200 + i * 33, y = 30 + row * 50;
+      g.fillStyle = '#55555e'; g.fillRect(x - 2, y - 2, 30, 30);
+      g.fillStyle = '#9a9aa4'; g.fillRect(x, y, 26, 26);           // light = deep socket in the normal map
+      g.fillStyle = '#55555e'; g.fillRect(x + 9, y + (row ? 22 : 0), 8, 4);
+    }
+  },
+  display: (g, w, h) => {
+    panelBase(g, w, h); perforate(g, 120, 14, 520, h - 28);
+    g.fillStyle = '#061620'; g.fillRect(690, 28, 220, 88);
+    g.strokeStyle = '#45454e'; g.lineWidth = 3; g.strokeRect(688, 26, 224, 92);
+  },
+};
+const panelMats = {};
+for (const [k, draw] of Object.entries(panelDraw)) {
+  const c = makeCanvas(1024, 144, draw);
+  const n = normalTex(c, 4);
+  if (k === 'net') {   // sockets read as black holes in colour
+    const g = c.getContext('2d');
+    for (let row = 0; row < 2; row++) for (let i = 0; i < 24; i++) { g.fillStyle = '#050506'; g.fillRect(202 + i * 33, 32 + row * 50, 22, 22); }
+  }
+  if (k === 'display') {
+    const g = c.getContext('2d'); g.fillStyle = '#5ec8ff'; g.font = '600 26px Menlo, Consolas, monospace';
+    g.fillText('NODE 01', 708, 64); g.globalAlpha = .55; g.fillText('RAID OK', 708, 100);
+  }
+  panelMats[k] = new THREE.MeshPhysicalMaterial({ map: tex(c), normalMap: n, metalness: .35, roughness: .5, roughnessMap: grain,
+    clearcoat: .35, clearcoatRoughness: .3 });
+}
+const plate = text => tex(makeCanvas(512, 64, (g, w, h) => {
+  g.fillStyle = '#1a1a1d'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#a2a2aa'; g.font = '600 30px -apple-system, "Segoe UI", Arial, sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, w / 2, h / 2 + 1);
+}));
+
+// ================================================================ materials
+const M = {
+  alu: () => new THREE.MeshPhysicalMaterial({ color: 0xc9cbd0, metalness: 1, roughness: .38, roughnessMap: brushed, anisotropy: .3, clearcoat: .2, clearcoatRoughness: .3 }),
+  graphite: () => new THREE.MeshPhysicalMaterial({ color: 0x2b2b2f, metalness: .9, roughness: .42, roughnessMap: grain, clearcoat: .6, clearcoatRoughness: .15 }),
+  steel: new THREE.MeshPhysicalMaterial({ color: 0x4b4d53, metalness: 1, roughness: .4, roughnessMap: brushed, anisotropy: .6, clearcoat: .25, clearcoatRoughness: .25 }),
+  titanium: new THREE.MeshPhysicalMaterial({ color: 0xa3a5ab, metalness: 1, roughness: .3, roughnessMap: brushed, anisotropy: .7, clearcoat: .2 }),
+  chrome: new THREE.MeshPhysicalMaterial({ color: 0xf2f2f5, metalness: 1, roughness: .08 }),
+  smoked: new THREE.MeshPhysicalMaterial({ color: 0x0c0c10, metalness: 0, roughness: .04, transparent: true, opacity: .32, clearcoat: 1, depthWrite: false }),
+  velvet: new THREE.MeshStandardMaterial({ color: 0x141518, roughness: .95, side: THREE.BackSide }),
+  backPanel: (() => {
+    const c = makeCanvas(256, 512, (g, w, h) => { g.fillStyle = '#18181b'; g.fillRect(0, 0, w, h); perforate(g, 8, 8, w - 16, h - 16, 12, 3.6, '#4a4a52'); });
+    return new THREE.MeshPhysicalMaterial({ map: tex(c), normalMap: normalTex(c, 3), metalness: .8, roughness: .45, clearcoat: .3 });
+  })(),
+};
+const LED = {
+  off: new THREE.Color(.012, .012, .014),
+  green: new THREE.Color(.19, .82, .35).multiplyScalar(8),
+  blue: new THREE.Color(.45, .75, 1).multiplyScalar(8),
+  amber: new THREE.Color(1, .62, .1).multiplyScalar(7),
+  red: new THREE.Color(1, .27, .23).multiplyScalar(9),
+};
+const HALO = { green: new THREE.Color(0x1d7a36), red: new THREE.Color(0x8c2019), blue: new THREE.Color(0x2a6fd6) };
+
+// ================================================================ floor, backdrop, helpers
+let mirror = null;
+if (hi) {
+  mirror = new Reflector(new THREE.PlaneGeometry(40, 40), {
+    clipBias: .003, textureWidth: innerWidth * DPR * .5, textureHeight: innerHeight * DPR * .5, color: 0x1e1e22 });
+  mirror.rotation.x = -Math.PI / 2; scene.add(fx(mirror));
+}
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshPhysicalMaterial({ specularIntensity: .12,
+  color: 0x020203, roughness: .42, metalness: 0, envMapIntensity: .04, transparent: hi, depthWrite: false,
+  alphaMap: hi ? tex(makeCanvas(512, 512, radial([[0, '#8a8a8a'], [.45, '#c2c2c2'], [.8, '#ffffff']])), false) : null }));
+floor.rotation.x = -Math.PI / 2; floor.position.y = .002; floor.receiveShadow = true; floor.renderOrder = 1;
+scene.add(floor);
+const back = new THREE.Mesh(new THREE.PlaneGeometry(44, 20), new THREE.MeshBasicMaterial({
+  map: tex(makeCanvas(512, 256, (g, w, h) => {
+    const r = g.createRadialGradient(w / 2, h, 0, w / 2, h, w * .55);
+    r.addColorStop(0, '#1c1c21'); r.addColorStop(.5, '#060608'); r.addColorStop(1, '#000'); g.fillStyle = r; g.fillRect(0, 0, w, h);
+  })), toneMapped: false, fog: false }));
+back.position.set(0, 9.9, -20); back.scale.setScalar(1.6); scene.add(back);
+
+const world = new THREE.Group(); scene.add(world);
+const contactTex = tex(makeCanvas(256, 256, radial([[0, 'rgba(0,0,0,.95)'], [.5, 'rgba(0,0,0,.5)'], [1, 'rgba(0,0,0,0)']])));
+const glowTex = tex(makeCanvas(256, 256, radial([[0, 'rgba(255,255,255,1)'], [.35, 'rgba(255,255,255,.22)'], [1, 'rgba(255,255,255,0)']])));
+function contact(w, d) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), new THREE.MeshBasicMaterial({ map: contactTex, transparent: true, depthWrite: false }));
+  m.rotation.x = -Math.PI / 2; m.position.y = .004; m.renderOrder = 2; return fx(m);
+}
+function halo(size, color, y, z) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshBasicMaterial({
+    map: glowTex, color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+  m.position.set(0, y, z); return fx(m);
+}
+function spark(color, scale) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+  s.scale.setScalar(scale); return fx(s);
+}
+const shadowed = o => o.traverse(m => { if (m.isMesh && !m.material.transparent) { m.castShadow = true; m.receiveShadow = true; } });
+
+// ================================================================ server rack
+// Units are 1.46 x 0.24 x 1.2; the cabinet's posts and side glass sit outside them, so nothing overlaps at rest.
+const W = 1.46, H = .24, D = 1.2, PITCH = .262, COM = 1.1;
+const SLOT_X = -.3, SLOT_DY = -.035, SLOT_Y = .28 + 7 * PITCH + SLOT_DY, SLOT_Z = D / 2 + .035;   // slot on the top unit's front
+const unitGeo = new RoundedBoxGeometry(W, H, D, 4, .03);
+const panelGeo = new RoundedBoxGeometry(W - .08, H - .05, .03, 2, .01);
+const earGeo = new RoundedBoxGeometry(.07, H - .012, .03, 2, .01);
+const screwGeo = new THREE.CylinderGeometry(.012, .012, .012, 20).rotateX(Math.PI / 2);
+const handleGeo = new THREE.CapsuleGeometry(.012, .12, 4, 12);
+const ledGeo = new THREE.CircleGeometry(.011, 16);
+const LAYOUT = ['drives', 'vent', 'drives', 'net', 'vent', 'drives', 'vent', 'display'];
+const cableMats = [0x1b1b1d, 0x2a2a2d, 0x2b6cff, 0xffc21a, 0x1b1b1d, 0x3a3a3e].map(c => new THREE.MeshStandardMaterial({ color: c, roughness: .5 }));
+
+function ledSpots(type) {
+  const fz = D / 2 + .028, s = [];
+  if (type === 'drives') for (let i = 0; i < 8; i++) s.push([-.69 + (i + .5) * 1.38 / 8 + .05, .055, fz, 'act']);
+  if (type === 'net') for (let i = 0; i < 12; i++) s.push([-.33 + i * .088, .074, fz, 'net']);
+  if (type === 'vent') s.push([-.57, .05, fz, 'status'], [-.53, .05, fz, 'act']);
+  if (type === 'display') s.push([.27, .05, fz, 'status']);
+  return s;
+}
+
+function makeRack(x, tag) {
+  const group = new THREE.Group(); group.position.x = x; world.add(group);
+  const body = M.alu(), frame = M.graphite();
+  // cabinet: the pivot sits at the centre of mass so the physics transform applies directly
+  const cab = new THREE.Group(); cab.position.y = COM; group.add(cab);
+  const geo = new THREE.Group(); geo.position.y = -COM; cab.add(geo);
+  const plinth = new THREE.Mesh(new RoundedBoxGeometry(1.72, .14, 1.5, 3, .03), frame); plinth.position.y = .07;
+  const cap = new THREE.Mesh(new RoundedBoxGeometry(1.72, .1, 1.5, 3, .03), frame); cap.position.y = 2.32;
+  const capPlate = new THREE.Mesh(new THREE.PlaneGeometry(.5, .0625), new THREE.MeshBasicMaterial({ map: plate(tag) }));
+  capPlate.position.set(0, 2.32, .752);
+  const postGeo = new RoundedBoxGeometry(.07, 2.13, .07, 2, .02);
+  for (const px of [-.84, .84]) for (const pz of [-.62, .62]) { const p = new THREE.Mesh(postGeo, frame); p.position.set(px, 1.205, pz); geo.add(p); }
+  const sideGeo = new THREE.BoxGeometry(.012, 2.13, 1.17);
+  for (const px of [-.84, .84]) { const m = new THREE.Mesh(sideGeo, M.smoked); m.position.set(px, 1.205, 0); geo.add(fx(m)); }
+  const backP = new THREE.Mesh(new THREE.BoxGeometry(1.62, 2.13, .02), M.backPanel); backP.position.set(0, 1.205, -.68);
+  // cable bundle between the units and the back panel
+  for (let i = 0; i < 10; i++) {
+    const cx = -.63 + i * .14, cz = -.637;
+    const curve = new THREE.CatmullRomCurve3([V(cx, 2.27, cz), V(cx + jit(.04), 1.7, cz), V(cx + jit(.05), 1.1, cz), V(cx + jit(.04), .5, cz), V(cx, .14, cz)]);
+    geo.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 48, .011 + rand() * .004, 8), cableMats[i % cableMats.length]));
+  }
+  geo.add(plinth, cap, capPlate, backP);
+  shadowed(geo);
+
+  const units = [], leds = [];
+  LAYOUT.forEach((type, i) => {
+    const u = new THREE.Group();
+    u.add(new THREE.Mesh(unitGeo, body));
+    const panel = new THREE.Mesh(panelGeo, panelMats[type]); panel.position.z = D / 2 + .012; u.add(panel);
+    for (const sx of [-1, 1]) {
+      const ear = new THREE.Mesh(earGeo, frame); ear.position.set(sx * (W / 2 + .04), 0, D / 2 + .02); u.add(ear);
+      for (const sy of [-1, 1]) { const sc = new THREE.Mesh(screwGeo, M.chrome); sc.position.set(sx * (W / 2 + .04), sy * .065, D / 2 + .038); u.add(sc); }
+      if (type === 'vent' || type === 'display') { const hd = new THREE.Mesh(handleGeo, M.chrome); hd.position.set(sx * .62, 0, D / 2 + .05); u.add(hd); }
+    }
+    const spots = ledSpots(type);
+    const inst = new THREE.InstancedMesh(ledGeo, new THREE.MeshBasicMaterial({ toneMapped: false }), spots.length);
+    const mtx = new THREE.Matrix4();
+    spots.forEach(([lx, ly, lz, kind], j) => {
+      mtx.makeTranslation(lx, ly, lz); inst.setMatrixAt(j, mtx); inst.setColorAt(j, LED.off);
+      leds.push({ inst, j, kind, unit: i, rate: 3 + rand() * 9, rate2: 5 + rand() * 13, phase: rand() * 9 });
+    });
+    u.add(inst);
+    shadowed(u);
+    u.position.set(0, .28 + i * PITCH, 0);
+    group.add(u); units.push(u);
+  });
+  const glow = halo(5.5, 0xffffff, 1.4, -1.3);
+  const decal = contact(2.6, 2.3);
+  // card slot on the top unit: photos leave and enter the rack here, and its LED flashes as each one passes
+  const slot = new THREE.Group(); slot.position.set(SLOT_X, SLOT_DY, D / 2 + .028);
+  const bezel = new THREE.Mesh(new RoundedBoxGeometry(.58, .045, .014, 2, .008), frame);
+  const mouth = new THREE.Mesh(new THREE.BoxGeometry(.52, .012, .016), new THREE.MeshBasicMaterial({ color: 0x020203 }));
+  const slotLed = new THREE.Mesh(new THREE.CircleGeometry(.011, 16), new THREE.MeshBasicMaterial({ color: LED.off.clone(), toneMapped: false }));
+  slotLed.position.set(.33, 0, .008);
+  slot.add(bezel, mouth, slotLed);
+  units[units.length - 1].add(slot);
+  group.add(decal, glow);
+  return { group, cab, units, leds, body, glow, decal, slotLed };
+}
+const primary = makeRack(-3.1, 'KR · 01');
+const standby = makeRack(3.1, 'KR · 02');
+
+// ================================================================ collapse, simulated once with rigid-body physics and replayed by scroll
+function bakeCollapse(rack) {
+  const w = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82, 0) });
+  w.broadphase = new CANNON.SAPBroadphase(w);
+  w.solver.iterations = 30;
+  w.allowSleep = true;
+  w.defaultContactMaterial.friction = .45;
+  w.defaultContactMaterial.restitution = .06;
+  // units ride on rails, so they slide easily against the cabinet and each other
+  const mGround = new CANNON.Material('ground'), mCab = new CANNON.Material('cab'), mUnit = new CANNON.Material('unit');
+  w.addContactMaterial(new CANNON.ContactMaterial(mUnit, mCab, { friction: .06, restitution: .05 }));
+  w.addContactMaterial(new CANNON.ContactMaterial(mUnit, mUnit, { friction: .1, restitution: .05 }));
+  w.addContactMaterial(new CANNON.ContactMaterial(mUnit, mGround, { friction: .5, restitution: .08 }));
+  w.addContactMaterial(new CANNON.ContactMaterial(mCab, mGround, { friction: .6, restitution: .04 }));
+  const ground = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: mGround });
+  ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0); w.addBody(ground);
+  const B = (x, y, z) => new CANNON.Box(new CANNON.Vec3(x, y, z));
+  const O = (x, y, z) => new CANNON.Vec3(x, y - COM, z);
+  const cab = new CANNON.Body({ mass: 140, position: new CANNON.Vec3(0, COM + .002, 0), material: mCab });
+  cab.addShape(B(.86, .07, .75), O(0, .07, 0));
+  cab.addShape(B(.86, .05, .75), O(0, 2.32, 0));
+  for (const px of [-.84, .84]) {
+    cab.addShape(B(.03, 1.065, .585), O(px, 1.205, 0));
+    for (const pz of [-.62, .62]) cab.addShape(B(.035, 1.065, .035), O(px, 1.205, pz));
+  }
+  cab.addShape(B(.81, 1.065, .02), O(0, 1.205, -.68));
+  // start as a rotation about the front bottom edge: spinning about the centre of mass alone
+  // drives that edge into the floor and the contact eats the motion, so the rack only rocks
+  const omega = new CANNON.Vec3(1.6, .22, .1), pivot = new CANNON.Vec3(0, 0, .75);
+  const vAt = p => cab.velocity.vadd(omega.cross(p.vsub(cab.position)));
+  cab.angularVelocity.copy(omega);
+  cab.velocity.copy(omega.cross(cab.position.vsub(pivot)));
+  w.addBody(cab);
+  const units = rack.units.map((u, i) => {
+    const b = new CANNON.Body({ mass: 22, position: new CANNON.Vec3(0, .28 + i * PITCH + .002, 0), material: mUnit });
+    b.addShape(B(W / 2, H / 2, .63), new CANNON.Vec3(0, 0, .03));   // includes the front panel, ears and handles
+    b.velocity.copy(vAt(b.position)).vadd(new CANNON.Vec3(jit(.15), 0, jit(.15)), b.velocity);
+    b.angularVelocity.set(jit(.3), jit(.4), jit(.3));
+    w.addBody(b); return b;
+  });
+  const bodies = [cab, ...units], frames = [];
+  const rec = () => frames.push(bodies.map(b => [b.position.x, b.position.y, b.position.z, b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w]));
+  rec();
+  for (let i = 1; i <= 420; i++) { w.step(1 / 120); if (i % 3 === 0) rec(); }
+  return frames;
+}
+const collapse = bakeCollapse(primary);
+const qa = new THREE.Quaternion(), qb = new THREE.Quaternion();
+function replay(rack, frames, ft) {
+  const f = clamp(ft) * (frames.length - 1), i = Math.min(frames.length - 2, Math.floor(f)), a = f - i;
+  const A = frames[i], B = frames[i + 1];
+  [rack.cab, ...rack.units].forEach((o, j) => {
+    o.position.set(lerp(A[j][0], B[j][0], a), lerp(A[j][1], B[j][1], a), lerp(A[j][2], B[j][2], a));
+    qa.set(A[j][3], A[j][4], A[j][5], A[j][6]); qb.set(B[j][3], B[j][4], B[j][5], B[j][6]);
+    o.quaternion.slerpQuaternions(qa, qb, a);
+  });
+}
+
+// ================================================================ vault: a steel safe with a round door
+const SY = .95;
+const safe = new THREE.Group(); world.add(safe);
+const door = new THREE.Group();     // pivot on the hinge axis
+const doorParts = { wheel: null, bolts: null };
+{
+  const shell = new THREE.Group();
+  const slab = (w, h, d, x, y, z, r = .05) => { const m = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 3, r), M.steel); m.position.set(x, y, z); shell.add(m); };
+  slab(1.7, .14, 1.36, 0, SY + .78, -.07);
+  slab(1.7, .14, 1.36, 0, SY - .78, -.07);
+  slab(.14, 1.42, 1.36, -.78, SY, -.07, .04);
+  slab(.14, 1.42, 1.36, .78, SY, -.07, .04);
+  slab(1.7, 1.7, .14, 0, SY, -.68);
+  for (const footX of [-.68, .68]) for (const footZ of [-.58, .48]) {
+    const f = new THREE.Mesh(new RoundedBoxGeometry(.16, .1, .16, 2, .03), M.graphite()); f.position.set(footX, .05, footZ); shell.add(f);
+  }
+  // front plate with the door opening
+  const s = new THREE.Shape(), w = 1.7, h = 1.7, r = .12, x0 = -w / 2, y0 = -h / 2;
+  s.moveTo(x0 + r, y0); s.lineTo(x0 + w - r, y0); s.quadraticCurveTo(x0 + w, y0, x0 + w, y0 + r);
+  s.lineTo(x0 + w, y0 + h - r); s.quadraticCurveTo(x0 + w, y0 + h, x0 + w - r, y0 + h);
+  s.lineTo(x0 + r, y0 + h); s.quadraticCurveTo(x0, y0 + h, x0, y0 + h - r); s.lineTo(x0, y0 + r); s.quadraticCurveTo(x0, y0, x0 + r, y0);
+  const hole = new THREE.Path(); hole.absarc(0, 0, .56, 0, Math.PI * 2, false); s.holes.push(hole);
+  const front = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: .12, bevelEnabled: true, bevelThickness: .02, bevelSize: .02, bevelSegments: 3, curveSegments: 64 }), M.steel);
+  front.position.set(0, SY, .61); shell.add(front);
+  const trim = new THREE.Mesh(new THREE.TorusGeometry(.56, .018, 16, 96), M.chrome); trim.position.set(0, SY, .755); shell.add(trim);
+  const rivets = new THREE.InstancedMesh(new THREE.SphereGeometry(.016, 12, 8), M.chrome, 24);
+  for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; rivets.setMatrixAt(i, new THREE.Matrix4().makeTranslation(Math.cos(a) * .67, SY + Math.sin(a) * .67, .752)); }
+  shell.add(rivets);
+  const tagM = new THREE.Mesh(new THREE.PlaneGeometry(.56, .07), new THREE.MeshBasicMaterial({ map: plate('JP · VAULT · WORM') }));
+  tagM.position.set(0, SY + .73, .753); shell.add(tagM);
+  // interior: dark lining and a wall of deposit drawers, seen through the open door
+  const liner = new THREE.Mesh(new THREE.BoxGeometry(1.42, 1.42, 1.2), M.velvet); liner.position.set(0, SY, 0); shell.add(liner);
+  const drawers = new THREE.InstancedMesh(new RoundedBoxGeometry(.2, .15, .03, 2, .01), M.titanium, 36);
+  const knobs = new THREE.InstancedMesh(new THREE.SphereGeometry(.014, 10, 8), M.chrome, 36);
+  for (let c = 0, i = 0; c < 6; c++) for (let rr = 0; rr < 6; rr++, i++) {
+    const px = -.55 + c * .22, py = SY - .5 + rr * .2;
+    drawers.setMatrixAt(i, new THREE.Matrix4().makeTranslation(px, py, -.575));
+    knobs.setMatrixAt(i, new THREE.Matrix4().makeTranslation(px, py, -.55));
+  }
+  shell.add(drawers, knobs);
+  const strip = new THREE.Mesh(new THREE.BoxGeometry(1.2, .015, .015), new THREE.MeshBasicMaterial({ color: new THREE.Color(.8, .9, 1).multiplyScalar(3), toneMapped: false }));
+  strip.position.set(0, SY + .69, .45); shell.add(strip);
+  // hinge knuckles fixed to the frame
+  for (const hy of [-.47, .47]) { const k = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, .14, 24), M.chrome); k.position.set(.68, SY + hy, .83); shell.add(k); }
+  for (const hy of [-.47, .47]) { const b = new THREE.Mesh(new RoundedBoxGeometry(.1, .14, .08, 2, .02), M.steel); b.position.set(.68, SY + hy, .79); shell.add(b); }
+  shadowed(shell);
+  liner.receiveShadow = false; liner.castShadow = false;
+  safe.add(shell);
+
+  // door, built around its own centre and offset from the hinge
+  const d = new THREE.Group(); d.position.x = -.68; door.add(d);
+  door.position.set(.68, SY, .83);
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(.62, .62, .14, 96).rotateX(Math.PI / 2), M.titanium);
+  const boss = new THREE.Mesh(new THREE.CylinderGeometry(.5, .52, .04, 96).rotateX(Math.PI / 2), M.steel); boss.position.z = .09;
+  const plug = new THREE.Mesh(new THREE.CylinderGeometry(.5, .5, .1, 96).rotateX(Math.PI / 2), M.steel); plug.position.z = -.12;
+  const ringA = new THREE.Mesh(new THREE.TorusGeometry(.58, .008, 8, 96), M.chrome); ringA.position.z = .072;
+  const ringB = new THREE.Mesh(new THREE.TorusGeometry(.46, .006, 8, 96), M.graphite()); ringB.position.z = .112;
+  const wheel = new THREE.Group(); wheel.position.z = .14;
+  wheel.add(new THREE.Mesh(new THREE.TorusGeometry(.26, .02, 16, 96), M.chrome));
+  wheel.add(new THREE.Mesh(new THREE.CylinderGeometry(.07, .07, .06, 32).rotateX(Math.PI / 2), M.chrome));
+  for (let i = 0; i < 3; i++) {
+    const sp = new THREE.Mesh(new THREE.CylinderGeometry(.016, .016, .62, 16), M.chrome); sp.rotation.z = i * Math.PI / 3; wheel.add(sp);
+    for (const sgn of [-1, 1]) {
+      const a = i * Math.PI / 3 + Math.PI / 2;
+      const ball = new THREE.Mesh(new THREE.SphereGeometry(.034, 20, 14), M.chrome); ball.position.set(Math.cos(a) * .31 * sgn, Math.sin(a) * .31 * sgn, 0); wheel.add(ball);
+    }
+  }
+  const dial = new THREE.Mesh(new THREE.CylinderGeometry(.07, .075, .04, 48).rotateX(Math.PI / 2), M.chrome); dial.position.set(0, .43, .13);
+  const arms = [-.32, .32].map(ay => { const a = new THREE.Mesh(new RoundedBoxGeometry(.18, .08, .05, 2, .015), M.steel); a.position.set(.6, ay, 0); return a; });
+  const knuck = [-.32, .32].map(ay => { const k = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, .14, 24), M.chrome); k.position.set(.68, ay, 0); return k; });
+  const bolts = new THREE.InstancedMesh(new THREE.CylinderGeometry(.028, .028, .16, 16), M.chrome, 8);
+  d.add(disc, boss, plug, ringA, ringB, wheel, dial, ...arms, ...knuck, bolts);
+  shadowed(d);
+  doorParts.wheel = wheel; doorParts.bolts = bolts;
+  safe.add(door);
+}
+const boltM = new THREE.Matrix4(), boltQ = new THREE.Quaternion(), boltP = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1), ZAX = new THREE.Vector3(0, 0, 1);
+function setBolts(radius) {
+  for (let i = 0; i < 8; i++) {
+    const a = i / 8 * Math.PI * 2 + Math.PI / 8;
+    boltQ.setFromAxisAngle(ZAX, a - Math.PI / 2);
+    boltP.set(Math.cos(a) * radius, Math.sin(a) * radius, -.12);
+    doorParts.bolts.setMatrixAt(i, boltM.compose(boltP, boltQ, ONE));
+  }
+  doorParts.bolts.instanceMatrix.needsUpdate = true;
+}
+const safeGlow = halo(4.4, HALO.blue, 1, -1.3); safe.add(safeGlow, contact(3, 2.8));
+
+// ================================================================ photos and their paths
+// photos: small landscapes painted in code, shown as rounded glossy tiles
+function vnoise(seed) {
+  const h = i => { const x = Math.sin(i * 127.1 + seed * 311.7) * 43758.5453; return x - Math.floor(x); };
+  return x => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return h(i) * (1 - u) + h(i + 1) * u; };
+}
+function fbm(seed, oct = 5) {
+  const ns = Array.from({ length: oct }, (_, o) => vnoise(seed + o * 7.3));
+  return x => { let a = .5, f = 1, sum = 0; for (const n of ns) { sum += n(x * f) * a; a *= .5; f *= 2.1; } return sum; };
+}
+function ridge(g, w, h, y, amp, col, seed, freq = 3, oct = 5) {
+  const n = fbm(seed, oct);
+  g.fillStyle = col; g.beginPath(); g.moveTo(0, h);
+  for (let x = 0; x <= w; x += 2) g.lineTo(x, h * y - (n(x / w * freq) - .5) * 2 * amp * h);
+  g.lineTo(w, h); g.closePath(); g.fill();
+}
+const vgrad = (g, stops, y0, y1) => { const gr = g.createLinearGradient(0, y0, 0, y1); stops.forEach(([o, c]) => gr.addColorStop(o, c)); return gr; };
+function sunDisc(g, x, y, r, core, glow) {
+  const gr = g.createRadialGradient(x, y, 0, x, y, r * 7); gr.addColorStop(0, glow); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, g.canvas.width, g.canvas.height);
+  g.fillStyle = core; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+}
+function starField(g, w, h, n, ymax) {
+  for (let i = 0; i < n; i++) {
+    g.fillStyle = 'rgba(255,255,255,' + (.25 + rand() * .75) + ')';
+    const sz = rand() < .08 ? 2 : 1; g.fillRect(rand() * w, rand() * h * ymax, sz, sz);
+  }
+}
+// mirror everything above the horizon, then tint it and add ripples
+function water(g, w, h, hz, tint, alpha = .6) {
+  g.save(); g.translate(0, 2 * hz); g.scale(1, -1); g.globalAlpha = alpha; g.drawImage(g.canvas, 0, 0, w, hz, 0, 0, w, hz); g.restore();
+  g.fillStyle = vgrad(g, tint, hz, h); g.fillRect(0, hz, w, h - hz);
+  for (let i = 0; i < 70; i++) {
+    g.fillStyle = 'rgba(255,255,255,' + (.04 + rand() * .07) + ')';
+    g.fillRect(rand() * w, hz + 3 + rand() * (h - hz), 20 + rand() * 90, 1);
+  }
+}
+const SCENES = [
+  (g, w, h) => {   // sunset over mountains
+    g.fillStyle = vgrad(g, [[0, '#1b1036'], [.38, '#6a2c70'], [.68, '#f08a5d'], [.86, '#f9d29d']], 0, h); g.fillRect(0, 0, w, h);
+    sunDisc(g, w * .66, h * .55, h * .055, '#fff3d6', 'rgba(255,190,120,.55)');
+    ridge(g, w, h, .64, .1, '#a1557a', 1, 2.4); ridge(g, w, h, .73, .09, '#6e3463', 2, 3); ridge(g, w, h, .86, .07, '#2c1535', 3, 4);
+  },
+  (g, w, h) => {   // lake at blue hour
+    const hz = h * .6;
+    g.fillStyle = vgrad(g, [[0, '#0b1b38'], [.55, '#3a6ea5'], [.6, '#a9cbe8']], 0, h); g.fillRect(0, 0, w, h);
+    starField(g, w, h, 60, .3);
+    ridge(g, w, h, .5, .14, '#5a7ba3', 4, 2); ridge(g, w, h, .58, .06, '#2b4669', 5, 4);
+    water(g, w, h, hz, [[0, 'rgba(20,45,80,.25)'], [1, 'rgba(5,15,35,.85)']]);
+  },
+  (g, w, h) => {   // misty forest
+    g.fillStyle = vgrad(g, [[0, '#e3ece6'], [1, '#b5c8bc']], 0, h); g.fillRect(0, 0, w, h);
+    const mist = y => { g.fillStyle = vgrad(g, [[0, 'rgba(235,242,238,0)'], [1, 'rgba(235,242,238,.55)']], h * (y - .12), h * y); g.fillRect(0, h * (y - .12), w, h * .12); };
+    ridge(g, w, h, .5, .08, '#9db4a5', 6, 2); mist(.55);
+    ridge(g, w, h, .62, .07, '#738f7c', 7, 9, 6); mist(.66);
+    ridge(g, w, h, .74, .08, '#4c6a55', 8, 16, 6); mist(.78);
+    ridge(g, w, h, .88, .09, '#22392a', 9, 26, 6);
+  },
+  (g, w, h) => {   // dunes
+    g.fillStyle = vgrad(g, [[0, '#f2b766'], [.55, '#fbe3b8']], 0, h); g.fillRect(0, 0, w, h);
+    sunDisc(g, w * .3, h * .3, h * .05, '#fffaf0', 'rgba(255,240,210,.5)');
+    ridge(g, w, h, .62, .06, '#e7a35c', 10, 1.2, 3); ridge(g, w, h, .72, .07, '#cf7f3e', 11, 1.4, 3); ridge(g, w, h, .86, .08, '#a35a2a', 12, 1.1, 3);
+  },
+  (g, w, h) => {   // moonlit mountains
+    g.fillStyle = vgrad(g, [[0, '#050a18'], [.6, '#1a2b4a'], [1, '#2c3e5e']], 0, h); g.fillRect(0, 0, w, h);
+    starField(g, w, h, 200, .6);
+    sunDisc(g, w * .72, h * .24, h * .045, '#f4f1e6', 'rgba(200,215,255,.35)');
+    ridge(g, w, h, .6, .16, '#33476a', 13, 2.2); ridge(g, w, h, .72, .1, '#1d2b45', 14, 3.5); ridge(g, w, h, .86, .07, '#0b111d', 19, 6);
+  },
+  (g, w, h) => {   // sea at sunrise
+    const hz = h * .62;
+    g.fillStyle = vgrad(g, [[0, '#4f93c9'], [.5, '#bfe0f0'], [.62, '#ffd9a8']], 0, h); g.fillRect(0, 0, w, h);
+    sunDisc(g, w * .42, hz - h * .015, h * .05, '#fff7e8', 'rgba(255,214,160,.6)');
+    g.fillStyle = vgrad(g, [[0, '#3f7fae'], [1, '#0d2c4b']], hz, h); g.fillRect(0, hz, w, h - hz);
+    for (let i = 0; i < 90; i++) {
+      const y = hz + 2 + Math.pow(rand(), 1.6) * (h - hz), sp = 8 + (y - hz) * .45;
+      g.fillStyle = 'rgba(255,236,200,' + (.5 * (1 - (y - hz) / (h - hz))) + ')';
+      g.fillRect(w * .42 - sp / 2 + (rand() - .5) * sp, y, 6 + rand() * sp * .5, 1.5);
+    }
+  },
+  (g, w, h) => {   // snow peaks in the morning
+    g.fillStyle = vgrad(g, [[0, '#6f9fe3'], [.7, '#d9ebfb']], 0, h); g.fillRect(0, 0, w, h);
+    ridge(g, w, h, .55, .2, '#f1f5fb', 15, 1.6, 6); ridge(g, w, h, .6, .17, 'rgba(160,178,204,.55)', 16, 1.6, 6);
+    ridge(g, w, h, .74, .09, '#5d6b7f', 17, 4, 6); ridge(g, w, h, .88, .06, '#252c36', 18, 8, 6);
+  },
+  (g, w, h) => {   // city at dusk on the water
+    const hz = h * .74;
+    g.fillStyle = vgrad(g, [[0, '#0f1a2e'], [.5, '#2d4469'], [.74, '#f0a06e']], 0, h); g.fillRect(0, 0, w, h);
+    for (let x = 0; x < w;) {
+      const bw = 14 + rand() * 34, bh = h * (.1 + rand() * .32);
+      g.fillStyle = '#0a0e17'; g.fillRect(x, hz - bh, bw - 2, bh);
+      for (let wy = hz - bh + 5; wy < hz - 4; wy += 7) for (let wx = x + 3; wx < x + bw - 6; wx += 6)
+        if (rand() < .3) { g.fillStyle = 'rgba(255,' + Math.round(190 + rand() * 50) + ',120,' + (.55 + rand() * .4) + ')'; g.fillRect(wx, wy, 2.5, 3); }
+      x += bw;
+    }
+    water(g, w, h, hz, [[0, 'rgba(15,25,45,.35)'], [1, 'rgba(5,8,16,.9)']], .55);
+  },
+];
+const photoMats = SCENES.map(paint => {
+  const map = tex(makeCanvas(512, 384, paint));
+  return new THREE.MeshPhysicalMaterial({ map, emissive: 0xffffff, emissiveMap: map, emissiveIntensity: .32, roughness: .3, clearcoat: 1, clearcoatRoughness: .06 });
+});
+const edgeMat = new THREE.MeshPhysicalMaterial({ color: 0x1a1a1e, metalness: .6, roughness: .3 });
+const CW = .46, CH = .345, CR = .028;
+const cardGeo = (() => {
+  const sh = new THREE.Shape(), x = -CW / 2, y = -CH / 2;
+  sh.moveTo(x + CR, y); sh.lineTo(x + CW - CR, y); sh.quadraticCurveTo(x + CW, y, x + CW, y + CR);
+  sh.lineTo(x + CW, y + CH - CR); sh.quadraticCurveTo(x + CW, y + CH, x + CW - CR, y + CH);
+  sh.lineTo(x + CR, y + CH); sh.quadraticCurveTo(x, y + CH, x, y + CH - CR); sh.lineTo(x, y + CR); sh.quadraticCurveTo(x, y, x + CR, y);
+  const uv = (v, i) => new THREE.Vector2((v[i * 3] + CW / 2) / CW, (v[i * 3 + 1] + CH / 2) / CH);
+  const g = new THREE.ExtrudeGeometry(sh, { depth: .006, bevelEnabled: true, bevelThickness: .002, bevelSize: .002, bevelSegments: 2, curveSegments: 10,
+    UVGenerator: { generateTopUV: (geo, v, a, b, c) => [uv(v, a), uv(v, b), uv(v, c)],
+      generateSideWallUV: () => [new THREE.Vector2(), new THREE.Vector2(), new THREE.Vector2(), new THREE.Vector2()] } });
+  return g.translate(0, 0, -.003);
+})();
+const N = 10;
+// one shared path per direction, so the photos travel as a tidy queue and never cross each other
+const PX = -3.1 + SLOT_X, SX = 3.1 + SLOT_X;
+const pathIn = new THREE.CatmullRomCurve3([V(PX, SLOT_Y, .2), V(PX, SLOT_Y, .7), V(PX, SLOT_Y, 1.25), V(-2.3, 2.6, 1.95), V(-1, 2.15, 2.4), V(0, SY, 2.45), V(0, SY, 1.2), V(0, SY, -.3)]);
+const pathOut = new THREE.CatmullRomCurve3([V(0, SY, -.3), V(0, SY, 1.2), V(0, SY, 2.45), V(1.3, 2.5, 2.4), V(2.5, 2.45, 1.95), V(SX, SLOT_Y, 1.25), V(SX, SLOT_Y, .7), V(SX, SLOT_Y, .2)]);
+const LIN = pathIn.getLength(), LOUT = pathOut.getLength();
+const holeIn = 1 - 1.05 / LIN, holeOut = 1.05 / LOUT;   // where the safe's door plane sits along each path
+const slotIn = (SLOT_Z - .2) / LIN, slotOut = 1 - (SLOT_Z - .2) / LOUT;   // where the rack's front face sits
+const flatIn = [1.05 / LIN, 1.9 / LIN], flatOut = [1 - 1.9 / LOUT, 1 - 1.05 / LOUT];   // stretch where a card turns between flat and upright
+const pulse = (u, at) => Math.exp(-Math.pow((u - at) * 40, 2));
+const cards = (n) => Array.from({ length: n }, (_, k) => {
+  const m = new THREE.Mesh(cardGeo, [photoMats[k % photoMats.length], edgeMat]); m.visible = false; m.castShadow = true; world.add(m);
+  m.userData.roll = (k % 2 ? 1 : -1) * (.12 + rand() * .12); return m;
+});
+const backup = cards(N), restore = cards(N);
+
+// ================================================================ photo wall
+// The group's photo library as a curved wall of tiles behind the set. It tells the story too: a copy
+// sweep lights it during the backup, it goes dark when the primary falls, and the restore brings it back
+// from the standby's side. A soft light follows the pointer and nearby tiles lean out of the wall.
+// Procedural landscapes for the wall: palette, sun, cloud, ridge and water choices per seed, so 234 tiles
+// drawn from 48 paintings, each also mirrored, cropped and tinted per tile, do not visibly repeat.
+const PALETTES = [
+  { sky: ['#0b1d3a', '#2b4c7e', '#f6a65a', '#ffd9a0'], land: ['#3a2a4d', '#241a35', '#120d1c'], sun: '#ffe2b0' },
+  { sky: ['#6fa8dc', '#a9d2ef', '#eef4f2'], land: ['#6b8f78', '#46644f', '#26392c'], sun: '#fff6e0' },
+  { sky: ['#03040b', '#0b1530', '#1d2c5a'], land: ['#111a30', '#0a0f1e', '#03050b'], sun: '#e8ecff', night: 1 },
+  { sky: ['#ffd6c9', '#f7b2a6', '#c48bb0'], land: ['#8a6a8f', '#5e4a6e', '#382c47'], sun: '#fff1e6' },
+  { sky: ['#f6cf8a', '#e38b4a', '#7a3b2e'], land: ['#a0522d', '#6b3420', '#3a1d12'], sun: '#fff0c8' },
+  { sky: ['#c9e6f2', '#9ccbe0', '#5e9fc2'], land: ['#eef3f6', '#c9d5de', '#8fa3b2'], sun: '#ffffff' },
+  { sky: ['#1e3c2f', '#3d7a5c', '#b5dcc2'], land: ['#24432f', '#152a1e', '#0a160f'], sun: '#eaffd8' },
+  { sky: ['#2b1055', '#7597de', '#d6e4ff'], land: ['#3a2a6b', '#24194a', '#120c28'], sun: '#ffffff' },
+  { sky: ['#ff7e5f', '#feb47b', '#ffe3b3'], land: ['#4a2c3a', '#2e1b26', '#170d13'], sun: '#fff7da' },
+  { sky: ['#0f2027', '#203a43', '#2c5364'], land: ['#16303a', '#0c1d24', '#050d11'], sun: '#cfe9ff' },
+];
+function landscape(seed, w, h) {
+  let st = 1 + seed * 7919 % 2147483646; const r = () => (st = (st * 16807) % 2147483647, (st - 1) / 2147483646);
+  const P = PALETTES[seed % PALETTES.length];
+  return makeCanvas(w, h, g => {
+    g.fillStyle = vgrad(g, P.sky.map((c, i) => [i / (P.sky.length - 1), c]), 0, h * (.6 + r() * .2)); g.fillRect(0, 0, w, h);
+    if (P.night) for (let i = 0; i < 46; i++) { g.fillStyle = `rgba(255,255,255,${(.25 + r() * .6).toFixed(2)})`; g.fillRect(r() * w, r() * h * .6, 1, 1); }
+    if (r() < .8) {
+      const x = w * (.12 + r() * .76), y = h * (.14 + r() * .34), rad = h * (.04 + r() * .06);
+      const gr = g.createRadialGradient(x, y, 0, x, y, rad * 7); gr.addColorStop(0, P.sun + 'aa'); gr.addColorStop(1, P.sun + '00');
+      g.fillStyle = gr; g.fillRect(0, 0, w, h); g.fillStyle = P.sun; g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
+    }
+    if (!P.night) for (let i = 0, n = Math.floor(r() * 5); i < n; i++) {
+      g.fillStyle = `rgba(255,255,255,${(.08 + r() * .16).toFixed(2)})`;
+      g.beginPath(); g.ellipse(r() * w, h * (.1 + r() * .3), w * (.08 + r() * .16), h * (.015 + r() * .03), 0, 0, Math.PI * 2); g.fill();
+    }
+    const layers = 2 + Math.floor(r() * 3);
+    for (let i = 0; i < layers; i++)
+      ridge(g, w, h, .46 + i * (.32 / layers) + r() * .05, .05 + r() * .13, P.land[Math.min(P.land.length - 1, Math.round(i * (P.land.length - 1) / Math.max(1, layers - 1)))], seed * 13 + i, 2 + r() * 5, 5);
+    if (r() < .35) water(g, w, h, h * (.66 + r() * .1), [[0, 'rgba(10,18,32,.3)'], [1, 'rgba(4,6,12,.85)']], .5);
+    if (r() < .45) { g.fillStyle = vgrad(g, [[0, 'rgba(255,255,255,0)'], [.5, 'rgba(255,255,255,.12)'], [1, 'rgba(255,255,255,0)']], h * .45, h * .7); g.fillRect(0, h * .45, w, h * .25); }
+  });
+}
+const atlas = (() => {
+  const n = 48, cols = 8, rows = n / cols, cw = 192, ch = 144;
+  const c = makeCanvas(cols * cw, rows * ch, g => { for (let i = 0; i < n; i++) g.drawImage(landscape(i + 1, cw, ch), (i % cols) * cw, Math.floor(i / cols) * ch); });
+  return { tex: tex(c), cols, rows, n };
+})();
+const wall = (() => {
+  const R = 16, CZ = 4, TW = 1.08, TH = .81, GAP = .14, ROWS = 9, Y0 = .5, SPAN = 1.0;
+  const step = (TW + GAP) / R, COLS = Math.floor(2 * SPAN / step), count = COLS * ROWS;
+  const geo = new THREE.PlaneGeometry(TW, TH);
+  const cell = new Float32Array(count), rnd = new Float32Array(count * 4), grid = new Float32Array(count * 2);
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uAtlas: { value: atlas.tex }, uGrid: { value: new THREE.Vector2(atlas.cols, atlas.rows) }, uLight: { value: new THREE.Vector3(0, .9, -9) },
+      uLift: { value: .35 }, uSweepA: { value: 0 }, uDark: { value: 0 }, uSweepR: { value: 0 }, uTime: { value: 0 } },
+    vertexShader: `attribute float aCell; attribute vec4 aRand; attribute vec2 aGrid;
+      uniform vec3 uLight; uniform float uLift;
+      varying vec2 vUv; varying float vCell; varying vec4 vRand; varying vec2 vGrid; varying float vLight;
+      void main(){
+        vUv = uv; vCell = aCell; vRand = aRand; vGrid = aGrid;
+        mat4 im = modelMatrix * instanceMatrix;
+        vec3 c = (im * vec4(0., 0., 0., 1.)).xyz;
+        vec2 d = c.xy - uLight.xy;
+        vLight = exp(-dot(d, d) / 9.);
+        vec4 wp = im * vec4(position, 1.);
+        wp.xyz += normalize(mat3(im) * vec3(0., 0., 1.)) * vLight * uLift;   // tiles near the light lean out
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }`,
+    fragmentShader: `uniform sampler2D uAtlas; uniform vec2 uGrid; uniform float uSweepA, uDark, uSweepR, uTime;
+      varying vec2 vUv; varying float vCell; varying vec4 vRand; varying vec2 vGrid; varying float vLight;
+      float rbox(vec2 p, vec2 b, float r){ vec2 q = abs(p) - b + r; return length(max(q, 0.)) + min(max(q.x, q.y), 0.) - r; }
+      void main(){
+        vec2 p = (vUv - .5) * vec2(1.3333, 1.);
+        float sd = rbox(p, vec2(.6666, .5), .07);
+        if (sd > 0.) discard;
+        float cell = floor(vCell + .5);                                                        // an interpolated 8.0 can arrive as 7.9999: round before mod/floor
+        float cx = mod(cell, uGrid.x), cy = floor((cell + .5) / uGrid.x);
+        vec2 tuv = vUv;
+        if (vRand.y > .5) tuv.x = 1. - tuv.x;                                                 // mirror half the tiles
+        float z = mix(.7, 1., vRand.z);                                                        // and crop each one differently
+        tuv = tuv * z + (1. - z) * vec2(vRand.w, fract(vRand.x * 7.13));
+        vec3 photo = texture2D(uAtlas, (vec2(cx, uGrid.y - 1. - cy) + tuv) / uGrid, 1.).rgb;
+        photo *= mix(vec3(1.07, 1., .93), vec3(.93, 1., 1.07), fract(vRand.w * 3.7));        // a slight warm or cool cast
+        float x = vGrid.x, y = vGrid.y;
+        float off = smoothstep(vRand.x * .7, vRand.x * .7 + .3, uDark);                       // the collapse switches tiles off at random
+        float back = smoothstep(0., .12, uSweepR * 1.3 - (1. - x) * 1.1 - vRand.y * .1);       // the restore relights them from the standby side
+        float on = clamp(1. - off + back, 0., 1.);
+        float flick = step(.45, fract(sin(floor(uTime * 22.) + vRand.z * 91.7) * 437.5));
+        on *= mix(1., flick, step(.02, off) * step(off, .98) * (1. - back));
+        float f = uSweepA * 1.3 - .15;
+        float flash = exp(-pow((x - f) * 9., 2.)) * step(.001, uSweepA) * step(uSweepA, .999);   // the copy sweep
+        float dimTop = mix(1., .05, smoothstep(.16, .68, y));                                     // rows behind the headline stay dim
+        vec3 col = photo * (.016 + .014 * vRand.w + vLight * .6) * dimTop * on;   // dark until the pointer light reaches it
+        col += vec3(.3, .58, 1.) * flash * .3 * dimTop + photo * flash * .25 * dimTop;
+        col += smoothstep(-.014, 0., sd) * (.025 + vLight * .4) * vec3(.82, .9, 1.) * on * dimTop;      // rim
+        gl_FragColor = vec4(col, 1.);
+      }`,
+  });
+  const m = new THREE.InstancedMesh(geo, mat, count);
+  const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), Y = V(0, 1, 0), S1 = V(1, 1, 1);
+  let k = 0;
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++, k++) {
+    const th = -SPAN + (c + .5) * step;
+    M.compose(V(Math.sin(th) * R, Y0 + r * (TH + GAP) + TH / 2, CZ - Math.cos(th) * R), Q.setFromAxisAngle(Y, -th), S1);
+    m.setMatrixAt(k, M);
+    cell[k] = Math.floor(rand() * atlas.n);
+    rnd.set([rand(), rand(), rand(), rand()], k * 4);
+    grid.set([(c + .5) / COLS, r / (ROWS - 1)], k * 2);
+  }
+  geo.setAttribute('aCell', new THREE.InstancedBufferAttribute(cell, 1));
+  geo.setAttribute('aRand', new THREE.InstancedBufferAttribute(rnd, 4));
+  geo.setAttribute('aGrid', new THREE.InstancedBufferAttribute(grid, 2));
+  m.frustumCulled = false;
+  scene.add(m);
+  return m;
+})();
+let wallPointer = false; addEventListener('pointermove', () => { wallPointer = true; }, { once: true, passive: true });   // until then the light rests low behind the set
+const lightTarget = new THREE.Vector3(0, .9, -9), lightPos = lightTarget.clone(), wallRay = new THREE.Raycaster(), wallPlane = new THREE.Plane(V(0, 0, 1), 9), ndc = new THREE.Vector2();
+
+
+// ================================================================ sparks
+const SP = 220;
+const sparkGeo = new THREE.BufferGeometry();
+const sparkPos = new Float32Array(SP * 3), sparkCol = new Float32Array(SP * 3);
+sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPos, 3));
+sparkGeo.setAttribute('color', new THREE.BufferAttribute(sparkCol, 3));
+const sparkSeed = Array.from({ length: SP }, () => ({
+  o: V(-3.1 + jit(.65), .35 + rand() * 1.9, .7), v: V(jit(1.6), .6 + rand() * 2.4, .8 + rand() * 2.2), d: rand() * .3, life: .45 + rand() * .55 }));
+const sparks = new THREE.Points(sparkGeo, new THREE.PointsMaterial({ size: .03, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+sparks.frustumCulled = false; world.add(fx(sparks));
+const SPARK = new THREE.Color(1, .55, .2).multiplyScalar(6);
+
+// ================================================================ post-processing
+const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
+const composer = new EffectComposer(renderer, rt);
+const aoCam = camera.clone();   // follows the main camera but sees layer 0 only
+composer.addPass(new RenderPass(scene, camera));
+// GTAO measured 2026-10-08 (RTX 3050 laptop, 1628x956): about 9 ms of a 24 ms frame, and on/off screenshots looked the same.
+const USE_AO = false;
+if (hi && USE_AO) {
+  const ao = new GTAOPass(scene, aoCam, 1, 1);
+  ao.output = GTAOPass.OUTPUT.Default; ao.blendIntensity = .85;
+  ao.updateGtaoMaterial({ radius: .3, distanceExponent: 1.4, thickness: 1, scale: 1, samples: 16, distanceFallOff: 1, screenSpaceRadius: false });
+  composer.addPass(ao);
+}
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), .42, .35, 3.2));
+const finish = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uFluid: { value: null }, uFluidOn: { value: 0 } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime; uniform sampler2D uFluid; uniform float uFluidOn; varying vec2 vUv;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+    void main(){
+      vec2 fl = uFluidOn > 0. ? texture2D(uFluid, vUv).xy * uFluidOn : vec2(0.);
+      vec2 uv = vUv - fl * .018;
+      vec4 c = texture2D(tDiffuse, uv);
+      c.r = texture2D(tDiffuse, uv + fl * .004).r; c.b = texture2D(tDiffuse, uv - fl * .004).b;
+      float v = smoothstep(.95, .25, length((vUv - .5) * vec2(1.1, 1.25)));
+      c.rgb *= mix(.7, 1., v);
+      gl_FragColor = c; }`,
+});
+composer.addPass(finish);
+composer.addPass(new OutputPass());
+
+// ================================================================ pointer fluid (after alche.studio)
+// A quarter-resolution velocity field: the pointer splats its motion in, the field carries itself along
+// and fades. The finish pass bends the picture by it, so moving the mouse leaves a liquid wake.
+const fluidRT = [0, 1].map(() => new THREE.WebGLRenderTarget(2, 2, { type: THREE.HalfFloatType, depthBuffer: false }));
+const fluidCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), fluidScene = new THREE.Scene();
+const fluidMat = new THREE.ShaderMaterial({
+  uniforms: { uPrev: { value: null }, uMouse: { value: new THREE.Vector2(-9, -9) }, uDelta: { value: new THREE.Vector2() }, uAspect: { value: 1 }, uDecay: { value: .95 }, uTexel: { value: new THREE.Vector2(.01, .01) } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }',
+  fragmentShader: `uniform sampler2D uPrev; uniform vec2 uMouse, uDelta, uTexel; uniform float uAspect, uDecay; varying vec2 vUv;
+    void main(){
+      vec2 v = texture2D(uPrev, vUv).xy;
+      vec3 prev = texture2D(uPrev, vUv - v * uTexel * 5.).xyz * uDecay;     // carried along itself, fading
+      vec2 d = vUv - uMouse; d.x *= uAspect;
+      float s = exp(-dot(d, d) / .0045);
+      gl_FragColor = vec4(clamp(prev + vec3(uDelta * 32., length(uDelta) * 20.) * s, -3., 3.), 1.);
+    }`,
+  depthTest: false, depthWrite: false,
+});
+fluidScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), fluidMat));
+let fluidI = 0;
+const fluidUv = new THREE.Vector2(-9, -9), fluidLast = new THREE.Vector2(-9, -9);
+addEventListener('pointermove', e => { fluidUv.set(e.clientX / innerWidth, 1 - e.clientY / innerHeight); }, { passive: true });
+function stepFluid(dt) {
+  const u = fluidMat.uniforms;
+  u.uPrev.value = fluidRT[fluidI].texture;
+  u.uMouse.value.copy(fluidUv);
+  if (fluidLast.x < -1) u.uDelta.value.set(0, 0); else u.uDelta.value.copy(fluidUv).sub(fluidLast);
+  fluidLast.copy(fluidUv);
+  u.uDecay.value = Math.pow(.95, dt * 60);
+  renderer.setRenderTarget(fluidRT[1 - fluidI]); renderer.render(fluidScene, fluidCam); renderer.setRenderTarget(null);
+  fluidI = 1 - fluidI;
+  finish.uniforms.uFluid.value = fluidRT[fluidI].texture;
+  finish.uniforms.uFluidOn.value = 1;
+}
+
+// ================================================================ camera path
+const shots = [
+  { s: 0.0, t: [0, 1.75, 0], p: [0, 2.2, 14.2] },
+  // no hold at the top: the push-in starts on the first wheel notch and eases out into the close-up
+  { s: .9, t: [-3.05, 1.95, .6], p: [-1.6, 2.15, 4.9], ease: 'out' },
+  { s: 1.2, t: [-1.2, 2.45, .9], p: [-.2, 3.1, 11.6] },
+  { s: 2.5, t: [-2.5, 1, 1.4], p: [-.5, 2.4, 10.4] },
+  { s: 3.3, t: [1, 2.35, .9], p: [1.3, 3.0, 11.6] },
+  { s: 4.0, t: [.2, 1.7, 0], p: [.4, 2.3, 14] },
+  // closing beat: pull back and up to the whole set, under the call to action
+  { s: 4.55, t: [0, 1.6, 0], p: [0, 3.1, 16.5] },
+  { s: 5.0, t: [0, 1.6, 0], p: [0, 3.1, 16.5] },
+];
+const camT = new THREE.Vector3(), camP = new THREE.Vector3(), tmp = new THREE.Vector3();
+function shotAt(s) {
+  let i = 0; while (i < shots.length - 2 && s > shots[i + 1].s) i++;
+  const A = shots[i], B = shots[i + 1], u = clamp((s - A.s) / (B.s - A.s));
+  const k = B.ease === 'out' ? 1 - (1 - u) * (1 - u) : u * u * (3 - 2 * u);
+  camT.set(...A.t).lerp(tmp.set(...B.t), k); camP.set(...A.p).lerp(tmp.set(...B.p), k);
+}
+
+// ================================================================ input
+let mx = 0, my = 0, emx = 0, emy = 0, yaw = 0, yawT = 0, dragging = false, lastX = 0;
+addEventListener('pointermove', e => { mx = e.clientX / innerWidth * 2 - 1; my = e.clientY / innerHeight * 2 - 1; });
+canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; canvas.classList.add('drag'); canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove', e => { if (!dragging) return; yawT = clamp(yawT + (e.clientX - lastX) * .005, -.8, .8); lastX = e.clientX; });
+const endDrag = () => { dragging = false; canvas.classList.remove('drag'); };
+canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
+canvas.addEventListener('dblclick', () => { yawT = 0; });
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  renderer.setPixelRatio(PR); renderer.setSize(w, h, false); composer.setPixelRatio(PR); composer.setSize(w, h);
+  const fw = Math.max(2, w >> 2), fh = Math.max(2, h >> 2);
+  fluidRT.forEach(rt => rt.setSize(fw, fh)); fluidMat.uniforms.uAspect.value = w / h; fluidMat.uniforms.uTexel.value.set(1 / fw, 1 / fh);
+  camera.aspect = w / h; camera.setViewOffset(w, h, 0, -h * .13, w, h);   // scene sits lower, under the copy
+}
+addEventListener('resize', resize); resize();
+const storyS = () => { const r = story.getBoundingClientRect(); return clamp(-r.top / (r.height - innerHeight)) * 5; };
+const reducedBeat = s => [.5, 1.45, 3, 4, 4.8][Math.min(4, Math.floor(s))];
+
+// ================================================================ LEDs
+const blinkAct = (L, t) => (Math.sin(t * L.rate + L.phase) + Math.sin(t * L.rate2 + L.phase * 2.3)) > .55;
+const blinkNet = (L, t) => Math.sin(t * L.rate * .7 + L.phase) > -.2;
+const C = new THREE.Color();
+function paintLeds(rack, fn, t) {
+  const touched = new Set();
+  rack.leds.forEach(L => { fn(L, t, C); L.inst.setColorAt(L.j, C); touched.add(L.inst); });
+  touched.forEach(i => { i.instanceColor.needsUpdate = true; });
+}
+const live = (L, t) => L.kind === 'status' ? LED.green : L.kind === 'net' ? (blinkNet(L, t) ? LED.green : LED.off) : (blinkAct(L, t) ? LED.blue : LED.off);
+
+// ================================================================ frame
+let sCur = 0, last = performance.now(), forced = null, shadowKey = '', shadowTick = 0;
+const chapters = document.querySelector('.chapters'), chapterBtns = [...chapters.querySelectorAll('button')], thumb = chapters.querySelector('.thumb');
+let chapOn = -2;
+function setChapter(k) {
+  chapterBtns.forEach((b, i) => b.classList.toggle('on', i === k));
+  if (k < 0) { thumb.style.opacity = 0; return; }
+  const b = chapterBtns[k];
+  thumb.style.left = b.offsetLeft + 'px'; thumb.style.width = b.offsetWidth + 'px'; thumb.style.opacity = 1;
+}
+document.fonts.ready.then(() => setChapter(chapOn)); addEventListener('resize', () => setChapter(chapOn));   // widths change once Be Vietnam Pro loads
+// Jump to a story position (data-go) with the browser's own smooth scroll.
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-go]'); if (!a) return;
+  e.preventDefault();
+  const v = +a.dataset.go, top = story.offsetTop + v / 5 * (story.offsetHeight - innerHeight);
+  scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' });
+});
+const P = new THREE.Vector3();
+// Quality governor: when the median frame interval over 60 frames stays above 20 ms (below ~50 fps,
+// on any refresh rate), drop the next most expensive effect. The median ignores one-off hitches.
+const tiers = [
+  () => { if (mirror) mirror.getRenderTarget().setSize(innerWidth * PR * .3, innerHeight * PR * .3); key.shadow.mapSize.set(1024, 1024); key.shadow.map?.dispose(); key.shadow.map = null; renderer.shadowMap.needsUpdate = true; },
+  () => { PR = Math.max(.75, DPR * .75); resize(); },
+  () => { if (mirror) mirror.visible = false; },
+];
+let tier = 0, gWarm = 0, prevNow = 0;
+const gWin = [];
+function govern(ms) {
+  if (document.visibilityState !== 'visible' || ms > 250) return;   // hidden tabs say nothing about the GPU
+  if (gWarm++ < 45) return;
+  gWin.push(ms);
+  if (gWin.length < 60) return;
+  const med = gWin.sort((a, b) => a - b)[30]; gWin.length = 0;
+  if (med > 20 && tier < tiers.length) { tiers[tier++](); gWarm = 15; }
+}
+function frame(now) { if (prevNow) govern(now - prevNow); prevNow = now; draw(now); requestAnimationFrame(frame); }
+function draw(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  const time = reduce ? 0 : now / 1000;
+  const sT = forced ?? storyS();
+  sCur = forced ?? (reduce ? reducedBeat(sT) : lerp(sCur, sT, 1 - Math.exp(-dt * 5)));
+  const s = sCur;
+  finish.uniforms.uTime.value = time % 100;
+
+  steps.forEach((el, i) => {
+    const l = (reduce ? sT : s) - i;
+    const o = i === 0 ? 1 : smooth(-.05, .12, l);
+    // Leaving is scrubbed by scroll in kinetic.js (letters lift away one by one); the block itself stays opaque.
+    // The opening headline starts to give way early.
+    const exit = i < 4 ? (i === 0 ? clamp((l - .35) / .55) : clamp((l - .72) / .24)) : 0;
+    el.style.opacity = o.toFixed(3);
+    el.style.transform = `translateY(${((1 - o) * 18).toFixed(1)}px)`;
+    el.dataset.exit = exit.toFixed(3);
+    el.style.visibility = o < .01 || exit > .999 ? 'hidden' : 'visible';
+  });
+  hint.style.opacity = sT < .15 ? 1 : 0;
+  const barO = smooth(.85, 1.05, s) * (1 - smooth(3.95, 4.15, s));
+  chapters.style.opacity = barO.toFixed(3);
+  chapters.style.visibility = barO < .01 ? 'hidden' : 'visible';
+  const ch = s < 1 ? -1 : Math.min(2, Math.floor(s) - 1);
+  if (ch !== chapOn) { chapOn = ch; setChapter(ch); }
+
+  // ---- safe door: unlock, open, (photos), close, lock
+  const unlock = Math.max(smooth(1.1, 1.18, s) * (1 - smooth(1.97, 2.04, s)), smooth(2.93, 3, s) * (1 - smooth(3.9, 3.97, s)));
+  const open = Math.max(smooth(1.15, 1.3, s) * (1 - smooth(1.86, 1.96, s)), smooth(2.97, 3.08, s) * (1 - smooth(3.8, 3.9, s)));
+  door.rotation.y = ease(open) * 1.95;
+  doorParts.wheel.rotation.z = -unlock * Math.PI * 1.3;
+  setBolts(lerp(.58, .45, unlock));
+
+  // ---- backup queue
+  const busyA = smooth(1.2, 1.28, s) * (1 - smooth(1.8, 1.9, s));
+  let flashA = 0;
+  backup.forEach((m, k) => {
+    const t = clamp((s - (1.22 + k * .035)) / .38);
+    m.visible = t > 0 && t < 1; if (!m.visible) return;
+    const u = ease(t);
+    pathIn.getPointAt(u, m.position);
+    const upright = smooth(flatIn[0], flatIn[1], u), inHole = smooth(holeIn - .08, holeIn, u);
+    m.rotation.set(-Math.PI / 2 * (1 - upright), 0, Math.sin(u * Math.PI) * m.userData.roll * upright * (1 - inHole));
+    m.scale.setScalar(lerp(1, .62, smooth(holeIn - .25, holeIn - .05, u)));
+    flashA = Math.max(flashA, pulse(u, slotIn));
+  });
+  primary.slotLed.material.color.copy(LED.off).lerp(LED.blue, flashA);
+
+  // ---- primary collapses (physics replay)
+  const ft = clamp((s - 2.1) / .85), brk = smooth(2.1, 2.95, s);
+  replay(primary, collapse, ft);
+  paintLeds(primary, (L, t, c) => {
+    if (brk <= 0) c.copy(live(L, t));
+    else c.copy(LED.red).multiplyScalar((1 - smooth(.5, 1, brk)) * (Math.sin(t * 16 + L.phase) > 0 ? 1 : .3)).lerp(LED.off, smooth(.9, 1, brk));
+  }, time);
+  const dead = smooth(.35, 1, brk);
+  primary.body.color.setRGB(.6, .61, .64).lerp(C.setRGB(.2, .2, .22), dead);
+  primary.glow.material.color.copy(HALO.green).lerp(HALO.red, smooth(0, .12, brk));
+  primary.glow.material.opacity = brk > 0 ? .7 * (1 - smooth(.35, 1, brk)) : .22;
+  primary.decal.material.opacity = 1 - smooth(0, .25, ft);
+  const st = brk * 1.25;
+  sparkSeed.forEach((p, i) => {
+    const tt = st - p.d, alive = brk > 0 && brk < 1 && tt > 0 && tt < p.life, fade = alive ? 1 - tt / p.life : 0;
+    sparkPos[i * 3] = p.o.x + p.v.x * tt; sparkPos[i * 3 + 1] = Math.max(.01, p.o.y + p.v.y * tt - 4.9 * tt * tt); sparkPos[i * 3 + 2] = p.o.z + p.v.z * tt;
+    sparkCol[i * 3] = SPARK.r * fade; sparkCol[i * 3 + 1] = SPARK.g * fade; sparkCol[i * 3 + 2] = SPARK.b * fade;
+  });
+  sparkGeo.attributes.position.needsUpdate = true; sparkGeo.attributes.color.needsUpdate = true;
+
+  // ---- restore queue
+  const busyB = smooth(3.06, 3.12, s) * (1 - smooth(3.72, 3.82, s));
+  let flashB = 0;
+  restore.forEach((m, k) => {
+    const t = clamp((s - (3.08 + k * .035)) / .38);
+    m.visible = t > 0 && t < 1; if (!m.visible) return;
+    const u = ease(t);
+    pathOut.getPointAt(u, m.position);
+    const out = smooth(holeOut, holeOut + .08, u), flat = smooth(flatOut[0], flatOut[1], u);
+    m.rotation.set(-Math.PI / 2 * flat, 0, Math.sin(u * Math.PI) * m.userData.roll * out * (1 - flat));
+    m.scale.setScalar(lerp(.62, 1, smooth(holeOut, holeOut + .15, u)));
+    flashB = Math.max(flashB, pulse(u, slotOut));
+  });
+  standby.slotLed.material.color.copy(LED.off).lerp(LED.blue, flashB);
+  safeGlow.material.opacity = .08 + .25 * Math.max(busyA, busyB);
+
+  // ---- standby wakes up
+  const wake = smooth(3.5, 3.95, s);
+  paintLeds(standby, (L, t, c) => {
+    const on = smooth(3.5 + L.unit * .05, 3.62 + L.unit * .05, s);
+    c.copy(L.kind === 'status' ? LED.amber : LED.off).lerp(live(L, t), on);
+  }, time);
+  standby.body.color.setRGB(.42, .43, .45).lerp(C.setRGB(.6, .61, .64), wake);
+  standby.glow.material.color.copy(HALO.green);
+  standby.glow.material.opacity = .03 + .45 * wake;
+
+  // ---- camera
+  shotAt(s);
+  const fit = clamp(1.75 / camera.aspect, 1, 2.6);
+  scene.fog.near = 16 * fit; scene.fog.far = 32 * fit;   // a portrait screen pulls the camera back; the fog must recede with it
+  camera.position.copy(camP).sub(camT).multiplyScalar(fit).add(camT);
+  emx = lerp(emx, mx, 1 - Math.exp(-dt * 3.2)); emy = lerp(emy, my, 1 - Math.exp(-dt * 3.2));   // the camera drifts after the pointer instead of jumping with it
+  if (!reduce) { camera.position.x += emx * .3; camera.position.y -= emy * .18; }
+  camera.lookAt(camT);
+  aoCam.copy(camera); aoCam.layers.set(0);
+  yaw = lerp(yaw, yawT, 1 - Math.exp(-dt * 8));
+  world.rotation.y = yaw;
+  // Shadows depend on the objects and the light, not on the camera: only the story position and the drag turn move them.
+  const sk = s.toFixed(4) + '|' + yaw.toFixed(4);
+  if (sk !== shadowKey && (++shadowTick & 1)) { shadowKey = sk; renderer.shadowMap.needsUpdate = true; }   // every other frame while moving
+
+  const lab = [
+    [primary.group, brk > .05 ? ['Mất kết nối', 'var(--red)'] : ['Đang chạy', 'var(--green)']],
+    [safe, [busyA > .5 ? 'Đang nhận bản sao' : busyB > .5 ? 'Đang trả dữ liệu' : 'Chỉ ghi, không xoá', 'var(--grey)']],
+    [standby.group, wake > .9 ? ['Đang chạy', 'var(--green)'] : ['Chờ', 'var(--amber)']],
+  ];
+  // The scene sits low (view offset), so a point under a rack often projects below the screen:
+  // keep every label inside the frame, pinned above the bottom edge and clear of the sides.
+  const sizes = labels.map(el => [el.offsetWidth, el.offsetHeight]);   // one layout read before the writes
+  labels.forEach((el, i) => {
+    const [obj, [txt, col]] = lab[i], [lw, lh] = sizes[i];
+    obj.getWorldPosition(P); P.y = -.12; P.z += i === 0 ? lerp(.9, 3.5, ft) : .9; P.project(camera);   // the primary label moves in front of the fallen rack
+    const ax = (P.x + 1) / 2 * innerWidth, x = clamp(ax, lw / 2 + 16, innerWidth - lw / 2 - 16);
+    const away = 1 - clamp(Math.abs(ax - x) / 120);   // an object that has left the frame takes its label with it
+    const y = Math.min((1 - P.y) / 2 * innerHeight, innerHeight - lh - 100);   // above the chapter bar
+    el.style.transform = `translate(${x.toFixed(0)}px, ${y.toFixed(0)}px) translate(-50%,0)`;
+    const focus = s < 2.05 ? 1 : s < 3 ? 0 : 2;   // on a narrow screen only the object the story is about keeps its label
+    const room = innerWidth < 701 && i !== focus ? 0 : 1;
+    el.style.opacity = (smooth(1.25, 1.45, s) * (1 - smooth(3.95, 4.2, s)) * away * room).toFixed(2);   // not during the opening push-in, where they sat on the rack
+    const stEl = el.querySelector('.st'); if (stEl.textContent !== txt) stEl.textContent = txt;
+    el.style.setProperty('--st', col);
+  });
+
+  // ---- photo wall: story state and the pointer light (a ray from the camera to a plane near the wall)
+  ndc.set(mx, -my); wallRay.setFromCamera(ndc, camera);
+  if (wallPointer) wallRay.ray.intersectPlane(wallPlane, lightTarget);
+  lightPos.lerp(lightTarget, reduce ? 1 : 1 - Math.exp(-dt * 5));
+  const wu = wall.material.uniforms;
+  wu.uLight.value.copy(lightPos); wu.uTime.value = time;
+  wu.uSweepA.value = clamp((s - 1.15) / .8); wu.uDark.value = smooth(2.3, 2.95, s); wu.uSweepR.value = clamp((s - 3.05) / .8);
+  if (!reduce) stepFluid(dt);
+
+  composer.render();
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
