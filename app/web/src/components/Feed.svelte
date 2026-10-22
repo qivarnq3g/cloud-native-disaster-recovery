@@ -6,6 +6,7 @@
   import PhotoGrid from './PhotoGrid.svelte';
   import TopBar from './TopBar.svelte';
   import Toast from './Toast.svelte';
+  import UploadDialog from './UploadDialog.svelte';
   import PostViewer from './PostViewer.svelte';
 
   let { apiUrl }: { apiUrl: string } = $props();
@@ -131,7 +132,7 @@
 {/if}
 
 {#if uploadOpen}
-  <Toast text="Đăng ảnh sắp có." kind="done" onClose={() => (uploadOpen = false)} />
+  <UploadDialog {apiUrl} onDone={prepend} onClose={() => (uploadOpen = false)} />
 {/if}
 
 {#if machine.status.kind === 'outage'}
