@@ -1,0 +1,31 @@
+---
+import ViewApp from '../components/ViewApp.svelte';
+import '../styles/global.css';
+
+const apiReady = import.meta.env.PUBLIC_API_READY === 'true';
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'https://api.dr.qivarn.id.vn';
+---
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Ảnh của Nhóm 23, chạy trên hệ thống khôi phục sau thảm hoạ." />
+    <title>Ảnh của nhóm · DR Nhóm 23</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" />
+    {apiReady && <link rel="preconnect" href={apiUrl} crossorigin />}
+  </head>
+  <body>
+    {apiReady ? (
+      <ViewApp client:load apiUrl={apiUrl} />
+    ) : (
+      <main>
+        <h1>Sắp có</h1>
+        <p class="subtitle">Trang dùng sẽ mở khi máy chủ chạy trên Azure.</p>
+        <p style="margin-top:24px"><a class="btn glass" href="/?intro">Xem trang giới thiệu</a></p>
+      </main>
+    )}
+  </body>
+</html>
