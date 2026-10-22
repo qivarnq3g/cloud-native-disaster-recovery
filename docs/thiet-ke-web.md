@@ -144,14 +144,14 @@ Hai lớp này độc lập: quên bật chế độ chỉ đọc khi dùng mã 
 - Code gọi API sinh từ `/openapi.json` bằng `openapi-typescript`, gọi bằng `openapi-fetch`.
 - Phông Be Vietnam Pro, nền đen, các nút và thanh bằng kính lỏng giống trang giới thiệu (dùng lại `glass.js`). Trang dùng không tải Three.js.
 - `/` là trang giới thiệu, giữ nguyên bản đang chạy ở `dr-preview`, thêm hai việc:
-  - một đoạn script nhỏ đặt đầu trang: ai đã bấm "Vào xem" thì chuyển ngay sang `/xem` trước khi cảnh 3D bắt đầu tải, trừ khi địa chỉ có `?gioi-thieu`;
-  - nút "Vào xem" mở `/xem` và ghi nhớ lựa chọn.
-- `/xem` là trang dùng. Một bài mở bằng `/xem?bai={id}`: GitHub Pages không có định tuyến phía máy chủ, nên dùng tham số thay cho đường dẫn con.
+  - một đoạn script nhỏ đặt đầu trang: ai đã bấm "Vào xem" thì chuyển ngay sang `/view` trước khi cảnh 3D bắt đầu tải, trừ khi địa chỉ có `?intro`;
+  - nút "Vào xem" mở `/view` và ghi nhớ lựa chọn.
+- `/view` là trang dùng. Một bài mở bằng `/view?post={id}`: GitHub Pages không có định tuyến phía máy chủ, nên dùng tham số thay cho đường dẫn con.
 - Mọi đọc ghi `localStorage` đều bọc `try/catch`; không có `localStorage` thì trang vẫn chạy, chỉ không nhớ được.
 
 ### 3.2 Trang dùng
 
-- **Thanh trên** bằng kính: tên trang, nhãn trạng thái, nút "Đăng ảnh" (ẩn khi `/healthz` báo `read_only: true`), đường dẫn "Giới thiệu" (`/?gioi-thieu`).
+- **Thanh trên** bằng kính: tên trang, nhãn trạng thái, nút "Đăng ảnh" (ẩn khi `/healthz` báo `read_only: true`), đường dẫn "Giới thiệu" (`/?intro`).
 - **Lưới ảnh:** xếp hàng đều theo tỉ lệ thật của ảnh, không cắt; chiều cao hàng khoảng 240 px trên máy tính, khoảng 2 ảnh mỗi hàng trên điện thoại. Dùng `width` và `height` để dựng khung xám đúng kích thước trước khi ảnh tải, nên trang không nhảy. Tiêu đề màu xám dưới ảnh. Ảnh nhỏ tải dần khi cuộn tới; cuộn gần cuối thì tải trang tiếp theo.
 - **Xem một bài:** hộp thoại `<dialog>` toàn màn hình với ảnh gốc, tiêu đề, mô tả, giờ đăng. Phím mũi tên hoặc vuốt để sang bài khác; ảnh gốc của bài kề bên được tải trước. Esc hoặc nút Quay lại của trình duyệt để đóng; địa chỉ đổi theo bài nên gửi được cho người khác.
 - **Đăng ảnh:**
@@ -173,7 +173,7 @@ Hai lớp này độc lập: quên bật chế độ chỉ đọc khi dùng mã 
 
 - **API:** `ci` biên dịch image và đẩy lên GitHub Container Registry (mục 9 thiết kế chính). Cụm kéo image bằng mã kéo riêng, nằm trong danh sách chìa khóa khôi phục.
 - **Trang web:** khi nhánh `main` qua hết kiểm tra, GitHub Actions dựng `app/web` rồi đẩy bản đã dựng thành một commit mới lên nhánh `main` của `dr-preview`, ghi mã commit nguồn trong lời commit. Quyền ghi vào `dr-preview` là một deploy key chỉ cho kho đó; khóa riêng lưu trong secret của kho đồ án. Tệp `CNAME` nằm trong bản dựng để tên miền không bị mất.
-- **Bật trang dùng:** khi API trên Azure chưa chạy, biến dựng `PUBLIC_API_READY` để `false`: nút "Vào xem" vẫn ghi "sắp có" và `/xem` chỉ hiện "Sắp có". Bật thành `true` khi API trên Azure chạy (tuần 3 theo lịch).
+- **Bật trang dùng:** khi API trên Azure chưa chạy, biến dựng `PUBLIC_API_READY` để `false`: nút "Vào xem" vẫn ghi "sắp có" và `/view` chỉ hiện "Sắp có". Bật thành `true` khi API trên Azure chạy (tuần 3 theo lịch).
 
 ## 5. Kiểm tra
 
@@ -192,9 +192,9 @@ Tất cả chạy trong `ci` mỗi lần đẩy code; trang web chỉ được �
 
 **Trang web:**
 - Kiểm thử đơn vị cho phần logic: xếp lưới, mã hóa lại ảnh, máy trạng thái của nhãn.
-- Playwright chạy với API thật trong Docker, ở cỡ màn hình máy tính và điện thoại: xem lưới, mở và chuyển bài, đăng ảnh với mã, quên mã; dừng API thì nhãn chuyển vàng, chạy lại thì nhãn xanh và ảnh hiện lại; mở `/` sau khi đã vào xem thì tới `/xem`.
+- Playwright chạy với API thật trong Docker, ở cỡ màn hình máy tính và điện thoại: xem lưới, mở và chuyển bài, đăng ảnh với mã, quên mã; dừng API thì nhãn chuyển vàng, chạy lại thì nhãn xanh và ảnh hiện lại; mở `/` sau khi đã vào xem thì tới `/view`.
 - axe-core trong Playwright: không có lỗi trợ năng mức nghiêm trọng.
-- Lighthouse CI trên `/xem`, cấu hình điện thoại: hiệu năng từ 95 trở lên.
+- Lighthouse CI trên `/view`, cấu hình điện thoại: hiệu năng từ 95 trở lên.
 
 **Khớp nhau:** `ci` xuất `/openapi.json` từ API vừa biên dịch, so với bản đã commit, rồi sinh lại code gọi và kiểm tra kiểu của trang (`astro check`). Lệch là lỗi.
 
@@ -213,4 +213,4 @@ Sửa và xóa bài, tài khoản người dùng, bình luận, tìm kiếm, nhi
 | Biên dịch tĩnh musl cùng `ravif` | Image chạy được trên `distroless/static` | Dùng `distroless/cc` và liên kết động |
 | Kích thước image API | Khoảng 10–15 MB | Ghi số thật, không chặn |
 | Thời gian từ lúc container chạy tới `/healthz` 200 | Dưới 1 giây khi Postgres và kho ảnh sẵn sàng | Tìm bước khởi động chậm |
-| Hiệu năng Lighthouse của `/xem` trên điện thoại | Từ 95 | Cắt bớt mã JavaScript tải ban đầu |
+| Hiệu năng Lighthouse của `/view` trên điện thoại | Từ 95 | Cắt bớt mã JavaScript tải ban đầu |
