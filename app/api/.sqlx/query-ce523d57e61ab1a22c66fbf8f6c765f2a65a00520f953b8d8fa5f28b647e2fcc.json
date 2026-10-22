@@ -1,0 +1,71 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, title, description, image_sha256, image_type, image_bytes, width, height, created_at FROM posts\n         WHERE ($1::uuid IS NULL OR id < $1) ORDER BY id DESC LIMIT $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "title",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "image_sha256",
+        "type_info": "Bytea"
+      },
+      {
+        "ordinal": 4,
+        "name": "image_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "image_bytes",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "width",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "height",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "ce523d57e61ab1a22c66fbf8f6c765f2a65a00520f953b8d8fa5f28b647e2fcc"
+}

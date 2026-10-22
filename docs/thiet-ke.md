@@ -106,7 +106,7 @@ Terraform state chứa khóa truy cập, nên không bao giờ đưa vào Git. S
 
 ## 2. Web
 
-- **Công nghệ:** Python + FastAPI.
+- **Công nghệ:** máy chủ (API) viết bằng Rust, trang web bằng Astro + Svelte. Đổi từ Python + FastAPI ngày 09/10/2026 vì Quang ưu tiên tối ưu hơn độ dễ: gói máy chủ nhỏ hơn và bật nhanh hơn nên cụm mới khôi phục nhanh hơn, tốn ít bộ nhớ hơn trên máy ảo 4 GB. Thiết kế chi tiết của web nằm trong bản thiết kế riêng cho web.
 - **Chức năng:** đăng bài (tiêu đề, mô tả, một ảnh), xem danh sách, xem bài, tải ảnh.
 - **Lưu trữ:** bài viết lưu trong Postgres, do CloudNativePG (CNPG) quản lý. Ảnh lưu trong Azure Blob.
 - **Kiểm tra ảnh:** lúc đăng, web tính mã băm SHA-256 của ảnh rồi lưu vào bài viết.
@@ -308,7 +308,7 @@ Danh sách chi tiết nằm ở `checklist-khoi-phuc.md`, do Minh Thư soạn t�
   - Bài thiếu cho biết RPO thật, tính bằng khoảng từ bài cuối còn lại tới lúc sự cố xảy ra.
   - Bài thiếu nằm ngoài mục tiêu RPO được liệt kê riêng.
 - **Mã băm:** tải từng ảnh về, so với mã lưu trong bài và mã script đã ghi. Ghi lại ảnh hỏng và bài còn mà mất ảnh.
-- **Chức năng:** đăng bài, xem bài, tải ảnh lên, rồi xóa bài thử.
+- **Chức năng:** đăng bài, xem bài, tải ảnh lên. Bài thử không bị xóa (web không có lệnh xóa, xem `thiet-ke-web.md`): script ghi nhận nó như mọi bài khác, và trạng thái được dựng lại sau mỗi lần diễn tập.
 
 Toàn bộ kết quả lưu thành CSV/JSON trong `data/<mã lần diễn tập>/`. `scripts/` có script vẽ lại biểu đồ. Mọi biểu đồ ghi rõ tên trục, đơn vị, điều kiện đo và số lần lặp.
 
@@ -333,12 +333,14 @@ Toàn bộ kết quả lưu thành CSV/JSON trong `data/<mã lần diễn tập>
 | D1 | Xóa nhầm namespace của web | Khôi phục ngay trên cụm chính, đưa cơ sở dữ liệu về thời điểm ngay trước lúc xóa | `kubectl delete namespace` |
 | D2 | Mất cụm chính | Lạnh. Kho ảnh chính vẫn còn nên dùng lại, không cần chép ảnh | Xóa cụm chính |
 | D3 | Mất cụm chính | Ấm | Xóa cụm chính |
-| D4 | Mất vùng | Lạnh. Chép ảnh từ bản chép ở Nhật | Xóa cả nhóm `rg-dr-primary` (cụm và kho ảnh chính) |
-| D5 | Mất vùng | Ấm | Như D4 |
+| D4 | Mất nhóm tài nguyên chính (giả lập mất vùng) | Lạnh. Chép ảnh từ bản chép ở Nhật | Xóa cả nhóm `rg-dr-primary` (cụm và kho ảnh chính) |
+| D5 | Mất nhóm tài nguyên chính (giả lập mất vùng) | Ấm | Như D4 |
 | D6 | Thử xóa két | — | Dùng khóa tài khoản để xóa và ghi đè một file trong két. Kết quả đúng là bị từ chối |
 | D7 | Khôi phục từ két và từ server bạn | — | Giải mã gói trong két rồi khôi phục vào một namespace thử. Khôi phục từ bản ở server bạn vào Postgres chạy trên laptop, để chứng minh không cần Azure. Sau đó chạy bước kiểm tra ở mục 5.3 |
 
 Trình tự hai cách chuyển được vẽ ở mục 6.1.
+
+**Giới hạn của D4 và D5:** hai cụm cùng ở `koreacentral` (mục 1), nên D4 và D5 chứng minh khôi phục được khi mất cả cụm chính lẫn kho ảnh chính, với dữ liệu lấy thật từ Nhật. Chúng **không** chứng minh hệ thống chịu được mất vùng thật: mất cả `koreacentral` thì cụm dự phòng của cách ấm cũng mất theo. Báo cáo nêu rõ điều này, và ước tính chi phí của cách ấm thật cho mất vùng, tức cụm dự phòng đặt ở vùng thứ hai.
 
 **Hai vòng:**
 - **Vòng thử:** D1–D7, mỗi tình huống một lần. Sửa runbook sau mỗi lần.
@@ -501,7 +503,7 @@ Bước đầu tiên của kế hoạch là một lần làm thử để trả l
 
 | Tệp | Nội dung | Khi nào có |
 |---|---|---|
-| `docs/phien-ban.md` | Phiên bản cụ thể của mọi công cụ: Kubernetes, CNPG, Barman Cloud Plugin, Velero và plugin Azure, cert-manager, Terraform và provider azurerm, Python, FastAPI, Postgres, restic, age | Chốt ở bước làm thử |
+| `docs/phien-ban.md` | Phiên bản cụ thể của mọi công cụ: Kubernetes, CNPG, Barman Cloud Plugin, Velero và plugin Azure, cert-manager, Terraform và provider azurerm, Rust và các thư viện của máy chủ, Node.js và các thư viện của trang web, Postgres, restic, age | Chốt ở bước làm thử |
 | `docs/huong-dan-tai-lap.md` | Dựng lại từ đầu, chạy diễn tập, dọn sạch tài nguyên (gồm cả cách đợi két hết hạn), ước tính chi phí | Viết dần, hoàn thiện trước vòng chính thức |
 | `docs/runbook.md` | Từng bước khôi phục, mẫu tin nhắn, chỗ để chìa khóa | Lan Hương viết nháp, Quang duyệt |
 | `docs/checklist-khoi-phuc.md` | Danh sách kiểm tra theo mục 5.3 | Minh Thư |
