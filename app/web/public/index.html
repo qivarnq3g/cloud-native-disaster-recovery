@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
+<script>try{if(localStorage.getItem("entered-view")==="1"&&!/[?&]intro/.test(location.search))location.replace("/view/")}catch(e){}</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="description" content="Bản xem thử trang giới thiệu đồ án khôi phục sau thảm hoạ của Nhóm 23.">
@@ -116,7 +117,7 @@ footer b{color:#d2d2d7;font-weight:500}
         <p class="lede">Dữ liệu từ két được <strong>khôi phục về cụm dự phòng</strong>, web chạy lại như cũ.</p></div>
       <div class="step cta"><p class="eyebrow">Thử ngay</p><h2>Xem ảnh của cả nhóm.</h2>
         <p class="lede">Đăng một tấm, rồi xem nó <strong>sống sót</strong> qua lần phá cụm tiếp theo.</p>
-        <div class="actions"><span class="btn glass tint" aria-disabled="true" title="Trang dùng đang được làm">Vào xem · sắp có</span><a class="btn glass" href="#" data-go="0">Xem lại từ đầu</a></div></div>
+        <div class="actions"><a class="btn glass tint" id="enter-view" href="/view/" aria-disabled="true" title="Trang dùng đang được làm">Vào xem · sắp có</a><a class="btn glass" href="#" data-go="0">Xem lại từ đầu</a></div></div>
     </div>
     <div class="label glass dim" data-bend="14" data-blur="10"><span class="dot"></span><i>Cụm chính</i><span class="rg">Hàn Quốc</span><span class="st"></span></div>
     <div class="label glass dim" data-bend="14" data-blur="10"><span class="dot"></span><i>Két sao lưu</i><span class="rg">Nhật Bản</span><span class="st"></span></div>
@@ -1153,6 +1154,21 @@ function draw(now) {
   composer.render();
 }
 requestAnimationFrame(frame);
+</script>
+<script>
+(() => {
+  const a = document.getElementById('enter-view');
+  a.addEventListener('click', (e) => {
+    if (a.getAttribute('aria-disabled') === 'true') { e.preventDefault(); return; }
+    try { localStorage.setItem('entered-view', '1'); } catch (_) {}
+  });
+  fetch('/ready.json', { cache: 'no-store' }).then((r) => r.json()).then((d) => {
+    if (!d.ready) return;
+    a.textContent = 'Vào xem';
+    a.removeAttribute('aria-disabled');
+    a.removeAttribute('title');
+  }).catch(() => {});
+})();
 </script>
 </body>
 </html>
