@@ -9,7 +9,7 @@ permissions:
 jobs:
   api:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: app/api
