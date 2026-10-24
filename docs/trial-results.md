@@ -7,7 +7,7 @@ Ngày chạy: 24/10/2026. Kế hoạch: `docs/ke-hoach/2026-10-09-chay-thu-azure
 | 1 | RAM của một cụm | | |
 | 2 | Dung lượng WAL mỗi ngày | | |
 | 3 | Thời gian chép ảnh Hàn Quốc sang Nhật | | |
-| 4 | Thời gian dựng một cụm mới | | |
+| 4 | Thời gian dựng một cụm mới | Cụm chính: 2 phút 15 giây từ lệnh tạo máy tới Traefik sẵn sàng (máy ảo 71 s, k3s 17 s, nút 8 s, Traefik 39 s). Tín dụng CPU: Azure chưa có số đo cho máy vừa tạo | |
 | 5 | iNET cho ủy quyền `api.dr` sang Azure DNS (bản ghi NS) | | |
 | 6 | CNPG dựng cụm bản sao từ kho ở Nhật; đường dẫn WAL riêng mỗi cụm | | |
 | 7 | Chứng chỉ khôi phục bằng Velero được dùng lại, không xin mới | | |
