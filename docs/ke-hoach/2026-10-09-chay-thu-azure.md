@@ -1074,7 +1074,7 @@ az rest --method delete --url "https://management.azure.com/subscriptions/$SUB/p
 rm -f ~/.dr-trial/kubeconfig-* ~/.dr-trial/key-* ~/.dr-trial/velero-values-* ~/.dr-trial/cloud-init-* ~/.dr-trial/or-policy.json
 ```
 
-- [x] **Step 3: Ghi chi phí ngày hôm sau và kết luận**
+- [ ] **Step 3: Ghi chi phí ngày hôm sau và kết luận**
 
 Ngày hôm sau, xem chi phí của ba nhóm trong Cost Management và ghi vào cuối `docs/trial-results.md`. Với mỗi dòng có quyết định đổi thiết kế, sửa mục tương ứng trong `docs/thiet-ke.md` và `docs/thiet-ke-web.md`.
 
