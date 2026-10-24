@@ -76,7 +76,6 @@ Kết quả nào cũng là kết quả: giả thuyết bị bác bỏ thì báo 
 | `rg-dr-primary` | `koreacentral` | Máy ảo chạy cụm chính (k3s), tài khoản lưu trữ ảnh chính |
 | `rg-dr-standby` | `koreacentral` | Máy ảo chạy cụm dự phòng (k3s), tài khoản lưu trữ ảnh dự phòng |
 | `rg-dr-backup` | `japanwest` | Bốn tài khoản lưu trữ: Terraform state, kho sao lưu (cơ sở dữ liệu, Velero), bản chép ảnh, két |
-| `rg-dr-dns` | toàn cầu | Vùng DNS `api.dr.qivarn.id.vn` |
 
 Khu vực và cỡ máy là **tham số** của Terraform, không viết cứng. Tài khoản sinh viên của người khác có thể được phép dùng những khu vực khác.
 
@@ -98,7 +97,7 @@ Lý do chọn như vậy:
 
 Không dùng nhóm tài nguyên nào khác trong tài khoản. Tài khoản này còn có tài nguyên của một dự án khác, tuyệt đối không đụng tới.
 
-**Tách DNS giao diện và API (chốt 08/10/2026):** `dr.qivarn.id.vn` trỏ CNAME tới GitHub Pages, tắt proxy, dùng cho trang giới thiệu và trang dùng. Chỉ `api.dr.qivarn.id.vn` trỏ vào cụm k3s và được đổi khi diễn tập. Vùng DNS API trên Azure được ủy quyền riêng từ iNET khi làm hạ tầng; chưa tạo tài nguyên Azure để công khai bản xem thử. Giao diện vẫn tải được khi cụm chính mất, nên script đo phải gọi API để xác định khôi phục.
+**Tách DNS giao diện và API (chốt 08/10/2026):** `dr.qivarn.id.vn` trỏ CNAME tới GitHub Pages, tắt proxy, dùng cho trang giới thiệu và trang dùng. Chỉ `api.dr.qivarn.id.vn` trỏ vào cụm k3s và được đổi khi diễn tập. **Chốt 24/10/2026 sau buổi chạy thử:** bản ghi A của `api.dr.qivarn.id.vn` nằm ở Cloudflare (DNS của cả tên miền đã chuyển sang Cloudflare Free từ 09/10), tắt proxy, thời gian ghi nhớ 60 giây. Khi chuyển cụm, script gọi API của Cloudflare để đổi địa chỉ. Không dùng Azure DNS: không tốn thêm tiền và bớt một nơi có thể hỏng. Mã API Cloudflare chỉ có quyền sửa DNS của tên miền này, lưu trong secret của GitHub, không đưa vào kho. Giao diện vẫn tải được khi cụm chính mất, nên script đo phải gọi API để xác định khôi phục.
 
 ### Terraform state
 
@@ -176,7 +175,7 @@ Mỗi lần dựng cụm mới, cơ sở dữ liệu ghi WAL vào một **đư�
 | Cấu hình Kubernetes, kể cả chứng chỉ HTTPS | Velero, lưu vào kho ở Nhật | 3 ngày; bản trước diễn tập và bản lúc tắt phiên giữ 7 ngày |
 | Hạ tầng, file cấu hình, image | Git trên GitHub | Lâu dài |
 
-**Không sao lưu:** log và số liệu giám sát. Cụm và vùng DNS thì dựng lại bằng Terraform.
+**Không sao lưu:** log và số liệu giám sát. Cụm thì dựng lại bằng Terraform; bản ghi DNS ở Cloudflare do script chuyển cụm sửa.
 
 **Lưu ý khi khôi phục bằng Velero:** không để Velero khôi phục đối tượng `Cluster` của CNPG và ổ đĩa của Postgres. Nếu để Velero làm, CNPG sẽ dựng một cơ sở dữ liệu rỗng. Cơ sở dữ liệu luôn được khôi phục bằng CNPG từ kho ở Nhật.
 
@@ -434,12 +433,12 @@ Giá bán lẻ Azure tại `koreacentral` và `japanwest`, đọc ngày 07/10/20
 | Một địa chỉ IP công khai mỗi cụm | 0,005 / giờ | 120 giờ | 0,6 |
 | Lưu trữ Blob | 0,02 / GB-tháng | khoảng 20 GB × 2 tháng | 0,8 |
 | Thao tác ghi Blob | 0,05 / 10.000 lần | khoảng 200.000 lần | 1,0 |
-| Vùng DNS | 0,50 / tháng | 2 tháng | 1,0 |
+| DNS (Cloudflare Free) | 0 | | 0 |
 | Truyền dữ liệu Hàn Quốc → Nhật (WAL, ảnh) | 0,08 / GB | khoảng 10 GB | 0,8 |
 | Dữ liệu ra internet (GitHub tải bản sao lưu mỗi ngày) | 100 GB đầu mỗi tháng miễn phí, sau đó 0,12 / GB | khoảng 15 GB / tháng | 0 |
-| **Tổng** | | | **khoảng 11** |
+| **Tổng** | | | **khoảng 10** |
 
-Nếu bước làm thử phải đổi sang B2as v2 (8 GB, 0,0936 / giờ) thì tiền máy thành 11,2 và tổng thành khoảng 16.
+Buổi chạy thử 24/10 đo RAM đỉnh 46%, nên giữ B2als v2.
 
 **Cách tính 120 giờ-cụm:** khoảng 75 giờ lúc làm (cụm chính 50 giờ, cụm dự phòng 25 giờ) và khoảng 45 giờ cho 24 lần diễn tập (7 lần vòng thử, 17 lần vòng chính thức).
 
@@ -474,7 +473,7 @@ Bước đầu tiên của kế hoạch là một lần làm thử để trả l
 | Mỗi ngày WAL chiếm bao nhiêu dung lượng khi gửi mỗi phút? Nếu quá nhiều thì đặt `walSegmentSize` nhỏ hơn | Dung lượng, chi phí |
 | Azure chép ảnh từ Hàn Quốc sang Nhật mất bao lâu? | RPO của ảnh |
 | Dựng một cụm mới (tạo máy ảo, cài k3s, cài phần mềm) mất bao lâu? | RTO của cách lạnh |
-| iNET có cho trỏ tên miền con `dr` sang máy chủ DNS của Azure (bản ghi NS) không? Nếu không thì đổi bản ghi A trên iNET bằng tay, thời gian ghi nhớ 60 giây | Bước chuyển lưu lượng |
+| ~~iNET có cho trỏ tên miền con `dr` sang máy chủ DNS của Azure (bản ghi NS) không?~~ Đã trả lời 24/10: DNS ở Cloudflare, đổi bản ghi A qua API Cloudflare | Bước chuyển lưu lượng |
 | CNPG có dựng được cụm bản sao chỉ từ kho ở Nhật, ở một cụm khác không? Đường dẫn WAL mới cho mỗi cụm (mục 4.1) có chạy đúng không? | Cách ấm, cách lạnh |
 | Chứng chỉ khôi phục từ Velero có được cert-manager dùng lại mà không xin mới không? | Giới hạn Let's Encrypt |
 | Job kiểm tra trên GitHub có gửi được email khi báo lỗi không? | Theo dõi sao lưu |
