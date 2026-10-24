@@ -292,10 +292,10 @@ az storage container create -n images --account-name "$IMAGE_ACCOUNT_PRIMARY" --
 az storage container create -n images --account-name "$IMAGE_ACCOUNT_JAPAN" --account-key "$(cat "$PRIVATE_DIR/key-$IMAGE_ACCOUNT_JAPAN")" -o none
 SOURCE_ID=$(az storage account show -n "$IMAGE_ACCOUNT_PRIMARY" -g "$RG_PRIMARY" --query id -o tsv)
 DEST_ID=$(az storage account show -n "$IMAGE_ACCOUNT_JAPAN" -g "$RG_JAPAN" --query id -o tsv)
-az storage account or-policy create -g "$RG_JAPAN" -n "$IMAGE_ACCOUNT_JAPAN" \
+MSYS_NO_PATHCONV=1 az storage account or-policy create -g "$RG_JAPAN" -n "$IMAGE_ACCOUNT_JAPAN" \
   --source-account "$SOURCE_ID" --destination-account "$DEST_ID" \
   --source-container images --destination-container images -o json > "$PRIVATE_DIR/or-policy.json"
-az storage account or-policy create -g "$RG_PRIMARY" -n "$IMAGE_ACCOUNT_PRIMARY" --policy "@$PRIVATE_DIR/or-policy.json" -o none
+MSYS_NO_PATHCONV=1 az storage account or-policy create -g "$RG_PRIMARY" -n "$IMAGE_ACCOUNT_PRIMARY" --policy "@$(cygpath -m "$PRIVATE_DIR/or-policy.json")" -o none
 az storage account or-policy list -g "$RG_PRIMARY" -n "$IMAGE_ACCOUNT_PRIMARY" --query "[].rules[].sourceContainer" -o tsv
 ```
 
@@ -692,7 +692,7 @@ spec:
   storageLocation: default
   ttl: 72h0m0s
 EOF
-kubectl -n velero wait --for=jsonpath='{.status.phase}'=Completed backup/tls-test-1 --timeout=600s
+kubectl -n velero wait --for=jsonpath='{.status.phase}'=Completed backups.velero.io/tls-test-1 --timeout=600s
 ```
 
 Expected: serial và issuer có chữ `STAGING`; backup `Completed`. Ghi serial lại để so ở Task 6.
@@ -719,7 +719,7 @@ spec:
   pluginConfiguration:
     name: barman-cloud.cloudnative-pg.io
 EOF
-kubectl wait --for=jsonpath='{.status.phase}'=completed backup/first --timeout=900s
+kubectl wait --for=jsonpath='{.status.phase}'=completed backups.postgresql.cnpg.io/first --timeout=900s
 ```
 
 - [ ] **Step 2: Dựng cụm dự phòng và cài phần mềm (đo thời gian như cụm chính)**
@@ -865,7 +865,7 @@ Expected: số dòng và `max(created_at)` cách lúc chạy lệnh không quá 
 export KUBECONFIG=~/.dr-trial/kubeconfig-standby
 source scripts/trial/env.sh
 sed "s/__HOST__/$FQDN_PRIMARY/g" infra/trial/tls-test.yaml.tpl | python -c "import sys; d=sys.stdin.read().split('\n---\n'); print(d[0])" | kubectl apply -f -
-kubectl -n velero wait --for=jsonpath='{.status.phase}'=Available backupstoragelocation/default --timeout=300s
+kubectl -n velero wait --for=jsonpath='{.status.phase}'=Available backupstoragelocations.velero.io/default --timeout=300s
 kubectl -n velero create -f - <<EOF
 apiVersion: velero.io/v1
 kind: Restore
@@ -874,7 +874,7 @@ metadata:
 spec:
   backupName: tls-test-1
 EOF
-kubectl -n velero wait --for=jsonpath='{.status.phase}'=Completed restore/tls-test-1 --timeout=600s
+kubectl -n velero wait --for=jsonpath='{.status.phase}'=Completed restores.velero.io/tls-test-1 --timeout=600s
 kubectl -n tls-test get secret whoami-tls -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -serial
 sleep 600
 kubectl -n tls-test get certificaterequest --no-headers | wc -l
