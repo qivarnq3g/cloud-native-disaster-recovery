@@ -1,5 +1,7 @@
 # Kế hoạch chạy thử trên Azure
 
+> **Đã chạy 24/10/2026** (05:50-07:20 UTC), kết quả trong [`docs/trial-results.md`](../trial-results.md). Ba nhóm tài nguyên và ngân sách thử đã xóa, kiểm tra lại không còn. Còn Task 11 Step 3: xem chi phí ngày 25/10.
+
 > **Cho người thực hiện (agent):** dùng superpowers:executing-plans hoặc superpowers:subagent-driven-development để làm theo từng task. Các bước dùng ô `- [ ]` để đánh dấu.
 >
 > **Chỉ chạy khi Quang đã cho phép tạo tài nguyên Azure.** Kế hoạch này tạo máy ảo và tài khoản lưu trữ thật. Ước tính dưới 1 USD cho một buổi khoảng 6 giờ.
@@ -38,7 +40,7 @@
 - Create: `docs/trial-results.md`
 - Create: `data/trial/.gitkeep`
 
-- [ ] **Step 1: Cài Helm và kiểm tra công cụ**
+- [x] **Step 1: Cài Helm và kiểm tra công cụ**
 
 ```bash
 winget install --id Helm.Helm --exact --silent
@@ -50,7 +52,7 @@ python -c "import sys; print(sys.version)"
 
 Expected: Helm `v4.x`, azure-cli `2.89.x`, kubectl `v1.36.x`, Python 3.
 
-- [ ] **Step 2: Tạo khóa SSH riêng cho buổi thử**
+- [x] **Step 2: Tạo khóa SSH riêng cho buổi thử**
 
 ```bash
 mkdir -p ~/.dr-trial
@@ -58,7 +60,7 @@ mkdir -p ~/.dr-trial
 ls -l ~/.ssh/dr_trial_ed25519.pub
 ```
 
-- [ ] **Step 3: Viết tệp biến dùng chung**
+- [x] **Step 3: Viết tệp biến dùng chung**
 
 `scripts/trial/env.sh`:
 
@@ -90,7 +92,7 @@ export SERVER_PRIMARY="primary-${DAY}"
 export SERVER_STANDBY="standby-${DAY}"
 ```
 
-- [ ] **Step 4: Tạo tệp kết quả**
+- [x] **Step 4: Tạo tệp kết quả**
 
 `docs/trial-results.md`:
 
@@ -114,7 +116,7 @@ Ngày chạy: <điền khi chạy>. Kế hoạch: `docs/ke-hoach/2026-10-09-chay
 | 11 | Thời gian tạo ảnh nhỏ AVIF trên B2als v2 (nếu API đã có) | | |
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 mkdir -p data/trial && touch data/trial/.gitkeep
@@ -129,7 +131,7 @@ git commit -m "Thêm biến và bảng kết quả cho buổi chạy thử Azure
 - Create: `infra/trial/budget.json`
 - Modify: `docs/trial-results.md` (dòng 10)
 
-- [ ] **Step 1: Tạo ba nhóm tài nguyên**
+- [x] **Step 1: Tạo ba nhóm tài nguyên**
 
 ```bash
 source scripts/trial/env.sh
@@ -141,7 +143,7 @@ az group list --query "[?tags.project=='dr-trial'].name" -o tsv
 
 Expected: đúng ba tên `rg-dr-trial-*`.
 
-- [ ] **Step 2: Thử tạo ngân sách có cảnh báo email**
+- [x] **Step 2: Thử tạo ngân sách có cảnh báo email**
 
 `infra/trial/budget.json`:
 
@@ -173,7 +175,7 @@ az rest --method put \
 
 Expected: `25`. Nếu lỗi vì loại tài khoản không hỗ trợ ngân sách, ghi nguyên văn mã lỗi vào dòng 10 của `docs/trial-results.md`; quyết định khi đó là "xem số dư thủ công mỗi tuần" (mục 7.2 thiết kế chính).
 
-- [ ] **Step 3: Ghi kết quả và commit**
+- [x] **Step 3: Ghi kết quả và commit**
 
 ```bash
 git add infra/trial/budget.json docs/trial-results.md
@@ -187,7 +189,7 @@ git commit -m "Chạy thử: nhóm tài nguyên và ngân sách"
 - Create: `scripts/trial/create-cluster.sh`
 - Create: `data/trial/cluster-build.csv` (script tự ghi)
 
-- [ ] **Step 1: Mẫu cloud-init cài k3s**
+- [x] **Step 1: Mẫu cloud-init cài k3s**
 
 `infra/trial/cloud-init-k3s.yaml.tpl`:
 
@@ -198,7 +200,7 @@ runcmd:
   - curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="v1.37.1+k3s1" INSTALL_K3S_EXEC="server --write-kubeconfig-mode=600 --tls-san=__FQDN__" sh -
 ```
 
-- [ ] **Step 2: Script dựng cụm có ghi mốc thời gian**
+- [x] **Step 2: Script dựng cụm có ghi mốc thời gian**
 
 `scripts/trial/create-cluster.sh`:
 
@@ -232,7 +234,7 @@ until kubectl -n kube-system rollout status deploy/traefik --timeout=10s >/dev/n
 mark traefik_ready
 ```
 
-- [ ] **Step 3: Chạy cho cụm chính**
+- [x] **Step 3: Chạy cho cụm chính**
 
 ```bash
 chmod +x scripts/trial/create-cluster.sh
@@ -244,7 +246,7 @@ cat data/trial/cluster-build.csv
 
 Expected: một nút `Ready`; CSV có 5 mốc. Thời gian dựng = `traefik_ready - start`.
 
-- [ ] **Step 4: Ghi tín dụng CPU lúc bắt đầu**
+- [x] **Step 4: Ghi tín dụng CPU lúc bắt đầu**
 
 ```bash
 VM_ID=$(az vm show -g "$RG_PRIMARY" -n vm-primary --query id -o tsv)
@@ -253,7 +255,7 @@ az monitor metrics list --resource "$VM_ID" --metric "CPU Credits Remaining" --i
 
 Ghi số này cạnh thời gian dựng ở dòng 4 của `docs/trial-results.md`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add infra/trial/cloud-init-k3s.yaml.tpl scripts/trial/create-cluster.sh data/trial/cluster-build.csv docs/trial-results.md
@@ -267,7 +269,7 @@ git commit -m "Chạy thử: dựng cụm chính, đo thời gian"
 - Create: `scripts/trial/measure-image-replication.py`
 - Create: `data/trial/image-replication.csv` (script tự ghi)
 
-- [ ] **Step 1: Tạo ba tài khoản lưu trữ và bật phiên bản, change feed, chép ảnh**
+- [x] **Step 1: Tạo ba tài khoản lưu trữ và bật phiên bản, change feed, chép ảnh**
 
 `scripts/trial/create-storage.sh`:
 
@@ -305,7 +307,7 @@ chmod +x scripts/trial/create-storage.sh && scripts/trial/create-storage.sh
 
 Expected: dòng cuối in `images`.
 
-- [ ] **Step 2: Script đo độ trễ chép ảnh**
+- [x] **Step 2: Script đo độ trễ chép ảnh**
 
 `scripts/trial/measure-image-replication.py`:
 
@@ -381,7 +383,7 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 3: Chạy đo 200 ảnh**
+- [x] **Step 3: Chạy đo 200 ảnh**
 
 ```bash
 python -m venv ~/.dr-trial/venv
@@ -392,7 +394,7 @@ source scripts/trial/env.sh
 
 Expected: một dòng `n=… missing=… median=… p95=… max=…`. Ghi vào dòng 3 của `docs/trial-results.md`. Quyết định: RPO của ảnh trong mục 3 thiết kế chính đặt không thấp hơn p95 đo được.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/trial/create-storage.sh scripts/trial/measure-image-replication.py data/trial/image-replication.csv docs/trial-results.md
@@ -407,7 +409,7 @@ git commit -m "Chạy thử: kho lưu trữ, đo độ trễ chép ảnh sang Nh
 - Create: `infra/trial/load-test.yaml`
 - Create: `scripts/trial/install-software.sh`
 
-- [ ] **Step 1: Mẫu cấu hình Velero**
+- [x] **Step 1: Mẫu cấu hình Velero**
 
 `infra/trial/velero-values.yaml.tpl`:
 
@@ -439,7 +441,7 @@ credentials:
       AZURE_CLOUD_NAME=AzurePublicCloud
 ```
 
-- [ ] **Step 2: Mẫu cơ sở dữ liệu có gửi WAL sang Nhật**
+- [x] **Step 2: Mẫu cơ sở dữ liệu có gửi WAL sang Nhật**
 
 `infra/trial/db-primary.yaml.tpl`:
 
@@ -491,7 +493,7 @@ spec:
         serverName: __SERVER__
 ```
 
-- [ ] **Step 3: Tải giả lập 1 bài mỗi giây trong 1 giờ**
+- [x] **Step 3: Tải giả lập 1 bài mỗi giây trong 1 giờ**
 
 `infra/trial/load-test.yaml`:
 
@@ -525,7 +527,7 @@ spec:
               done
 ```
 
-- [ ] **Step 4: Script cài phần mềm vào một cụm**
+- [x] **Step 4: Script cài phần mềm vào một cụm**
 
 `scripts/trial/install-software.sh`:
 
@@ -553,7 +555,7 @@ helm upgrade --install velero vmware-tanzu/velero -n velero --create-namespace \
 kubectl -n velero get backupstoragelocation default -o jsonpath='{.status.phase}{"\n"}'
 ```
 
-- [ ] **Step 5: Cài, dựng cơ sở dữ liệu, đo RAM lúc rảnh**
+- [x] **Step 5: Cài, dựng cơ sở dữ liệu, đo RAM lúc rảnh**
 
 ```bash
 chmod +x scripts/trial/install-software.sh
@@ -569,7 +571,7 @@ kubectl top pods -A --sort-by=memory | head -15
 
 Expected: `Available` của BackupStorageLocation; cluster `db` Ready; ghi `used` của `free -m` (rảnh).
 
-- [ ] **Step 6: Chạy tải 1 giờ, đo RAM đỉnh và dung lượng WAL**
+- [x] **Step 6: Chạy tải 1 giờ, đo RAM đỉnh và dung lượng WAL**
 
 ```bash
 kubectl apply -f infra/trial/load-test.yaml
@@ -588,7 +590,7 @@ Quyết định:
 - RAM đỉnh trên 80% của 4 GB (khoảng 3.200 MB dùng) thì đổi sang B2as v2 (mục 8 thiết kế chính).
 - WAL mỗi ngày trên 2 GB thì đặt `bootstrap.initdb.walSegmentSize: 1` (MB) cho cụm thật và đo lại ở bản thu nhỏ.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add infra/trial scripts/trial/install-software.sh data/trial/ram-primary.csv docs/trial-results.md
@@ -600,7 +602,7 @@ git commit -m "Chạy thử: cài phần mềm, đo RAM và dung lượng WAL"
 **Files:**
 - Create: `infra/trial/tls-test.yaml.tpl`
 
-- [ ] **Step 1: Mẫu dịch vụ thử có chứng chỉ staging**
+- [x] **Step 1: Mẫu dịch vụ thử có chứng chỉ staging**
 
 `infra/trial/tls-test.yaml.tpl`:
 
@@ -674,7 +676,7 @@ spec:
               service: { name: whoami, port: { number: 80 } }
 ```
 
-- [ ] **Step 2: Xin chứng chỉ và sao lưu**
+- [x] **Step 2: Xin chứng chỉ và sao lưu**
 
 ```bash
 source scripts/trial/env.sh
@@ -703,7 +705,7 @@ Expected: serial và issuer có chữ `STAGING`; backup `Completed`. Ghi serial 
 - Create: `infra/trial/db-replica.yaml.tpl`
 - Create: `infra/trial/db-restore.yaml.tpl`
 
-- [ ] **Step 1: Sao lưu đầy đủ đầu tiên ở cụm chính**
+- [x] **Step 1: Sao lưu đầy đủ đầu tiên ở cụm chính**
 
 ```bash
 export KUBECONFIG=~/.dr-trial/kubeconfig-primary
@@ -722,7 +724,7 @@ EOF
 kubectl wait --for=jsonpath='{.status.phase}'=completed backups.postgresql.cnpg.io/first --timeout=900s
 ```
 
-- [ ] **Step 2: Dựng cụm dự phòng và cài phần mềm (đo thời gian như cụm chính)**
+- [x] **Step 2: Dựng cụm dự phòng và cài phần mềm (đo thời gian như cụm chính)**
 
 ```bash
 source scripts/trial/env.sh
@@ -730,7 +732,7 @@ scripts/trial/create-cluster.sh standby "$RG_STANDBY" "$DNS_STANDBY" "$FQDN_STAN
 scripts/trial/install-software.sh standby
 ```
 
-- [ ] **Step 3: Mẫu cụm bản sao đọc WAL từ Nhật**
+- [x] **Step 3: Mẫu cụm bản sao đọc WAL từ Nhật**
 
 `infra/trial/db-replica.yaml.tpl`:
 
@@ -792,7 +794,7 @@ spec:
         serverName: __SERVER_STANDBY__
 ```
 
-- [ ] **Step 4: Dựng bản sao, đo độ trễ theo kịp**
+- [x] **Step 4: Dựng bản sao, đo độ trễ theo kịp**
 
 ```bash
 export KUBECONFIG=~/.dr-trial/kubeconfig-standby
@@ -811,7 +813,7 @@ az storage blob list --account-name "$BACKUP_ACCOUNT" --account-key "$(cat ~/.dr
 
 Expected: bản sao Ready; độ trễ dưới khoảng 2 phút (archive_timeout 60 giây cộng thời gian đọc); danh sách thư mục trong `cnpg` có `$SERVER_PRIMARY/` và **không** có tệp WAL mới nào của cụm dự phòng ghi vào thư mục `$SERVER_PRIMARY/`. Ghi vào dòng 6.
 
-- [ ] **Step 5: Đổi vai bản sao thành chính, đo thời gian**
+- [x] **Step 5: Đổi vai bản sao thành chính, đo thời gian**
 
 ```bash
 T0=$(date -u +%s)
@@ -823,7 +825,7 @@ kubectl exec db-1 -c postgres -- psql -d app -qc "INSERT INTO trial_posts(conten
 
 Expected: ghi được sau khi đổi vai; ghi thời gian vào dòng 6.
 
-- [ ] **Step 6: Mẫu khôi phục lạnh và đo thời gian**
+- [x] **Step 6: Mẫu khôi phục lạnh và đo thời gian**
 
 `infra/trial/db-restore.yaml.tpl`:
 
@@ -859,7 +861,7 @@ kubectl exec db-cold-1 -c postgres -- psql -d app -tAc "SELECT count(*), max(cre
 
 Expected: số dòng và `max(created_at)` cách lúc chạy lệnh không quá vài phút; ghi thời gian khôi phục vào dòng 6.
 
-- [ ] **Step 7: Khôi phục chứng chỉ bằng Velero ở cụm dự phòng**
+- [x] **Step 7: Khôi phục chứng chỉ bằng Velero ở cụm dự phòng**
 
 ```bash
 export KUBECONFIG=~/.dr-trial/kubeconfig-standby
@@ -883,7 +885,7 @@ kubectl -n tls-test get certificate whoami-tls -o jsonpath='{.status.conditions[
 
 Expected: serial giống hệt serial ở Task 5; sau 10 phút số CertificateRequest ở cụm dự phòng là `0` hoặc chỉ có bản được khôi phục, và Certificate `True`. Ghi vào dòng 7. Nếu cert-manager xin chứng chỉ mới thì quyết định: khi khôi phục, tắt cert-manager cho tới khi Secret đã về, và ghi vào runbook.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add infra/trial/db-replica.yaml.tpl infra/trial/db-restore.yaml.tpl docs/trial-results.md data/trial/cluster-build.csv
@@ -895,7 +897,7 @@ git commit -m "Chạy thử: bản sao, đổi vai, khôi phục lạnh, khôi p
 **Files:**
 - Modify: `docs/trial-results.md` (dòng 5)
 
-- [ ] **Step 1: Xem trang quản lý DNS của `qivarn.id.vn` bằng Edge của Quang (Claude in Chrome)**
+- [x] **Step 1: Xem trang quản lý DNS của `qivarn.id.vn` bằng Edge của Quang (Claude in Chrome)**
 
 Mở trang quản lý bản ghi của tên miền trong iNET OnePortal. Kiểm tra danh sách loại bản ghi có `NS` và cho phép tên `api.dr` không. Không bấm lưu, không tạo bản ghi.
 
@@ -908,7 +910,7 @@ Hai workflow thử ở Task 8 và 9 chạy khi đẩy nhánh thử, không dùng
 **Files:**
 - Create: `.github/workflows/fail-test.yml` (xóa ở Step 3)
 
-- [ ] **Step 1: Workflow cố ý lỗi, chỉ chạy bằng tay**
+- [x] **Step 1: Workflow cố ý lỗi, chỉ chạy bằng tay**
 
 `.github/workflows/fail-test.yml`:
 
@@ -924,7 +926,7 @@ jobs:
       - run: exit 1
 ```
 
-- [ ] **Step 2: Chạy và nhờ Quang xem hộp thư**
+- [x] **Step 2: Chạy và nhờ Quang xem hộp thư**
 
 ```bash
 git checkout -b trial/fail-email
@@ -937,7 +939,7 @@ gh run list --workflow fail-test.yml --limit 1 --json conclusion,createdAt
 
 Expected: `conclusion` là `failure`. Quang kiểm tra hộp thư `qivarnq3g@gmail.com` có thư "Run failed" của GitHub. Ghi vào dòng 8.
 
-- [ ] **Step 3: Dọn nhánh thử**
+- [x] **Step 3: Dọn nhánh thử**
 
 ```bash
 git checkout main
@@ -950,7 +952,7 @@ git branch -D trial/fail-email
 **Files:**
 - Create: `.github/workflows/kind-test.yml` (xóa ở Step 3)
 
-- [ ] **Step 1: Workflow dựng hai cụm kind và đo tài nguyên**
+- [x] **Step 1: Workflow dựng hai cụm kind và đo tài nguyên**
 
 `.github/workflows/kind-test.yml`:
 
@@ -1008,7 +1010,7 @@ jobs:
           nproc
 ```
 
-- [ ] **Step 2: Chạy và đọc kết quả**
+- [x] **Step 2: Chạy và đọc kết quả**
 
 ```bash
 git checkout -b trial/kind
@@ -1021,7 +1023,7 @@ gh run view --log "$(gh run list --workflow kind-test.yml --limit 1 --json datab
 
 Expected: workflow thành công; `free -m` còn trên 4 GB trống, `df -h /` còn trên 3 GB. Ghi vào dòng 9. Nếu thiếu: quyết định chạy bản thu nhỏ với một cụm kind và đổi vai trong cùng cụm, ghi vào mục 6.4 thiết kế chính.
 
-- [ ] **Step 3: Dọn nhánh thử**
+- [x] **Step 3: Dọn nhánh thử**
 
 ```bash
 git checkout main
@@ -1033,7 +1035,7 @@ git branch -D trial/kind
 
 Bỏ qua task này nếu kế hoạch API (`docs/ke-hoach/2026-10-09-api.md`) chưa làm tới Task 6 (ví dụ `bench-thumbnail`).
 
-- [ ] **Step 1: Biên dịch ví dụ đo và chạy trên máy ảo**
+- [x] **Step 1: Biên dịch ví dụ đo và chạy trên máy ảo**
 
 ```bash
 source scripts/trial/env.sh
@@ -1049,7 +1051,7 @@ Expected: dòng `n=50 median_ms=… p95_ms=…`. Ghi vào dòng 11. Ngưỡng: p
 
 Chạy được độc lập với các task trước.
 
-- [ ] **Step 1: Xóa ba nhóm tài nguyên và đợi xong**
+- [x] **Step 1: Xóa ba nhóm tài nguyên và đợi xong**
 
 ```bash
 source scripts/trial/env.sh
@@ -1064,7 +1066,7 @@ az group list --query "[?starts_with(name,'rg-dr-trial')].name" -o tsv
 
 Expected: dòng cuối rỗng.
 
-- [ ] **Step 2: Xóa ngân sách thử nếu đã tạo, xóa tệp riêng**
+- [x] **Step 2: Xóa ngân sách thử nếu đã tạo, xóa tệp riêng**
 
 ```bash
 SUB=$(az account show --query id -o tsv)
@@ -1072,7 +1074,7 @@ az rest --method delete --url "https://management.azure.com/subscriptions/$SUB/p
 rm -f ~/.dr-trial/kubeconfig-* ~/.dr-trial/key-* ~/.dr-trial/velero-values-* ~/.dr-trial/cloud-init-* ~/.dr-trial/or-policy.json
 ```
 
-- [ ] **Step 3: Ghi chi phí ngày hôm sau và kết luận**
+- [x] **Step 3: Ghi chi phí ngày hôm sau và kết luận**
 
 Ngày hôm sau, xem chi phí của ba nhóm trong Cost Management và ghi vào cuối `docs/trial-results.md`. Với mỗi dòng có quyết định đổi thiết kế, sửa mục tương ứng trong `docs/thiet-ke.md` và `docs/thiet-ke-web.md`.
 
