@@ -4,3 +4,8 @@ primary,vm_created,2026-10-24T05:56:40Z
 primary,k3s_installed,2026-10-24T05:56:57Z
 primary,node_ready,2026-10-24T05:57:05Z
 primary,traefik_ready,2026-10-24T05:57:44Z
+standby,start,2026-10-24T06:11:35Z
+standby,vm_created,2026-10-24T06:12:45Z
+standby,k3s_installed,2026-10-24T06:12:58Z
+standby,node_ready,2026-10-24T06:12:59Z
+standby,traefik_ready,2026-10-24T06:13:32Z

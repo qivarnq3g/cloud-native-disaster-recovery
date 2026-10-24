@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: load-test
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: psql
+          image: ghcr.io/cloudnative-pg/postgresql:18
+          env:
+            - name: URI
+              valueFrom:
+                secretKeyRef:
+                  name: db-app
+                  key: uri
+          command:
+            - bash
+            - -c
+            - |
+              psql "$URI" -qc "CREATE TABLE IF NOT EXISTS trial_posts(id bigserial PRIMARY KEY, content text, created_at timestamptz DEFAULT now())"
+              for i in $(seq 1 3600); do
+                psql "$URI" -qc "INSERT INTO trial_posts(content) VALUES (repeat(md5(random()::text), 10))"
+                sleep 1
+              done
