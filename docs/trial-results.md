@@ -4,8 +4,8 @@ Ngày chạy: 24/10/2026. Kế hoạch: `docs/ke-hoach/2026-10-09-chay-thu-azure
 
 | # | Câu hỏi (mục 8 thiết kế chính) | Kết quả đo | Quyết định |
 |---|---|---|---|
-| 1 | RAM của một cụm | | |
-| 2 | Dung lượng WAL mỗi ngày | | |
+| 1 | RAM của một cụm | Máy 3906 MB. Lúc rảnh (đủ phần mềm và cơ sở dữ liệu): 1772 MB dùng. Trong 1 giờ tải 1 bài/giây, 12 lần đo cách 5 phút: 1721-1797 MB, đỉnh 1797 MB (46%) | Dưới ngưỡng 80% (3200 MB): giữ B2als v2 |
+| 2 | Dung lượng WAL mỗi ngày | Khoảng 1 giờ (06:05-07:05 UTC): 63 tệp WAL, 4 622 357 byte sau nén gzip, tức khoảng 111 MB/ngày trong kho. Số tệp gần bằng số phút vì `archive_timeout` 60 s ép đổi tệp mỗi phút | Dưới ngưỡng 2 GB/ngày: giữ cỡ tệp WAL mặc định |
 | 3 | Thời gian chép ảnh Hàn Quốc sang Nhật | 200 ảnh 200 KB, 1 ảnh/giây: trung vị 52,7 s, p95 128,7 s, lớn nhất 139,2 s, không thiếu ảnh nào | RPO của ảnh đặt không dưới p95: 5 phút là đủ an toàn |
 | 4 | Thời gian dựng một cụm mới | Cụm chính: 2 phút 15 giây từ lệnh tạo máy tới Traefik sẵn sàng (máy ảo 71 s, k3s 17 s, nút 8 s, Traefik 39 s). Tín dụng CPU: Azure chưa có số đo cho máy vừa tạo; khoảng 35 phút sau còn 69-73 (cụm chính) và 62-66 (cụm dự phòng). Cụm dự phòng: 1 phút 57 giây | Dựng lại một cụm mất dưới 3 phút, cộng khoảng 3 phút cài phần mềm (161 s ở cụm chính) |
 | 5 | iNET cho ủy quyền `api.dr` sang Azure DNS (bản ghi NS) | Câu hỏi đã đổi: từ 09/10 DNS của `qivarn.id.vn` nằm ở Cloudflare Free (`nslookup` 24/10 trả `alexandra`, `bryce.ns.cloudflare.com`). Tài liệu Cloudflare (đọc 24/10): gói Free cho tạo bản ghi NS để ủy quyền tên con, tối đa 10 máy chủ tên; tên con ủy quyền không đi qua proxy của Cloudflare. Chưa tạo bản ghi nào | Cần chọn: ủy quyền `api.dr` sang Azure DNS, hoặc giữ ở Cloudflare và đổi bản ghi A qua API Cloudflare khi chuyển cụm |
