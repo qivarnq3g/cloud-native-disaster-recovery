@@ -903,6 +903,8 @@ Expected: một trong hai: có `NS` cho tên con, hoặc không. Ghi vào dòng 
 
 ### Task 8: GitHub có gửi email khi workflow lỗi
 
+Hai workflow thử ở Task 8 và 9 chạy khi đẩy nhánh thử, không dùng `workflow_dispatch`: GitHub chỉ cho chạy bằng tay workflow đã có trên nhánh mặc định.
+
 **Files:**
 - Create: `.github/workflows/fail-test.yml` (xóa ở Step 3)
 
@@ -913,7 +915,8 @@ Expected: một trong hai: có `NS` cho tên con, hoặc không. Ghi vào dòng 
 ```yaml
 name: fail-test
 on:
-  workflow_dispatch:
+  push:
+    branches: [trial/fail-email]
 jobs:
   fail:
     runs-on: ubuntu-latest
@@ -928,7 +931,6 @@ git checkout -b trial/fail-email
 git add .github/workflows/fail-test.yml
 git commit -m "Thử email khi workflow lỗi"
 git push -u origin trial/fail-email
-gh workflow run fail-test.yml --ref trial/fail-email
 sleep 60
 gh run list --workflow fail-test.yml --limit 1 --json conclusion,createdAt
 ```
@@ -955,7 +957,8 @@ git branch -D trial/fail-email
 ```yaml
 name: kind-test
 on:
-  workflow_dispatch:
+  push:
+    branches: [trial/kind]
 jobs:
   measure:
     runs-on: ubuntu-latest
@@ -1012,7 +1015,6 @@ git checkout -b trial/kind
 git add .github/workflows/kind-test.yml
 git commit -m "Thử bản thu nhỏ trên máy GitHub"
 git push -u origin trial/kind
-gh workflow run kind-test.yml --ref trial/kind
 gh run watch "$(gh run list --workflow kind-test.yml --limit 1 --json databaseId -q '.[0].databaseId')" --exit-status
 gh run view --log "$(gh run list --workflow kind-test.yml --limit 1 --json databaseId -q '.[0].databaseId')" | grep -A20 "Đo"
 ```
@@ -1038,7 +1040,7 @@ source scripts/trial/env.sh
 MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W)/app/api:/src" -w /src rust:1.97.1-alpine \
   sh -c 'apk add --no-cache build-base nasm >/dev/null && cargo build --release --features production --example bench-thumbnail --target-dir /src/target-musl'
 scp -i "$SSH_KEY" app/api/target-musl/release/examples/bench-thumbnail "dr@$FQDN_PRIMARY:/tmp/"
-ssh -i "$SSH_KEY" "dr@$FQDN_PRIMARY" /tmp/bench-thumbnail 50
+ssh -i "$SSH_KEY" "dr@$FQDN_PRIMARY" "chmod +x /tmp/bench-thumbnail && /tmp/bench-thumbnail 50"
 ```
 
 Expected: dòng `n=50 median_ms=… p95_ms=…`. Ghi vào dòng 11. Ngưỡng: p95 không quá 500 ms; vượt thì đổi ảnh nhỏ sang WebP (mục 7 thiết kế web).
