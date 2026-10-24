@@ -1,0 +1,16 @@
+{
+  "properties": {
+    "category": "Cost",
+    "amount": 25,
+    "timeGrain": "Monthly",
+    "timePeriod": { "startDate": "2026-10-01T00:00:00Z", "endDate": "2026-12-31T00:00:00Z" },
+    "filter": {
+      "dimensions": { "name": "ResourceGroupName", "operator": "In", "values": ["rg-dr-trial-primary", "rg-dr-trial-standby", "rg-dr-trial-japan"] }
+    },
+    "notifications": {
+      "half": { "enabled": true, "operator": "GreaterThan", "threshold": 50, "contactEmails": ["qivarnq3g@gmail.com"] },
+      "eighty": { "enabled": true, "operator": "GreaterThan", "threshold": 80, "contactEmails": ["qivarnq3g@gmail.com"] },
+      "full": { "enabled": true, "operator": "GreaterThan", "threshold": 100, "contactEmails": ["qivarnq3g@gmail.com"] }
+    }
+  }
+}
