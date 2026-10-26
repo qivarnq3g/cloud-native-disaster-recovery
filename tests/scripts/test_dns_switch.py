@@ -13,7 +13,6 @@ def ok(name, ip):
 
 
 class FakeCloudflare:
-    """Giả API Cloudflare: giữ các bản ghi A và ghi lại thân mọi lệnh PATCH."""
 
     def __init__(self, records):
         self.records = records

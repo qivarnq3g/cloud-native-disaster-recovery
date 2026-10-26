@@ -1,8 +1,3 @@
-"""Đổi bản ghi A của API qua API Cloudflare (bước 6 "chuyển lưu lượng" của mục 5.2 thiết kế).
-
-Chỉ dùng thư viện chuẩn. Mã Cloudflare không bao giờ được in ra.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -99,7 +94,7 @@ def _now() -> datetime:
 def switch(dns: CloudflareDns, name: str, ip: str, health: Callable[[str, str], bool],
            resolve: Callable[[str], set[str]], timeout_s: int = 300,
            sleep: Callable[[float], None] = time.sleep, poll_s: float = 5.0) -> SwitchResult:
-    ipaddress.IPv4Address(ip)  # ValueError nếu không phải IPv4
+    ipaddress.IPv4Address(ip)
     started_at = _now()
     if not health(name, ip):
         raise HealthCheckFailed(f"https://{ip}/healthz (SNI {name}) chưa trả 200, không đổi DNS")
@@ -119,7 +114,6 @@ def switch(dns: CloudflareDns, name: str, ip: str, health: Callable[[str, str], 
 
 
 class _SniHTTPSConnection(http.client.HTTPSConnection):
-    """Kết nối tới một IP nhưng bắt tay TLS với tên miền (SNI) và gửi Host là tên miền."""
 
     def __init__(self, ip: str, server_name: str, context: ssl.SSLContext, timeout: float):
         super().__init__(ip, 443, timeout=timeout, context=context)
@@ -147,7 +141,6 @@ def https_health(name: str, ip: str, insecure: bool = False, timeout: float = 10
 
 
 def doh_resolve(name: str) -> set[str]:
-    """Hỏi cả hai máy chủ DoH; trả hợp các IP. Chỉ khi cả hai cùng thấy một IP thì tập có một phần tử."""
     answers: set[str] = set()
     for base in DOH_RESOLVERS:
         req = urllib.request.Request(f"{base}?{urllib.parse.urlencode({'name': name, 'type': 'A'})}",

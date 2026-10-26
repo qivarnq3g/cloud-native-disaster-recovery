@@ -2,7 +2,7 @@
 
 Ngày 07/10/2026, sửa lần 1 cùng ngày sau buổi đánh giá, sửa lần 2 ngày 08/10/2026 để chốt hai việc cuối. Quang duyệt ngày 09/10/2026; bước tiếp theo là lập kế hoạch làm. Mọi phần code, hạ tầng, sao lưu và diễn tập đều làm theo tài liệu này. Muốn đổi gì thì sửa tài liệu này trước.
 
-> **Máy chạy Kubernetes: đã chốt ngày 08/10/2026, dùng k3s trên máy ảo, không dùng AKS.** Theo tài liệu của Microsoft, nhóm máy hệ thống của AKS cần máy ít nhất 4 nhân, ít nhất 2 máy và không được dùng máy B-series. Tài khoản chỉ còn 4 nhân, nên không đủ cho hai cụm AKS đúng quy định. Mỗi cụm là một máy ảo B2als v2 cài k3s, chi tiết ở mục 1.
+> Máy chạy Kubernetes: đã chốt ngày 08/10/2026, dùng k3s trên máy ảo, không dùng AKS. Theo tài liệu của Microsoft, nhóm máy hệ thống của AKS cần máy ít nhất 4 nhân, ít nhất 2 máy và không được dùng máy B-series. Tài khoản chỉ còn 4 nhân, nên không đủ cho hai cụm AKS đúng quy định. Mỗi cụm là một máy ảo B2als v2 cài k3s, chi tiết ở mục 1.
 
 > **Phạm vi tối thiểu: đã chốt ngày 08/10/2026.** Đề yêu cầu phạm vi tối thiểu phải chạy được trên máy cá nhân, phòng máy hoặc gói miễn phí. Nhóm hỏi giảng viên ở buổi học 08/10 về việc chạy trên Azure for Students. Thầy trả lời: được, miễn là dùng môi trường cô lập.
 >
@@ -77,17 +77,17 @@ Kết quả nào cũng là kết quả: giả thuyết bị bác bỏ thì báo 
 | `rg-dr-standby` | `koreacentral` | Máy ảo chạy cụm dự phòng (k3s), tài khoản lưu trữ ảnh dự phòng |
 | `rg-dr-backup` | `japanwest` | Bốn tài khoản lưu trữ: Terraform state, kho sao lưu (cơ sở dữ liệu, Velero), bản chép ảnh, két |
 
-Khu vực và cỡ máy là **tham số** của Terraform, không viết cứng. Tài khoản sinh viên của người khác có thể được phép dùng những khu vực khác.
+Khu vực và cỡ máy là tham số của Terraform, không viết cứng. Tài khoản sinh viên của người khác có thể được phép dùng những khu vực khác.
 
 Lý do chọn như vậy:
 
-- **Cả hai cụm ở Hàn Quốc:** tài khoản Azure for Students chỉ cho tạo máy ảo ở `koreacentral`. Tình huống "mất vùng" được **giả lập** bằng cách xóa toàn bộ nhóm `rg-dr-primary`.
+- **Cả hai cụm ở Hàn Quốc:** tài khoản Azure for Students chỉ cho tạo máy ảo ở `koreacentral`. Tình huống "mất vùng" được giả lập bằng cách xóa toàn bộ nhóm `rg-dr-primary`.
 - **Kho lưu trữ ở Nhật:** kho được phép đặt ở khu vực khác, nên bản sao lưu nằm thật ở Nhật.
 - **Ảnh chép sang một tài khoản riêng:** tài khoản này phải bật lưu phiên bản (vì object replication). Tách ra để các bản sao lưu cơ sở dữ liệu đã hết hạn không bị giữ lại dưới dạng phiên bản cũ mà vẫn tốn tiền.
 - **Không dùng MinIO** (đề gợi ý), vì bản cộng đồng đã ngừng phát triển. Azure Blob Storage có sẵn khóa chống xóa nên dùng luôn.
 - **Công cụ:** hạ tầng viết bằng Terraform (đề gợi ý), cài phần mềm vào cụm bằng Helm. Image của web để trên GitHub Container Registry, tức là nằm ngoài Azure.
 - **Cụm Kubernetes là k3s trên máy ảo, không dùng AKS:**
-  - Mỗi cụm là **một** máy ảo B2als v2 (2 nhân, 4 GB) cài k3s. Hai cụm dùng đúng 4 nhân còn lại của tài khoản.
+  - Mỗi cụm là một máy ảo B2als v2 (2 nhân, 4 GB) cài k3s. Hai cụm dùng đúng 4 nhân còn lại của tài khoản.
   - k3s được cài tự động ngay khi máy ảo vừa tạo xong (cloud-init trong Terraform). Phiên bản k3s ghim cố định.
   - Web nhận truy cập qua Traefik và ServiceLB có sẵn trong k3s. Hai thứ này mở thẳng cổng 80 và 443 trên IP công khai của máy, nên không cần bộ cân bằng tải của Azure.
   - Cổng quản trị (SSH 22, Kubernetes API 6443) chỉ mở cho địa chỉ IP của nhóm, khai trong Terraform. SSH chỉ đăng nhập bằng khóa.
@@ -97,7 +97,7 @@ Lý do chọn như vậy:
 
 Không dùng nhóm tài nguyên nào khác trong tài khoản. Tài khoản này còn có tài nguyên của một dự án khác, tuyệt đối không đụng tới.
 
-**Tách DNS giao diện và API (chốt 08/10/2026):** `dr.qivarn.id.vn` trỏ CNAME tới GitHub Pages, tắt proxy, dùng cho trang giới thiệu và trang dùng. Chỉ `api.dr.qivarn.id.vn` trỏ vào cụm k3s và được đổi khi diễn tập. **Chốt 24/10/2026 sau buổi chạy thử:** bản ghi A của `api.dr.qivarn.id.vn` nằm ở Cloudflare (DNS của cả tên miền đã chuyển sang Cloudflare Free từ 09/10), tắt proxy, thời gian ghi nhớ 60 giây. Khi chuyển cụm, script gọi API của Cloudflare để đổi địa chỉ. Không dùng Azure DNS: không tốn thêm tiền và bớt một nơi có thể hỏng. Mã API Cloudflare chỉ có quyền sửa DNS của tên miền này, lưu trong secret của GitHub, không đưa vào kho. Giao diện vẫn tải được khi cụm chính mất, nên script đo phải gọi API để xác định khôi phục.
+**Tách DNS giao diện và API (chốt 08/10/2026):** `dr.qivarn.id.vn` trỏ CNAME tới GitHub Pages, tắt proxy, dùng cho trang giới thiệu và trang dùng. Chỉ `api.dr.qivarn.id.vn` trỏ vào cụm k3s và được đổi khi diễn tập. Chốt 24/10/2026 sau buổi chạy thử: bản ghi A của `api.dr.qivarn.id.vn` nằm ở Cloudflare (DNS của cả tên miền đã chuyển sang Cloudflare Free từ 09/10), tắt proxy, thời gian ghi nhớ 60 giây. Khi chuyển cụm, script gọi API của Cloudflare để đổi địa chỉ. Không dùng Azure DNS: không tốn thêm tiền và bớt một nơi có thể hỏng. Mã API Cloudflare chỉ có quyền sửa DNS của tên miền này, lưu trong secret của GitHub, không đưa vào kho. Giao diện vẫn tải được khi cụm chính mất, nên script đo phải gọi API để xác định khôi phục.
 
 ### Terraform state
 
@@ -112,13 +112,13 @@ Terraform state chứa khóa truy cập, nên không bao giờ đưa vào Git. S
 - **Chống lạm dụng:** chỉ ai có mã bí mật mới đăng bài được. Mã này chỉ script đo và nhóm biết. Xem bài thì công khai. Ảnh tối đa 1 MB.
 - **HTTPS:**
   - Giao diện trên GitHub Pages dùng chứng chỉ và chế độ bắt buộc HTTPS do GitHub quản lý. API dùng chứng chỉ Let's Encrypt, do cert-manager quản lý.
-  - Let's Encrypt chỉ cấp tối đa 5 chứng chỉ cho cùng một tên miền mỗi 7 ngày. Vì vậy chứng chỉ chỉ xin **một lần**, sau đó được sao lưu và khôi phục cùng cấu hình. Cụm mới nhận lại chứng chỉ cũ, không xin mới.
+  - Let's Encrypt chỉ cấp tối đa 5 chứng chỉ cho cùng một tên miền mỗi 7 ngày. Vì vậy chứng chỉ chỉ xin một lần, sau đó được sao lưu và khôi phục cùng cấu hình. Cụm mới nhận lại chứng chỉ cũ, không xin mới.
   - Vòng thử dùng máy chủ thử (staging) của Let's Encrypt.
   - Bộ định tuyến HTTPS (ingress) là Traefik có sẵn trong k3s.
 - **Kiểm tra web còn sống:** có `/healthz` để script đo gọi vào.
-- **Giao diện gồm hai trang riêng, làm theo thứ tự.** Phần xử lý dữ liệu là một API JSON. Giao diện là trang tĩnh, gọi vào API đó. Hai trang tách riêng để trang dùng thật không phải tải phần 3D nặng.
-  1. **Tuần 1–3, làm trước:** API, rồi **trang dùng** (xem danh sách, xem bài, đăng bài). Trang này phải dễ dùng, không gây khó chịu cho người dùng. Diễn tập chỉ cần chừng này.
-  2. **Tuần 4–6, làm sau:** **trang giới thiệu** lấy phong cách từ apple.com (đổi từ alche.studio ngày 08/10; cả trang dùng cũng theo phong cách này). Trang có nút "Vào xem" sang trang dùng; lần sau vào thì đi thẳng tới trang dùng. Chỉ học ý tưởng, không lấy logo, phông SF Pro, hình ảnh, video hay câu chữ của họ. Trang giới thiệu vẫn có 3D, làm bằng Three.js: chỗ nào Apple dùng video quay sẵn thì mình dựng cảnh 3D bằng code, vì nhóm không tự làm được video (chốt 08/10). Cảnh 3D kể chuyện DR (chốt 08/10): ảnh từ cụm chính được chép sang két ở Nhật, cụm chính sập, dữ liệu từ két về cụm dự phòng và cụm này chạy lên. Mô hình (chốt 08/10): mọi thứ dựng bằng code, không dùng mô hình tải về, nên không cần tài khoản hay ghi công tác giả. Bản phác thảo đầu bị chê sơ sài, bản 2 bị chê có vật xuyên qua nhau nên trông giả. Bản dùng thật phải có chi tiết (tủ rack, khe ổ đĩa, cổng mạng, đèn, két sắt có cửa bản lề), ánh sáng studio, bóng đổ, sàn phản chiếu, và không vật nào xuyên qua vật nào: cảnh sập dùng mô phỏng vật lý tính sẵn, ảnh bay qua lỗ cửa két. Không gì được che chữ ở bất kỳ vị trí cuộn nào (bản 3 bị chê vì ảnh bay đè lên tiêu đề lúc chuyển cảnh); ảnh là ô bo góc bóng với phong cảnh vẽ bằng code, không phải hình minh họa. Ảnh ra vào tủ qua một khe nạp trên tầng trên cùng, đèn cạnh khe chớp đúng lúc từng tấm đi qua; không dùng quầng sáng lơ lửng làm điểm đến. Giao diện Apple thuần (chốt 08/10, sau khi so ba hướng): phông Be Vietnam Pro tải từ Google Fonts (phông hệ thống hiện thành Segoe UI trên Windows), nền đen, chữ căn giữa, chữ xám xen chữ trắng nổi bật; không chữ đơn cách, không ngoặc vuông, không hạt nhiễu. Lớp điều khiển (menu, nút, nhãn trạng thái, thanh chương kiểu iOS) làm bằng kính lỏng như Liquid Glass của Apple: khúc xạ ở mép, viền bắt sáng theo chuột, hiện ra bằng cách tăng dần độ khúc xạ; nhãn trên nền sáng dùng kính tối cho dễ đọc. Tiêu đề nhô lên từng từ khỏi lớp nhòe khi mỗi đoạn hiện ra và tan lên theo nhịp cuộn khi cuộn qua. Phần cuối trang là nhịp thứ năm ngay trong cảnh 3D (lùi ra toàn cảnh, nút kính "Vào xem"), không còn mảng phẳng tách rời. Nền và hiệu ứng chuột (chốt 08/10, học từ alche.studio): phía sau là bức tường ảnh của nhóm, tối cho tới khi đèn theo chuột rọi tới, kể chuyện cùng cảnh (sáng quét khi sao lưu, tắt khi sập, sáng lại khi khôi phục); rê chuột để lại vệt gợn như mặt nước trên cả khung hình. Tường dùng 48 phong cảnh tạo ngẫu nhiên, mỗi ô lật, cắt và đổi tông riêng nên không thấy lặp; sàn là sân khấu đen bóng, không xám. Hướng trừu tượng kiểu aether1.ai (mỗi cụm là quả cầu vòng sáng, ảnh là chấm sáng) đã thử và bị loại vì xấu và không liên quan tới máy chủ; cảnh phải là vật thật nhận ra được. Cảnh phải mượt (chốt 08/10): mỗi khung hình dưới 16 ms trên laptop phổ thông, chuột kéo máy quay trễ nhẹ chứ không giật theo, máy yếu thì tự bớt hiệu ứng (sàn phản chiếu, độ nét) thay vì giật. Nấc cuộn đầu tiên cảnh đã phải chuyển động, không có đoạn đứng yên ở đầu trang, nhưng cũng không được đi quá nhanh: mỗi nấc lăn chuột (100 px) chỉ đi khoảng 1/20 một đoạn. Nhãn trạng thái của tủ và két luôn nằm trong khung hình; trên điện thoại chỉ hiện nhãn của vật đang được nói tới. Trình đọc màn hình đọc nguyên câu tiêu đề, và người bật "giảm chuyển động" chỉ thấy chữ hiện ra và mờ đi.
+- Giao diện gồm hai trang riêng, làm theo thứ tự. Phần xử lý dữ liệu là một API JSON. Giao diện là trang tĩnh, gọi vào API đó. Hai trang tách riêng để trang dùng thật không phải tải phần 3D nặng.
+  1. **Tuần 1–3, làm trước:** API, rồi trang dùng (xem danh sách, xem bài, đăng bài). Trang này phải dễ dùng, không gây khó chịu cho người dùng. Diễn tập chỉ cần chừng này.
+  2. **Tuần 4–6, làm sau:** trang giới thiệu lấy phong cách từ apple.com (đổi từ alche.studio ngày 08/10; cả trang dùng cũng theo phong cách này). Trang có nút "Vào xem" sang trang dùng; lần sau vào thì đi thẳng tới trang dùng. Chỉ học ý tưởng, không lấy logo, phông SF Pro, hình ảnh, video hay câu chữ của họ. Trang giới thiệu vẫn có 3D, làm bằng Three.js: chỗ nào Apple dùng video quay sẵn thì mình dựng cảnh 3D bằng code, vì nhóm không tự làm được video (chốt 08/10). Cảnh 3D kể chuyện DR (chốt 08/10): ảnh từ cụm chính được chép sang két ở Nhật, cụm chính sập, dữ liệu từ két về cụm dự phòng và cụm này chạy lên. Mô hình (chốt 08/10): mọi thứ dựng bằng code, không dùng mô hình tải về, nên không cần tài khoản hay ghi công tác giả. Bản phác thảo đầu bị chê sơ sài, bản 2 bị chê có vật xuyên qua nhau nên trông giả. Bản dùng thật phải có chi tiết (tủ rack, khe ổ đĩa, cổng mạng, đèn, két sắt có cửa bản lề), ánh sáng studio, bóng đổ, sàn phản chiếu, và không vật nào xuyên qua vật nào: cảnh sập dùng mô phỏng vật lý tính sẵn, ảnh bay qua lỗ cửa két. Không gì được che chữ ở bất kỳ vị trí cuộn nào (bản 3 bị chê vì ảnh bay đè lên tiêu đề lúc chuyển cảnh); ảnh là ô bo góc bóng với phong cảnh vẽ bằng code, không phải hình minh họa. Ảnh ra vào tủ qua một khe nạp trên tầng trên cùng, đèn cạnh khe chớp đúng lúc từng tấm đi qua; không dùng quầng sáng lơ lửng làm điểm đến. Giao diện Apple thuần (chốt 08/10, sau khi so ba hướng): phông Be Vietnam Pro tải từ Google Fonts (phông hệ thống hiện thành Segoe UI trên Windows), nền đen, chữ căn giữa, chữ xám xen chữ trắng nổi bật; không chữ đơn cách, không ngoặc vuông, không hạt nhiễu. Lớp điều khiển (menu, nút, nhãn trạng thái, thanh chương kiểu iOS) làm bằng kính lỏng như Liquid Glass của Apple: khúc xạ ở mép, viền bắt sáng theo chuột, hiện ra bằng cách tăng dần độ khúc xạ; nhãn trên nền sáng dùng kính tối cho dễ đọc. Tiêu đề nhô lên từng từ khỏi lớp nhòe khi mỗi đoạn hiện ra và tan lên theo nhịp cuộn khi cuộn qua. Phần cuối trang là nhịp thứ năm ngay trong cảnh 3D (lùi ra toàn cảnh, nút kính "Vào xem"), không còn mảng phẳng tách rời. Nền và hiệu ứng chuột (chốt 08/10, học từ alche.studio): phía sau là bức tường ảnh của nhóm, tối cho tới khi đèn theo chuột rọi tới, kể chuyện cùng cảnh (sáng quét khi sao lưu, tắt khi sập, sáng lại khi khôi phục); rê chuột để lại vệt gợn như mặt nước trên cả khung hình. Tường dùng 48 phong cảnh tạo ngẫu nhiên, mỗi ô lật, cắt và đổi tông riêng nên không thấy lặp; sàn là sân khấu đen bóng, không xám. Hướng trừu tượng kiểu aether1.ai (mỗi cụm là quả cầu vòng sáng, ảnh là chấm sáng) đã thử và bị loại vì xấu và không liên quan tới máy chủ; cảnh phải là vật thật nhận ra được. Cảnh phải mượt (chốt 08/10): mỗi khung hình dưới 16 ms trên laptop phổ thông, chuột kéo máy quay trễ nhẹ chứ không giật theo, máy yếu thì tự bớt hiệu ứng (sàn phản chiếu, độ nét) thay vì giật. Nấc cuộn đầu tiên cảnh đã phải chuyển động, không có đoạn đứng yên ở đầu trang, nhưng cũng không được đi quá nhanh: mỗi nấc lăn chuột (100 px) chỉ đi khoảng 1/20 một đoạn. Nhãn trạng thái của tủ và két luôn nằm trong khung hình; trên điện thoại chỉ hiện nhãn của vật đang được nói tới. Trình đọc màn hình đọc nguyên câu tiêu đề, và người bật "giảm chuyển động" chỉ thấy chữ hiện ra và mờ đi.
   - Thiết kế chi tiết của giao diện chốt trong một bản thiết kế riêng cho web (đang làm từ 08/10).
   - Nếu không kịp làm trang giới thiệu thì nộp với trang dùng. Phần DR không phụ thuộc giao diện.
   - Giao diện là code nằm trong Git, nên không cần sao lưu. Script đo gọi thẳng API, nên giao diện nặng hay nhẹ đều không ảnh hưởng số đo.
@@ -126,7 +126,7 @@ Terraform state chứa khóa truy cập, nên không bao giờ đưa vào Git. S
 
 ## 3. Mục tiêu RPO và RTO
 
-Đây là mục tiêu **tạm**. Trình tự đúng:
+Đây là mục tiêu tạm. Trình tự đúng:
 1. Huong-19 viết bản đánh giá ảnh hưởng (BIA) trong `danh-gia-anh-huong.md` trước ngày 14/10, dùng các con số dưới đây làm bản nháp.
 2. Nhóm sửa con số nếu BIA cho thấy cần.
 3. Chốt mục tiêu trước vòng diễn tập thử.
@@ -138,7 +138,7 @@ Diễn tập xong, báo cáo so số đo thật với mục tiêu.
 | Bài viết (Postgres) | 5 phút | 15 phút | 2 phút |
 | Ảnh | 5 phút | 15 phút | 2 phút |
 | Cấu hình Kubernetes | 1 giờ | 15 phút | 0 (đã có sẵn ở cụm dự phòng) |
-| **Cả web, từ lúc sự cố tới lúc tên miền phục vụ lại** | | **60 phút** | **10 phút** |
+| **Cả web, từ lúc sự cố tới lúc tên miền phục vụ lại** | | 60 phút | 10 phút |
 
 RTO từng thành phần chỉ tính thời gian khôi phục thành phần đó. Các thành phần được khôi phục song song. RTO cả web cộng thêm thời gian phát hiện, quyết định, dựng hạ tầng và đổi DNS.
 
@@ -164,7 +164,7 @@ Két và bản ở server bạn chỉ dùng khi mất kho ở Nhật hoặc mấ
 
 Hệ quả có lợi: mỗi lần bật phiên là một lần khôi phục thật. Số lần và thời gian của những lần khôi phục này cũng được ghi lại, làm thêm bằng chứng cho báo cáo.
 
-Mỗi lần dựng cụm mới, cơ sở dữ liệu ghi WAL vào một **đường dẫn mới** (tham số `serverName`), để không ghi lẫn vào lịch sử của cụm cũ. Đường dẫn đang dùng được ghi trong kho sao lưu để runbook đọc ra. Bước làm thử phải kiểm tra lại điểm này.
+Mỗi lần dựng cụm mới, cơ sở dữ liệu ghi WAL vào một đường dẫn mới (tham số `serverName`), để không ghi lẫn vào lịch sử của cụm cũ. Đường dẫn đang dùng được ghi trong kho sao lưu để runbook đọc ra. Bước làm thử phải kiểm tra lại điểm này.
 
 ### 4.2 Sao lưu cái gì
 
@@ -190,12 +190,12 @@ Job két chạy lúc tắt phiên, và mỗi 24 giờ nếu phiên kéo dài. M�
 - các ảnh mới;
 - bản Velero mới nhất.
 
-Sau đó job **mã hóa gói bằng `age`** rồi tải lên két:
-- Gói được mã hóa cho **hai khóa**, khóa nào cũng mở được:
+Sau đó job mã hóa gói bằng `age` rồi tải lên két:
+- Gói được mã hóa cho hai khóa, khóa nào cũng mở được:
   - khóa của Quang, để ngoài Azure (mục 4.4);
   - khóa riêng cho bài diễn tập hằng ngày trên GitHub (mục 4.6).
 - Khóa công khai dùng để mã hóa thì nằm trong cụm.
-- Job dùng mã truy cập (SAS) **chỉ có quyền tạo mới**, không có quyền ghi đè hay xóa. Đã lọt mã truy cập của cụm cũng không xóa được két.
+- Job dùng mã truy cập (SAS) chỉ có quyền tạo mới, không có quyền ghi đè hay xóa. Đã lọt mã truy cập của cụm cũng không xóa được két.
 
 RPO của két: tính tới lần tắt phiên gần nhất, hoặc tối đa 24 giờ.
 
@@ -246,7 +246,7 @@ Các mã chỉ đọc và khóa `age` dành cho GitHub được để trong mụ
 
 ### 4.5 Theo dõi sao lưu
 
-Sao lưu hỏng mà không ai biết là rủi ro lớn nhất của một kế hoạch DR. Vì vậy, một workflow GitHub Actions chạy **mỗi giờ**, nằm ngoài Azure và không phụ thuộc cụm. Workflow đọc kho ở Nhật bằng mã chỉ đọc và kiểm tra:
+Sao lưu hỏng mà không ai biết là rủi ro lớn nhất của một kế hoạch DR. Vì vậy, một workflow GitHub Actions chạy mỗi giờ, nằm ngoài Azure và không phụ thuộc cụm. Workflow đọc kho ở Nhật bằng mã chỉ đọc và kiểm tra:
 
 | Kiểm tra | Ngưỡng báo lỗi |
 |---|---|
@@ -339,7 +339,7 @@ Toàn bộ kết quả lưu thành CSV/JSON trong `data/<mã lần diễn tập>
 
 Trình tự hai cách chuyển được vẽ ở mục 6.1.
 
-**Giới hạn của D4 và D5:** hai cụm cùng ở `koreacentral` (mục 1), nên D4 và D5 chứng minh khôi phục được khi mất cả cụm chính lẫn kho ảnh chính, với dữ liệu lấy thật từ Nhật. Chúng **không** chứng minh hệ thống chịu được mất vùng thật: mất cả `koreacentral` thì cụm dự phòng của cách ấm cũng mất theo. Báo cáo nêu rõ điều này, và ước tính chi phí của cách ấm thật cho mất vùng, tức cụm dự phòng đặt ở vùng thứ hai.
+**Giới hạn của D4 và D5:** hai cụm cùng ở `koreacentral` (mục 1), nên D4 và D5 chứng minh khôi phục được khi mất cả cụm chính lẫn kho ảnh chính, với dữ liệu lấy thật từ Nhật. Chúng không chứng minh hệ thống chịu được mất vùng thật: mất cả `koreacentral` thì cụm dự phòng của cách ấm cũng mất theo. Báo cáo nêu rõ điều này, và ước tính chi phí của cách ấm thật cho mất vùng, tức cụm dự phòng đặt ở vùng thứ hai.
 
 **Hai vòng:**
 - **Vòng thử:** D1–D7, mỗi tình huống một lần. Sửa runbook sau mỗi lần.
@@ -385,7 +385,7 @@ sequenceDiagram
   - Quang không liên lạc được trong 15 phút thì Huong-19 quyết định.
   - Người quyết định ghi giờ bằng lệnh của bước 2.
 - **Báo tin:** runbook có sẵn ba mẫu tin nhắn gửi vào nhóm Zalo: "bắt đầu sự cố", "đã chuyển sang dự phòng", "đã khôi phục xong". Mỗi tin ghi giờ gửi.
-- **Làm thêm nếu kịp: nút kích hoạt khôi phục trên GitHub.**
+- Làm thêm nếu kịp: nút kích hoạt khôi phục trên GitHub.
   - Runbook chạy được từ một workflow, không cần laptop của Quang.
   - Phải có Quang hoặc Huong-19 bấm duyệt thì workflow mới chạy. GitHub tự ghi lại ai bấm, lúc nào.
   - GitHub đăng nhập Azure bằng OIDC, không lưu mật khẩu.
@@ -413,7 +413,7 @@ Chỗ khác với Azure chỉ là cấu hình kho lưu trữ, tách thành hai b
 
 Bản thu nhỏ chạy được D1, D2, D3 (cách ấm dùng cụm bản sao trong kind thứ hai) và D6 (thử xóa két bằng khóa chống xóa của SeaweedFS). Phải dùng bản SeaweedFS đã sửa lỗi khóa chống xóa (09/2026).
 
-Bản thu nhỏ **không** có:
+Bản thu nhỏ không có:
 - mất vùng thật;
 - đổi DNS;
 - object replication của Azure.
@@ -436,7 +436,7 @@ Giá bán lẻ Azure tại `koreacentral` và `japanwest`, đọc ngày 07/10/20
 | DNS (Cloudflare Free) | 0 | | 0 |
 | Truyền dữ liệu Hàn Quốc → Nhật (WAL, ảnh) | 0,08 / GB | khoảng 10 GB | 0,8 |
 | Dữ liệu ra internet (GitHub tải bản sao lưu mỗi ngày) | 100 GB đầu mỗi tháng miễn phí, sau đó 0,12 / GB | khoảng 15 GB / tháng | 0 |
-| **Tổng** | | | **khoảng 10** |
+| **Tổng** | | | khoảng 10 |
 
 Buổi chạy thử 24/10 đo RAM đỉnh 46%, nên giữ B2als v2.
 

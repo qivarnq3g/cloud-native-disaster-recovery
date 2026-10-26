@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Hàm dùng chung của các script phiên. Mọi lệnh az đều ghi rõ -g.
 source "$(dirname "${BASH_SOURCE[0]}")/env.sh"
 
 die() { local code="$1"; shift; echo "$*" >&2; exit "$code"; }
@@ -23,7 +22,6 @@ power_state() {
     --query "instanceView.statuses[?starts_with(code,'PowerState/')].code" -o tsv
 }
 
-# mark <file> <cluster> <mark>: ghi mốc thời gian UTC vào $DATA_DIR/<file>.
 mark() {
   local f="$DATA_DIR/$1"
   [ -f "$f" ] || echo "cluster,mark,time_utc" > "$f"
