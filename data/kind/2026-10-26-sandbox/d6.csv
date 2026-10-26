@@ -1,0 +1,8 @@
+run_id,iteration,attempt,identity,refused,error_code,original_intact,result
+local-D6-1-20261026112401,1,delete_version,admin,true,AccessDenied,true,pass
+local-D6-1-20261026112401,1,delete_version_bypass_governance,admin,true,AccessDenied,true,pass
+local-D6-1-20261026112401,1,shorten_retention,admin,true,AccessDenied,true,pass
+local-D6-1-20261026112401,1,delete_version_as_writer,vault-writer,true,AccessDenied,true,pass
+local-D6-1-20261026112401,1,delete_bucket,admin,true,BucketNotEmpty,true,pass
+local-D6-1-20261026112401,1,overwrite,admin,false,,true,pass
+local-D6-1-20261026112401,1,delete_latest,admin,false,,true,pass
