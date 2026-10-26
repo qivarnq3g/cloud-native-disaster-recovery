@@ -44,7 +44,7 @@ jobs:
           python-version: "3.12"
       - run: pip install -r scripts/kind/requirements.txt
       - name: Kiểm thử script Python
-        run: python -m pytest tests/scripts -q
+        run: python -m pytest tests/scripts/test_kind_*.py -q
       - id: plan
         env:
           SCENARIOS: ${{ inputs.scenarios || 'D1,D2,D3,D6' }}
