@@ -695,3 +695,14 @@ git commit -m "Hạ tầng tuần 3: ghi kết quả, bật trang dùng"
 ## Ngoài kế hoạch này (tuần 4 trở đi)
 
 Cụm dự phòng chạy thật và cách ấm, job két với `age`, server bạn, script đo của mục 5.1, bản thu nhỏ trên kind, nút kích hoạt khôi phục trên GitHub. Kho ảnh dự phòng, replication tới nó và két đã được tạo ở Task 3 để tuần 4 chỉ còn phần trong cụm.
+
+### Đề còn đòi mà kế hoạch này chưa làm (so ngày 26/10)
+
+So với đề 23 (trang 23) và yêu cầu chung (trang 2) trong file đề. Mỗi mục cần một kế hoạch riêng ở tuần 4, viết theo đúng mục thiết kế đã có.
+
+- [ ] **Mã hóa bản sao lưu.** Đề: "Backup được mã hóa, có chính sách retention và bằng chứng khôi phục thành công". Azure tự mã hóa lúc lưu chưa đủ làm bằng chứng của nhóm; job két mã hóa bằng `age` cho hai khóa như thiết kế mục 4.3 và 4.4, kèm một lần giải mã và khôi phục thử có log.
+- [ ] **Diễn tập mất cụm và giả lập mất vùng, đo từng bước.** Đề: xóa có kiểm soát namespace hoặc cụm, kích hoạt runbook trên môi trường dự phòng, đo phát hiện, quyết định, cấp phát, phục hồi dữ liệu, kiểm thử, chuyển lưu lượng. Cần cụm dự phòng, script đo mục 5.1 và 5.2, các lượt D1 tới D6 theo mục 6, biên bản trong `docs/dien-tap/`.
+- [ ] **Runbook sửa sau diễn tập và kế hoạch kiểm thử lại.** Đề yêu cầu bản đã chỉnh sau diễn tập, không phải bản viết trước. Theo mục 6.1 và 6.3.
+- [ ] **Bản chạy trên máy cá nhân.** Đề: phạm vi tối thiểu phải chạy được trên máy cá nhân, phòng máy hoặc gói miễn phí. Bản thu nhỏ hai cụm kind với SeaweedFS theo mục 6.4, có hướng dẫn tái lập.
+- [ ] **Cả ba thành viên tham gia.** Đề: mỗi người hiểu toàn bộ kiến trúc, mã nguồn và kết quả đo; kho có lịch sử đóng góp của ba người. Huong-19 và minhthw1605 mỗi người ngồi cùng ít nhất một phiên Azure, tự commit phần của mình (BIA, checklist, biên bản, script biểu đồ), và ít nhất một lượt diễn tập do một trong hai người tự chạy theo runbook (mục 6 và 8).
+- [ ] **Sản phẩm bàn giao còn lại.** Bộ số đo CSV kèm script tạo lại bảng và biểu đồ, hướng dẫn dọn tài nguyên và ước tính chi phí, danh mục rủi ro bảo mật còn lại (có điểm Velero dùng khóa tài khoản ở Task 5), thẻ phiên bản cho bản nghiệm thu, video hoặc buổi demo có cả luồng bình thường và một tình huống lỗi.
