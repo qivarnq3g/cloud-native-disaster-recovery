@@ -72,7 +72,7 @@ impl ImageStore {
     }
 
     fn thumbnail_path(id: Uuid) -> Path {
-        Path::from(format!("thumbnail/{id}.avif"))
+        Path::from(format!("thumbnail/{id}.webp"))
     }
 
     pub async fn put_original(&self, id: Uuid, data: Bytes) -> object_store::Result<()> {

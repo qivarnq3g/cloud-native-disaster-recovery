@@ -1,5 +1,5 @@
 FROM rust:1.97.1-alpine AS build
-RUN apk add --no-cache build-base nasm
+RUN apk add --no-cache build-base
 WORKDIR /src
 COPY Cargo.toml Cargo.lock ./
 COPY .sqlx ./.sqlx
