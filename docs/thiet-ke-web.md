@@ -39,7 +39,7 @@ Thành công khi:
   - Chọn nơi cất bằng cấu hình lúc chạy, không biên dịch hai bản.
   - Thư viện chính thức của Azure cho Rust còn ở giai đoạn thử nghiệm nên không dùng.
 - Mô tả lệnh OpenAPI 3.1 sinh từ code bằng `utoipa`, xuất ở `/openapi.json`.
-- Xử lý ảnh: `image` để đọc, `fast_image_resize` để thu nhỏ, `ravif` để ghi ảnh nhỏ dạng AVIF.
+- Xử lý ảnh: `image` để đọc, `fast_image_resize` để thu nhỏ, `webp` để ghi ảnh nhỏ dạng WebP (AVIF đo p95 1340 ms trên B2als v2, vượt 500 ms).
 - Image container: biên dịch tĩnh (musl, TLS bằng `rustls`), chạy trên nền `distroless/static` bằng người dùng không phải root. Kích thước mục tiêu khoảng 10–15 MB, đo thật ở bước làm thử.
 - Phiên bản cụ thể của mọi thư viện ghi trong `docs/phien-ban.md`.
 
@@ -208,7 +208,7 @@ Sửa và xóa bài, tài khoản người dùng, bình luận, tìm kiếm, nhi
 
 | Việc | Ngưỡng | Nếu không đạt |
 |---|---|---|
-| Thời gian tạo ảnh nhỏ AVIF trên B2als v2 | Phân vị 95 không quá 500 ms | Đổi ảnh nhỏ sang WebP |
+| Thời gian tạo ảnh nhỏ AVIF trên B2als v2 | Phân vị 95 không quá 500 ms | Đổi ảnh nhỏ sang WebP. Đo 24/10: p95 1340 ms, không đạt, đã đổi sang WebP |
 | `object_store` xác thực Azure Blob bằng mã SAS và chạy với SeaweedFS | Kiểm thử chạy thật qua | Viết lớp kho ảnh riêng cho từng nơi cất |
 | Biên dịch tĩnh musl cùng `ravif` | Image chạy được trên `distroless/static` | Dùng `distroless/cc` và liên kết động |
 | Kích thước image API | Khoảng 10–15 MB | Ghi số thật, không chặn |

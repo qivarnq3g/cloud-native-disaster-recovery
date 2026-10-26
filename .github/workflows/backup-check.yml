@@ -1,0 +1,47 @@
+name: backup-check
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: backup-check
+jobs:
+  check:
+    if: github.event_name == 'workflow_dispatch' || vars.BACKUP_CHECK_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/requirements.txt
+      - name: Lấy nhánh ops-log
+        run: |
+          if git ls-remote --exit-code --heads origin ops-log > /dev/null; then
+            git clone --quiet --single-branch --branch ops-log "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ops
+          else
+            mkdir ops && git -C ops init --quiet -b ops-log
+            git -C ops remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          fi
+      - name: Kiểm tra
+        env:
+          BACKUP_CHECK_SAS_JSON: ${{ secrets.BACKUP_CHECK_SAS_JSON }}
+        run: python -m scripts.dr.backup_check --csv "ops/data/backup-check/$(date -u +%Y-%m).csv"
+      - name: Ghi CSV vào ops-log
+        if: always()
+        working-directory: ops
+        run: |
+          [ -d data ] || { echo "không có dòng CSV mới"; exit 0; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet && exit 0
+          git commit --quiet -m "backup-check $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3; do
+            git push --quiet origin HEAD:ops-log && exit 0
+            git pull --quiet --rebase origin ops-log || true
+            sleep $((i * 5))
+          done
+          exit 1

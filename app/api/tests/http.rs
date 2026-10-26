@@ -58,7 +58,7 @@ async fn lists_gets_post_and_original_image() {
 }
 
 #[tokio::test]
-async fn thumbnail_is_avif_for_large_and_original_for_small() {
+async fn thumbnail_is_webp_for_large_and_original_for_small() {
     let app = start(writable_store(TestStore::Seaweed), false).await;
     let large = insert_directly(&app, 1200, 900).await;
     let small = insert_directly(&app, 64, 48).await;
@@ -68,7 +68,7 @@ async fn thumbnail_is_avif_for_large_and_original_for_small() {
         .send()
         .await
         .unwrap();
-    assert_eq!(r.headers()["content-type"], "image/avif");
+    assert_eq!(r.headers()["content-type"], "image/webp");
     assert_eq!(
         r.headers()["etag"],
         format!("\"{}-thumbnail\"", large.image_sha256)
