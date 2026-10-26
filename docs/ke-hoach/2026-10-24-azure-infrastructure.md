@@ -112,7 +112,7 @@
 Run: `winget install --id Hashicorp.Terraform -e` rồi mở shell mới, `terraform version`.
 Expected: in ra `Terraform v1.<x>.<y>` với `x` từ 7 trở lên (cần `mock_provider` cho `terraform test`). Ghi đúng số đó vào `docs/versions.md` cùng mọi phiên bản ở mục Tech Stack. Trong `ci`, `hashicorp/setup-terraform@v3` dùng đúng số này. Cài thêm Velero CLI v1.18.4 (tệp `velero-v1.18.4-windows-amd64.tar.gz` từ trang release của `vmware-tanzu/velero`) vào `~/bin`, `velero version --client-only` in `v1.18.4`.
 
-- [ ] **Step 2: `.gitignore`, `scripts/requirements.txt` (`azure-storage-blob==12.*`, `pytest==8.*`), `conftest.py` thêm thư mục gốc kho vào `sys.path` để test nhập được `scripts.dr`**
+- [ ] Step 2: `.gitignore`, `scripts/requirements.txt` (`azure-storage-blob==12.*`, `pytest==8.*`), `conftest.py` thêm thư mục gốc kho vào `sys.path` để test nhập được `scripts.dr`
 
 - [ ] Step 3: Thêm job `infra` vào `.github/workflows/ci.yml`, chạy trên `ubuntu-latest`, Python 3.12, cài `scripts/requirements.txt`. Job phải xanh khi `infra/terraform/*` chưa có tệp `.tf` nào (bỏ qua thư mục rỗng) và khi `tests/scripts` chỉ có `conftest.py`.
 
