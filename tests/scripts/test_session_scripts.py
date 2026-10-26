@@ -164,3 +164,12 @@ def test_every_az_call_names_a_group(fake_tools):
     fake_tools.run("session-start.sh", "standby", "abc")
     az = [line for line in fake_tools.calls.splitlines() if line.startswith("az ")]
     assert az and all(" -g rg-dr-" in line for line in az), az
+
+
+def test_start_stops_when_session_file_cannot_be_read(fake_tools, monkeypatch):
+    # Đọc session.json lỗi (sai khóa, mất mạng) không được hiểu là "không có phiên nào chạy".
+    monkeypatch.setattr(sys, "executable", str(fake_tools.bin / "az"), raising=False)
+    fake_tools.fail_on = "-m scripts.dr.session_state"
+    r = fake_tools.run("session-start.sh", "primary", "abc")
+    assert r.returncode == 1, (r.returncode, r.stderr)
+    assert "terraform" not in fake_tools.calls
