@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-# Biến và hàm dùng chung cho các script của bản thu nhỏ trên kind (mục 6.4 thiết kế).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 export ROOT
-# Khóa và trạng thái dùng một lần, ngoài kho; down.sh xóa.
 export STATE_DIR="${DR_KIND_STATE:-$HOME/.dr-kind}"
 export DATA_DIR="${DR_KIND_DATA:-$ROOT/data/kind}"
 export PRIMARY_PORT="${PRIMARY_PORT:-18080}"
@@ -30,7 +28,6 @@ port_of() { if [ "$1" = primary ]; then echo "$PRIMARY_PORT"; else echo "$STANDB
 
 cred() { "$PYTHON" -m scripts.kind.store get "$STATE_DIR" "$1" "$2"; }
 
-# Ghi một mốc vào data/kind/up.csv: run_id,cluster,step,started_at,ended_at,duration_s
 timed() {
   local cluster="$1" step="$2"; shift 2
   local t0 t1 s0 s1
@@ -42,9 +39,6 @@ timed() {
   echo "${DR_KIND_RUN_ID:-manual},$cluster,$step,$t0,$t1,$(awk "BEGIN{printf \"%.1f\", $s1-$s0}")" >> "$DATA_DIR/up.csv"
 }
 
-# Gói mọi image cần nạp vào cụm (chỉ nền tảng của máy) thành một tệp, giữ trong thư mục cache để các
-# lần dựng sau dùng lại. Tên tệp đổi khi danh sách image hay image API đổi. Gói xong thì xóa bản trong
-# Docker của máy: máy GitHub chỉ còn khoảng 14 GB trống, giữ cả hai bản thì đầy ổ.
 image_archive() {
   local images key dir img
   images="$(grep -v '^#' "$ROOT/infra/kind/images.txt")"
@@ -53,10 +47,8 @@ image_archive() {
   if [ ! -s "$dir/images-$key.tar" ]; then
     mkdir -p "$dir"; rm -f "$dir"/images-*.tar
     for img in $images; do docker image inspect "$img" >/dev/null 2>&1 || docker pull -q "$img" >/dev/null; done
-    # shellcheck disable=SC2086
     docker save --platform "linux/$(docker version -f '{{.Server.Arch}}')" -o "$dir/images-$key.tar.tmp" $images "$API_IMAGE"
     mv "$dir/images-$key.tar.tmp" "$dir/images-$key.tar"
-    # shellcheck disable=SC2086
     docker rmi $images >/dev/null 2>&1 || true
   fi
   echo "$dir/images-$key.tar"
@@ -64,7 +56,6 @@ image_archive() {
 
 new_server_name() { echo "$1-$(date -u +%Y%m%d%H%M%S)"; }
 
-# Áp một mẫu cấu hình, thay các __TÊN__ theo cặp TÊN=giá_trị.
 apply_tpl() {
   local cluster="$1" tpl="$2"; shift 2
   local args=()
@@ -72,8 +63,6 @@ apply_tpl() {
   sed "${args[@]}" "$tpl" | k "$cluster" apply -f -
 }
 
-# Secret và ConfigMap riêng của từng cụm trong namespace dr-api (mục 2.5 thiết kế web).
-# $2: bucket ảnh, $3: true nếu API chạy chế độ chỉ đọc.
 site_config() {
   local cluster="$1" bucket="$2" read_only="$3" identity="api-$1"
   k "$cluster" create namespace dr-api --dry-run=client -o yaml | k "$cluster" apply -f - >/dev/null
@@ -100,7 +89,6 @@ deploy_api() {
   k "$1" -n dr-api rollout status deploy/api --timeout=300s
 }
 
-# Chờ /healthz của cụm trả 200 qua cổng trên máy.
 wait_healthy() {
   local port; port="$(port_of "$1")"
   for _ in $(seq 1 "${2:-300}"); do
@@ -110,7 +98,6 @@ wait_healthy() {
   log "API của $1 không trả 200 ở cổng $port"; return 1
 }
 
-# Bản đầy đủ của cơ sở dữ liệu qua plugin Barman; in tên bản khi xong.
 db_backup() {
   local cluster="$1" name="$2"
   k "$cluster" -n dr-api apply -f - >/dev/null <<YAML

@@ -1,6 +1,3 @@
-# Bản thu nhỏ trên kind: ảnh trong SeaweedFS qua S3, API mở bằng NodePort 30080
-# (kind ánh xạ ra cổng trên máy), image build tại máy rồi nạp bằng `kind load`.
-# Khóa S3 nằm trong Secret image-store (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY) do up.sh tạo.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:

@@ -1,4 +1,3 @@
-# Cách ấm: cụm bản sao ở cụm dự phòng, liên tục đọc WAL của __SOURCE_SERVER__ từ kho sao lưu.
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:

@@ -1,4 +1,3 @@
-# Chart 12.2.1 là bản mới nhất (app 1.18.2); ghi đè image lên v1.18.4 như docs/versions.md.
 image:
   tag: v1.18.4
 upgradeCRDs: false

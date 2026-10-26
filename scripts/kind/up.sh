@@ -1,11 +1,4 @@
 #!/usr/bin/env bash
-# Dựng toàn bộ bản thu nhỏ trên một máy (mục 6.4 thiết kế):
-#   SeaweedFS (thay Azure Blob) với các bucket cnpg, velero, images, images-copy, images-standby, vault;
-#   một container chép ảnh (thay object replication của Azure);
-#   cụm kind primary: CNPG + Barman + Velero + API, bộ dữ liệu mẫu;
-#   cụm kind standby (hồ sơ full): cụm bản sao của CNPG đọc WAL từ kho (cách ấm). API ở đây để 0 bản
-#   chạy: lúc khởi động API chạy sqlx migrate, mà cơ sở dữ liệu bản sao chỉ đọc nên API không lên được.
-# Dùng: up.sh [--profile full|primary] [--seed SỐ_BÀI]
 source "$(dirname "$0")/lib.sh"
 PROFILE=full
 SEED="${SEED_POSTS:-1000}"
@@ -47,7 +40,6 @@ start_store() {
     -v "$STATE_DIR/s3.json:/etc/seaweedfs/s3.json:ro" "$SEAWEEDFS_IMAGE" \
     server -s3 -s3.config=/etc/seaweedfs/s3.json -dir=/data -master.volumeSizeLimitMB=64 >/dev/null
   "$PYTHON" -m scripts.kind.store buckets "$STATE_DIR"
-  # Chép ảnh liên tục, chỉ thêm không xóa, giống object replication có lưu phiên bản.
   docker run -d --name dr-image-copy --network kind --entrypoint sh \
     -e RCLONE_CONFIG_SW_TYPE=s3 -e RCLONE_CONFIG_SW_PROVIDER=SeaweedFS \
     -e RCLONE_CONFIG_SW_ENDPOINT=http://dr-seaweedfs:8333 \
@@ -67,7 +59,6 @@ primary_app() {
   wait_db primary >/dev/null
   deploy_api primary >/dev/null
   wait_healthy primary
-  # Cụm bản sao ở standby cần một bản đầy đủ để bắt đầu.
   db_backup primary "base-$(date -u +%Y%m%d%H%M%S)"
 }
 

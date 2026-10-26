@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-# Chạy một tình huống diễn tập trên bản thu nhỏ.
-#   run.sh D1|D2|D3|D6                 chạy một lần trên môi trường up.sh đã dựng
-#   run.sh D1 --iterations N [--keep]  chạy N lần, mỗi lần dựng lại từ đầu (mục 6 thiết kế: sau mỗi lần
-#                                      diễn tập dựng lại trạng thái ban đầu, gồm cả bộ dữ liệu mẫu)
-# Số đo ghi vào data/kind/ (steps.csv, runs.csv, d6.csv, up.csv).
 source "$(dirname "$0")/lib.sh"
 SCENARIO="${1:-}"; shift || true
 ITERATIONS=""; KEEP=false

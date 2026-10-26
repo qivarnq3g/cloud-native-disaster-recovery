@@ -1,4 +1,3 @@
-# Kho sao lưu của CNPG trên SeaweedFS (thay cho kho ở Nhật). Secret backup-store do up.sh tạo.
 apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
 metadata:

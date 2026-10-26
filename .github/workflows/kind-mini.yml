@@ -1,7 +1,3 @@
-# Bản thu nhỏ trên kind (mục 6.4 thiết kế): lặp D1, D2, D3, D6 N lần, chia thành nhiều job song song
-# để mỗi job xa giới hạn 6 giờ, rồi gom CSV và đo đỉnh RAM, ổ đĩa của máy.
-# Chạy tay bằng workflow_dispatch. Trên pull request chỉ chạy mỗi tình huống một lần khi đổi các tệp
-# của bản thu nhỏ, để biết thay đổi còn chạy được.
 name: kind-mini
 on:
   workflow_dispatch:
@@ -83,7 +79,6 @@ jobs:
     name: drill (${{ matrix.scenario }}, ${{ matrix.chunk }})
     env:
       RUN_PREFIX: gh${{ github.run_id }}-${{ github.run_attempt }}-c${{ matrix.chunk }}
-      # Ghi số đo ra ngoài data/kind/ để không lẫn các thư mục số đo đã commit.
       DR_KIND_DATA: ${{ github.workspace }}/results
     steps:
       - uses: actions/checkout@v5

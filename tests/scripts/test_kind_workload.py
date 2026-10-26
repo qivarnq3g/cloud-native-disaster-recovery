@@ -10,8 +10,7 @@ def test_png_is_valid_and_about_200_kb():
     assert png[:8] == b"\x89PNG\r\n\x1a\n"
     width, height = struct.unpack(">II", png[16:24])
     assert (width, height) == (256, 256)
-    assert 190_000 < len(png) < 1_048_576  # dưới giới hạn 1 MiB của API
-    # Mỗi khối có CRC đúng
+    assert 190_000 < len(png) < 1_048_576
     pos = 8
     while pos < len(png):
         (length,) = struct.unpack(">I", png[pos:pos + 4])
@@ -40,5 +39,5 @@ def test_ledger_appends_and_numbers(tmp_path):
     assert ledger.next_seq() == 1
     ledger.append(LedgerEntry(1, "id-1", "2026-10-26T12:00:00.000000Z", "aa", "seed"))
     ledger.append(LedgerEntry(2, "id-2", "2026-10-26T12:00:01.000000Z", "bb", "writer"))
-    assert Ledger(path).next_seq() == 3  # mở lại không ghi đè tiêu đề
+    assert Ledger(path).next_seq() == 3
     assert [e.post_id for e in read_ledger(path)] == ["id-1", "id-2"]
