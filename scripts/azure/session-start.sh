@@ -8,7 +8,9 @@ check_cluster "$cluster"
 [ -n "$image_tag" ] || die 64 "cách dùng: session-start.sh <cluster> <image_tag>"
 
 [ "$(vm_count)" -lt 2 ] || die 4 "đã có hai máy vm-dr-*, không dựng máy thứ ba"
-[ "$(session get state)" != "running" ] || die 3 "session.json vẫn là running: tắt phiên trước bằng session-stop.sh"
+# Gán riêng để set -e dừng script khi không đọc được session.json, thay vì hiểu là chưa có phiên.
+state="$(session get state)"
+[ "$state" != "running" ] || die 3 "session.json vẫn là running: tắt phiên trước bằng session-stop.sh"
 ! vm_exists "$cluster" || die 3 "vm-dr-$cluster vẫn còn: tắt phiên trước bằng session-stop.sh"
 for s in install-software.sh deploy-api.sh; do
   [ -f "$REPO_ROOT/scripts/azure/$s" ] || die 5 "chưa có scripts/azure/$s"
