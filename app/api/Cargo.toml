@@ -6,7 +6,7 @@ rust-version = "1.97"
 publish = false
 
 [features]
-production = ["ravif/asm", "dep:mimalloc"]
+production = ["dep:mimalloc"]
 
 [dependencies]
 anyhow = "1.0.104"
@@ -19,7 +19,7 @@ ipnet = "2.12"
 lru = "0.12"
 mimalloc = { version = "0.1.52", optional = true }
 object_store = { version = "0.12.5", features = ["azure", "aws"] }
-ravif = { version = "0.11.20", default-features = false, features = ["threading"] }
+webp = { version = "0.3.1", default-features = false }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
 sha2 = "0.10"

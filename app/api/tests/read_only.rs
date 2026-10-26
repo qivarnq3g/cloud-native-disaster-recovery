@@ -20,7 +20,7 @@ async fn read_only_serves_thumbnails_writes_nothing_and_rejects_posts() {
             .await
             .unwrap();
         assert_eq!(r.status(), 200, "{kind:?}");
-        assert_eq!(r.headers()["content-type"], "image/avif");
+        assert_eq!(r.headers()["content-type"], "image/webp");
         assert_eq!(
             writable_store(kind).get_thumbnail(b.id).await.unwrap(),
             None,
