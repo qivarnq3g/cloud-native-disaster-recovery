@@ -42,18 +42,22 @@ timed() {
   echo "${DR_KIND_RUN_ID:-manual},$cluster,$step,$t0,$t1,$(awk "BEGIN{printf \"%.1f\", $s1-$s0}")" >> "$DATA_DIR/up.csv"
 }
 
-# Gói mọi image cần nạp vào cụm (chỉ linux/amd64 hay nền tảng của máy) thành một tệp, giữ trong
-# thư mục cache để các lần dựng sau dùng lại. Tên tệp đổi khi danh sách image hay image API đổi.
+# Gói mọi image cần nạp vào cụm (chỉ nền tảng của máy) thành một tệp, giữ trong thư mục cache để các
+# lần dựng sau dùng lại. Tên tệp đổi khi danh sách image hay image API đổi. Gói xong thì xóa bản trong
+# Docker của máy: máy GitHub chỉ còn khoảng 14 GB trống, giữ cả hai bản thì đầy ổ.
 image_archive() {
-  local images key dir
-  images="$(grep -v '^#' "$ROOT/infra/kind/images.txt") $API_IMAGE"
-  key="$( { echo "$images"; docker image inspect -f '{{.Id}}' "$API_IMAGE"; } | sha256sum | cut -c1-12)"
+  local images key dir img
+  images="$(grep -v '^#' "$ROOT/infra/kind/images.txt")"
+  key="$( { echo "$images $API_IMAGE"; docker image inspect -f '{{.Id}}' "$API_IMAGE"; } | sha256sum | cut -c1-12)"
   dir="${XDG_CACHE_HOME:-$HOME/.cache}/dr-kind"
   if [ ! -s "$dir/images-$key.tar" ]; then
     mkdir -p "$dir"; rm -f "$dir"/images-*.tar
+    for img in $images; do docker image inspect "$img" >/dev/null 2>&1 || docker pull -q "$img" >/dev/null; done
     # shellcheck disable=SC2086
-    docker save --platform "linux/$(docker version -f '{{.Server.Arch}}')" -o "$dir/images-$key.tar.tmp" $images
+    docker save --platform "linux/$(docker version -f '{{.Server.Arch}}')" -o "$dir/images-$key.tar.tmp" $images "$API_IMAGE"
     mv "$dir/images-$key.tar.tmp" "$dir/images-$key.tar"
+    # shellcheck disable=SC2086
+    docker rmi $images >/dev/null 2>&1 || true
   fi
   echo "$dir/images-$key.tar"
 }

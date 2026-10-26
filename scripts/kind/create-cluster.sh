@@ -14,7 +14,16 @@ create() {
 load_images() {
   # Tệp gói image do up.sh tạo (image_archive trong lib.sh); kind load docker-image lỗi với
   # kho image containerd của Docker 29 khi image có nhiều nền tảng.
-  kind load image-archive --name "$NAME" "$(image_archive)" >/dev/null
+  local archive node="$NAME-control-plane"; archive="$(image_archive)"
+  docker exec "$node" sh -c 'ctr -n k8s.io content ls -q 2>/dev/null' > "$STATE_DIR/blobs-before-$NAME"
+  kind load image-archive --name "$NAME" "$archive" >/dev/null
+  # Image vừa nạp đã được giải nén, nên bỏ các lớp nén của chúng (khoảng 0,8 GB mỗi cụm), như containerd
+  # vẫn làm khi tự kéo image (discard_unpacked_layers). Không bỏ lớp nào nút đã có từ trước: image kind
+  # nạp sẵn như local-path-helper chưa giải nén và có thể dùng chung lớp, mất là không tạo được ổ đĩa.
+  tar -tf "$archive" | sed -n 's#^blobs/sha256/#sha256:#p' | grep -vFxf "$STATE_DIR/blobs-before-$NAME" \
+    | docker exec -i "$node" sh -c 'cat > /tmp/ours; ctr -n k8s.io content ls 2>/dev/null \
+      | awk "/containerd.io\/uncompressed=/ {print \$1}" | grep -Fxf /tmp/ours | xargs -r ctr -n k8s.io content rm
+      rm /tmp/ours' >/dev/null 2>&1
 }
 
 install_software() {
