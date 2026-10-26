@@ -27,7 +27,7 @@ if kind get clusters 2>/dev/null | grep -qx 'primary\|standby' || docker inspect
 fi
 
 prepare_images() {
-  for img in $(grep -v '^#' "$ROOT/infra/kind/images.txt") "$SEAWEEDFS_IMAGE" "$RCLONE_IMAGE"; do
+  for img in "$SEAWEEDFS_IMAGE" "$RCLONE_IMAGE"; do
     docker image inspect "$img" >/dev/null 2>&1 || docker pull -q "$img" >/dev/null
   done
   if ! docker image inspect "$API_IMAGE" >/dev/null 2>&1; then

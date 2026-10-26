@@ -83,6 +83,8 @@ jobs:
     name: drill (${{ matrix.scenario }}, ${{ matrix.chunk }})
     env:
       RUN_PREFIX: gh${{ github.run_id }}-${{ github.run_attempt }}-c${{ matrix.chunk }}
+      # Ghi số đo ra ngoài data/kind/ để không lẫn các thư mục số đo đã commit.
+      DR_KIND_DATA: ${{ github.workspace }}/results
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -112,7 +114,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Bắt đầu đo RAM và ổ đĩa
         run: |
-          nohup python -m scripts.kind.resources sample data/kind/resources.csv --interval 5 > /dev/null 2>&1 &
+          nohup python -m scripts.kind.resources sample "$DR_KIND_DATA/resources.csv" --interval 5 > /dev/null 2>&1 &
           echo $! > /tmp/sampler.pid
       - name: Chạy ${{ matrix.scenario }} ${{ matrix.count }} lần
         run: bash scripts/kind/run.sh "${{ matrix.scenario }}" --iterations "${{ matrix.count }}"
@@ -123,15 +125,15 @@ jobs:
           sleep 1
           {
             echo '```'
-            python -m scripts.kind.resources peak data/kind/resources.csv
+            python -m scripts.kind.resources peak "$DR_KIND_DATA/resources.csv"
             echo '```'
-            python -m scripts.kind.results summary data/kind
+            python -m scripts.kind.results summary "$DR_KIND_DATA"
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: kind-${{ matrix.scenario }}-${{ matrix.chunk }}
-          path: data/kind/
+          path: results/
           retention-days: 90
 
   report:
