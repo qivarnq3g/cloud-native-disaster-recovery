@@ -136,7 +136,7 @@ Diễn tập xong, báo cáo so số đo thật với mục tiêu.
 | Thành phần | RPO | RTO cách lạnh | RTO cách ấm |
 |---|---|---|---|
 | Bài viết (Postgres) | 5 phút | 15 phút | 2 phút |
-| Ảnh | 15 phút | 15 phút | 2 phút |
+| Ảnh | 5 phút | 15 phút | 2 phút |
 | Cấu hình Kubernetes | 1 giờ | 15 phút | 0 (đã có sẵn ở cụm dự phòng) |
 | **Cả web, từ lúc sự cố tới lúc tên miền phục vụ lại** | | **60 phút** | **10 phút** |
 
@@ -144,7 +144,7 @@ RTO từng thành phần chỉ tính thời gian khôi phục thành phần đó
 
 **Vì sao RPO đạt được:**
 - Bài viết: nhật ký thay đổi (WAL) được gửi đi chậm nhất mỗi 1 phút.
-- Ảnh: Azure tự chép, không cam kết độ trễ, nên phải đo.
+- Ảnh: Azure tự chép, không cam kết độ trễ, nên phải đo (đo 24/10: p95 129 s).
 - Cấu hình: Velero sao lưu mỗi giờ, còn file cấu hình gốc đã nằm trong Git.
 
 Két và bản ở server bạn chỉ dùng khi mất kho ở Nhật hoặc mất cả tài khoản Azure. Hai nơi này không đặt mục tiêu RTO, chỉ cần chứng minh khôi phục được (D7).
@@ -502,7 +502,7 @@ Bước đầu tiên của kế hoạch là một lần làm thử để trả l
 
 | Tệp | Nội dung | Khi nào có |
 |---|---|---|
-| `docs/phien-ban.md` | Phiên bản cụ thể của mọi công cụ: Kubernetes, CNPG, Barman Cloud Plugin, Velero và plugin Azure, cert-manager, Terraform và provider azurerm, Rust và các thư viện của máy chủ, Node.js và các thư viện của trang web, Postgres, restic, age | Chốt ở bước làm thử |
+| `docs/versions.md` | Phiên bản cụ thể của mọi công cụ: Kubernetes, CNPG, Barman Cloud Plugin, Velero và plugin Azure, cert-manager, Terraform và provider azurerm, Rust và các thư viện của máy chủ, Node.js và các thư viện của trang web, Postgres, restic, age | Chốt ở bước làm thử |
 | `docs/huong-dan-tai-lap.md` | Dựng lại từ đầu, chạy diễn tập, dọn sạch tài nguyên (gồm cả cách đợi két hết hạn), ước tính chi phí | Viết dần, hoàn thiện trước vòng chính thức |
 | `docs/runbook.md` | Từng bước khôi phục, mẫu tin nhắn, chỗ để chìa khóa | Lan Hương viết nháp, Quang duyệt |
 | `docs/checklist-khoi-phuc.md` | Danh sách kiểm tra theo mục 5.3 | Minh Thư |
@@ -513,8 +513,8 @@ Bước đầu tiên của kế hoạch là một lần làm thử để trả l
 | Workflow | Chạy khi | Việc |
 |---|---|---|
 | `ci` | Mỗi lần đẩy code | Chạy test; build image và đẩy lên GitHub Container Registry; kiểm tra định dạng và cú pháp Terraform |
-| `kiem-tra-sao-luu` | Mỗi giờ | Mục 4.5 |
-| `dien-tap-hang-ngay` | Mỗi ngày | Mục 4.6 |
+| `kiem-tra-sao-luu` (tệp `backup-check.yml`) | Mỗi giờ | Mục 4.5 |
+| `dien-tap-hang-ngay` (tệp `daily-drill.yml`) | Mỗi ngày | Mục 4.6 |
 | `ban-thu-nho` | Bấm tay | Mục 6.4: lặp các tình huống 30 lần, xuất CSV |
 | `kich-hoat-khoi-phuc` | Bấm tay, cần duyệt | Mục 6.2, làm thêm nếu kịp |
 
