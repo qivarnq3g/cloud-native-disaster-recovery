@@ -34,3 +34,23 @@ Phiên bản cụ thể của mọi công cụ dùng trong đồ án (mục 9 th
 | Rust | 1.97.1 |
 | `webp` (ảnh nhỏ, bọc libwebp) | 0.3.1 |
 | Node.js | 24 |
+
+## Bản thu nhỏ trên kind
+
+Dùng cho `scripts/kind/` và workflow `kind-mini` (mục 6.4 thiết kế). Phiên bản CNPG, Barman Cloud Plugin, Velero và cert-manager giống bảng Hạ tầng ở trên.
+
+| Công cụ hoặc image | Phiên bản | Ghi chú |
+|---|---|---|
+| kind | v0.33.0 | Image nút `kindest/node:v1.37.0` (ghim bằng digest trong `infra/kind/cluster.yaml.tpl`) |
+| kubectl | v1.36.5 | |
+| Helm | v4.3.1 | |
+| Chart `jetstack/cert-manager` | v1.21.2 | |
+| Chart `cnpg/cloudnative-pg` | 0.29.1 | Chart có `app_version` 1.30.1 |
+| Barman Cloud Plugin | v0.15.1 | Manifest chép vào `infra/kind/vendor/` |
+| Chart `vmware-tanzu/velero` | 12.2.1 | Chart mới nhất chỉ có `app_version` 1.18.2, nên ghi đè image thành `velero/velero:v1.18.4` |
+| Plugin Velero cho AWS (S3) | v1.14.4 | Trỏ vào SeaweedFS |
+| Postgres | `ghcr.io/cloudnative-pg/postgresql:18.6-minimal-trixie` | |
+| SeaweedFS | 4.48 (28/09/2026) | Có các sửa lỗi Object Lock của tháng 9/2026; cùng bản với `app/compose.yaml` |
+| rclone | 1.75.2 | Chép ảnh thay object replication |
+| Python | 3.12 trong workflow | |
+| `boto3` | 1.40.x | |

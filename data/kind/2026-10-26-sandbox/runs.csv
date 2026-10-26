@@ -1,0 +1,5 @@
+run_id,scenario,iteration,runner,cpus,mem_total_mb,seed_posts,incident_at,detected_at,service_restored_at,verified_at,rto_s,posts_acked,posts_restored,posts_missing,posts_missing_beyond_rpo,posts_holes,posts_extra,rpo_s,digest_match,content_digest,images_checked,images_bad,functional_ok,result
+local-D3-1,D3,1,vm,4,16091,1000,2026-10-26T11:12:31.432Z,2026-10-26T11:12:36.431Z,2026-10-26T11:12:44.957Z,2026-10-26T11:12:48.367Z,16.9,1091,1043,48,0,0,0,47.962,true,79e8f462d75f83ca603c62ea36440e0e,1043,0,true,pass
+local-D1-1-20261026111310,D1,1,vm,4,16091,1000,2026-10-26T11:18:05.452Z,2026-10-26T11:18:17.484Z,2026-10-26T11:19:06.731Z,2026-10-26T11:19:09.870Z,64.4,1096,1096,0,0,0,0,0.0,true,426b1bc758b5f70d65ad03faf50ba0f8,1096,0,true,pass
+local-D2-1-20261026111915,D2,1,vm,4,16091,1000,2026-10-26T11:21:01.537Z,2026-10-26T11:21:06.537Z,2026-10-26T11:23:54.299Z,2026-10-26T11:23:57.671Z,176.1,1188,1152,36,0,0,0,35.985,true,6bcdf9a5752f46eb72350caa1f2837a8,1152,0,true,pass
+local-D6-1-20261026112401,D6,1,vm,4,16091,,,,,,,,,,,,,,,,,,,pass

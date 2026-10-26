@@ -1,0 +1,166 @@
+name: kind-mini
+on:
+  workflow_dispatch:
+    inputs:
+      scenarios:
+        description: Các tình huống, cách nhau bằng dấu phẩy
+        default: D1,D2,D3,D6
+      iterations:
+        description: Số lần lặp mỗi tình huống
+        default: "30"
+      per_job:
+        description: Số lần mỗi job (khoảng 6 đến 8 phút một lần)
+        default: "5"
+  pull_request:
+    paths:
+      - .github/workflows/kind-mini.yml
+      - scripts/kind/**
+      - infra/kind/**
+      - infra/k8s/**
+      - tests/scripts/test_kind_*.py
+permissions:
+  contents: read
+concurrency:
+  group: kind-mini-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  KIND_VERSION: v0.33.0
+  KUBECTL_VERSION: v1.36.5
+  HELM_VERSION: v4.3.1
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/kind/requirements.txt
+      - name: Kiểm thử script Python
+        run: python -m pytest tests/scripts/test_kind_*.py -q
+      - id: plan
+        env:
+          SCENARIOS: ${{ inputs.scenarios || 'D1,D2,D3,D6' }}
+          ITERATIONS: ${{ inputs.iterations || '1' }}
+          PER_JOB: ${{ inputs.per_job || '1' }}
+        run: echo "matrix=$(python -m scripts.kind.results matrix "$SCENARIOS" "$ITERATIONS" "$PER_JOB")" >> "$GITHUB_OUTPUT"
+
+  api-image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image API một lần cho mọi job
+        uses: docker/build-push-action@v6
+        with:
+          context: app/api
+          tags: dr-api:kind
+          build-args: APP_VERSION=${{ github.sha }}
+          outputs: type=docker,dest=/tmp/dr-api.tar
+          cache-from: type=gha,scope=kind-mini-api
+          cache-to: type=gha,mode=max,scope=kind-mini-api
+      - uses: actions/upload-artifact@v5
+        with:
+          name: api-image
+          path: /tmp/dr-api.tar
+          retention-days: 1
+
+  drill:
+    needs: [plan, api-image]
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    name: drill (${{ matrix.scenario }}, ${{ matrix.chunk }})
+    env:
+      RUN_PREFIX: gh${{ github.run_id }}-${{ github.run_attempt }}-c${{ matrix.chunk }}
+      DR_KIND_DATA: ${{ github.workspace }}/results
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/kind/requirements.txt
+      - name: Cài kind, kubectl, Helm
+        run: |
+          sudo curl -fsSLo /usr/local/bin/kind "https://kind.sigs.k8s.io/dl/$KIND_VERSION/kind-linux-amd64"
+          sudo curl -fsSLo /usr/local/bin/kubectl "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl"
+          curl -fsSL "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz" | tar xz -C /tmp
+          sudo mv /tmp/linux-amd64/helm /usr/local/bin/helm
+          sudo chmod +x /usr/local/bin/kind /usr/local/bin/kubectl
+          kind version; kubectl version --client; helm version --short
+      - uses: actions/download-artifact@v5
+        with:
+          name: api-image
+          path: /tmp
+      - run: docker load -i /tmp/dr-api.tar && rm /tmp/dr-api.tar
+      - name: Máy chạy
+        run: |
+          {
+            echo "### Máy chạy (${{ matrix.scenario }}, phần ${{ matrix.chunk }})"
+            echo '```'
+            nproc; free -m; df -h /; docker info -f 'Docker {{.ServerVersion}}, cgroup v{{.CgroupVersion}}, {{.Driver}}'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Bắt đầu đo RAM và ổ đĩa
+        run: |
+          nohup python -m scripts.kind.resources sample "$DR_KIND_DATA/resources.csv" --interval 5 > /dev/null 2>&1 &
+          echo $! > /tmp/sampler.pid
+      - name: Chạy ${{ matrix.scenario }} ${{ matrix.count }} lần
+        run: bash scripts/kind/run.sh "${{ matrix.scenario }}" --iterations "${{ matrix.count }}"
+      - name: Đỉnh RAM và ổ đĩa
+        if: always()
+        run: |
+          kill "$(cat /tmp/sampler.pid)" 2>/dev/null || true
+          sleep 1
+          {
+            echo '```'
+            python -m scripts.kind.resources peak "$DR_KIND_DATA/resources.csv"
+            echo '```'
+            python -m scripts.kind.results summary "$DR_KIND_DATA"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: kind-${{ matrix.scenario }}-${{ matrix.chunk }}
+          path: results/
+          retention-days: 90
+
+  report:
+    needs: drill
+    if: always() && needs.drill.result != 'skipped'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: kind-*
+          path: results
+      - name: Gom số đo
+        run: |
+          {
+            echo "## Bản thu nhỏ trên kind: tổng hợp"
+            python -m scripts.kind.results summary results
+            echo
+            echo "### Đỉnh RAM và ổ đĩa của từng job"
+            echo '| Job | RAM máy (MB) | RAM đỉnh (MB) | RAM lúc đầu (MB) | Ổ đĩa đã dùng lúc đầu (GB) | Ổ đĩa đã dùng đỉnh (GB) |'
+            echo '|---|---|---|---|---|---|'
+            for f in results/*/resources.csv; do
+              eval "$(python -m scripts.kind.resources peak "$f")"
+              echo "| $(basename "$(dirname "$f")") | $mem_total_mb | $mem_peak_mb | $mem_baseline_mb | $disk_baseline_used_gb | $disk_peak_used_gb |"
+            done
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v5
+        with:
+          name: kind-mini-results
+          path: results/
+          retention-days: 90
