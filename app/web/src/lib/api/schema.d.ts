@@ -407,7 +407,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Ảnh nhỏ AVIF, hoặc ảnh gốc nếu ảnh đã nhỏ */
+            /** @description Ảnh nhỏ WebP, hoặc ảnh gốc nếu ảnh đã nhỏ */
             200: {
                 headers: {
                     [name: string]: unknown;

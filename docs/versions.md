@@ -32,4 +32,5 @@ Phiên bản cụ thể của mọi công cụ dùng trong đồ án (mục 9 th
 | Công cụ | Phiên bản |
 |---|---|
 | Rust | 1.97.1 |
+| `webp` (ảnh nhỏ, bọc libwebp) | 0.3.1 |
 | Node.js | 24 |
