@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# session-stop.sh <cluster>: sao lưu lúc tắt phiên rồi xóa máy (mục 4.1 thiết kế).
-# Thứ tự: bản đầy đủ CNPG, bản Velero, đếm bài và mã băm nội dung, ghi session.json, xóa máy.
-# Bước sao lưu nào lỗi thì dừng trước khi xóa máy, thoát 1. Job két làm ở tuần 4.
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 cluster="${1:-}"
 check_cluster "$cluster"

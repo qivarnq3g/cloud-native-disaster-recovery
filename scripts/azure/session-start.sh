@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
-# session-start.sh <cluster> <image_tag>: dựng cụm, cài phần mềm, chạy API, đổi DNS, ghi session.json.
-# Thoát 3 nếu phiên trước chưa tắt sạch, 4 nếu đã có hai máy (giới hạn 4 nhân),
-# 5 nếu còn thiếu script của bước sau. Các kiểm tra này chạy trước khi tạo bất cứ thứ gì.
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 cluster="${1:-}"; image_tag="${2:-}"
 check_cluster "$cluster"
 [ -n "$image_tag" ] || die 64 "cách dùng: session-start.sh <cluster> <image_tag>"
 
 [ "$(vm_count)" -lt 2 ] || die 4 "đã có hai máy vm-dr-*, không dựng máy thứ ba"
-# Gán riêng để set -e dừng script khi không đọc được session.json, thay vì hiểu là chưa có phiên.
 state="$(session get state)"
 [ "$state" != "running" ] || die 3 "session.json vẫn là running: tắt phiên trước bằng session-stop.sh"
 ! vm_exists "$cluster" || die 3 "vm-dr-$cluster vẫn còn: tắt phiên trước bằng session-stop.sh"

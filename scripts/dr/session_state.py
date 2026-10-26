@@ -1,16 +1,3 @@
-"""Đọc, ghi hai tệp trạng thái trong container `status` của kho sao lưu.
-
-- `session.json`: phiên đang chạy hay đã tắt, và các bản sao lưu lúc tắt phiên.
-- `sas-expiry.json`: ngày hết hạn của từng mã SAS (`issue-sas.sh` ghi).
-
-Dòng lệnh (dùng trong script bash):
-    python -m scripts.dr.session_state get <field>
-    python -m scripts.dr.session_state set <field>=<value>...   (giá trị rỗng là null)
-    python -m scripts.dr.session_state sas-expiry <name> <iso>
-Xác thực bằng `BACKUP_ACCOUNT` và `BACKUP_ACCOUNT_KEY`. Khi có `DR_FAKE_SESSION` (thư mục) thì
-đọc ghi tệp trong thư mục đó thay cho Azure, dùng cho kiểm thử script.
-"""
-
 from __future__ import annotations
 
 import json
@@ -23,6 +10,7 @@ from pathlib import Path
 SESSION_BLOB = "session.json"
 SAS_EXPIRY_BLOB = "sas-expiry.json"
 STATES = ("running", "stopped")
+USAGE = "cách dùng: session_state get <field> | set <field>=<value>... | sas-expiry <name> <iso>"
 
 
 @dataclass
@@ -98,7 +86,6 @@ class _DirBlob:
 
 
 class DirContainer:
-    """Container giả trên đĩa cho kiểm thử: mỗi blob là một tệp."""
 
     def __init__(self, root: Path):
         self.root = root
@@ -119,9 +106,11 @@ def status_container():
 
 
 def main(argv: list[str] | None = None) -> int:
+    for stream in (sys.stdout, sys.stderr):
+        stream.reconfigure(encoding="utf-8")
     args = sys.argv[1:] if argv is None else argv
     if not args:
-        print(__doc__, file=sys.stderr)
+        print(USAGE, file=sys.stderr)
         return 64
     client = status_container()
     cmd, rest = args[0], args[1:]
@@ -145,7 +134,7 @@ def main(argv: list[str] | None = None) -> int:
     if cmd == "sas-expiry" and len(rest) == 2:
         merge_sas_expiry(client, rest[0], _parse_time(rest[1]))
         return 0
-    print(__doc__, file=sys.stderr)
+    print(USAGE, file=sys.stderr)
     return 64
 
 

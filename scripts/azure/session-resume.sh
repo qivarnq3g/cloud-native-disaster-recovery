@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# session-resume.sh <cluster>: bật lại máy đã nghỉ, chờ /healthz trên IP của máy trả 200.
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 cluster="${1:-}"
 check_cluster "$cluster"

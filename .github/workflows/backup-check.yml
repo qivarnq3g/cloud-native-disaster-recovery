@@ -1,8 +1,4 @@
 name: backup-check
-# Kiểm tra sao lưu mỗi giờ (mục 4.5 thiết kế). Lỗi kiểm tra làm job lỗi, GitHub gửi email cho
-# người kích hoạt, tức người commit tệp này gần nhất: luôn để Quang commit tệp workflow này.
-# Lịch chỉ chạy khi biến kho BACKUP_CHECK_ENABLED là true (bật sau khi có hạ tầng Azure thật);
-# bấm tay (workflow_dispatch) thì luôn chạy.
 on:
   schedule:
     - cron: "17 * * * *"
@@ -43,7 +39,6 @@ jobs:
           git add data
           git diff --cached --quiet && exit 0
           git commit --quiet -m "backup-check $(date -u +%Y-%m-%dT%H:%MZ)"
-          # daily-drill cũng ghi nhánh này: bị từ chối thì kéo về rồi thử lại, tối đa 3 lần.
           for i in 1 2 3; do
             git push --quiet origin HEAD:ops-log && exit 0
             git pull --quiet --rebase origin ops-log || true

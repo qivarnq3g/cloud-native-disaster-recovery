@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# Biến chung cho mọi script Azure. Dùng: source scripts/azure/env.sh
-# Chìa khóa và tệp riêng nằm trong ~/.dr (ngoài kho). DR_PRIVATE_DIR, DR_DATA_DIR, DR_SUFFIX
-# ghi đè được, để kiểm thử không đụng ~/.dr.
 set -euo pipefail
 
 export REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
@@ -35,7 +32,6 @@ export VAULT_ACCOUNT="drvault${SFX}"
 export IMAGE_PRIMARY_ACCOUNT="drimgpri${SFX}"
 export IMAGE_STANDBY_ACCOUNT="drimgstb${SFX}"
 
-# tf_init <dir> <state-key>: Terraform với state trong tài khoản $STATE_ACCOUNT.
 tf_init() {
   terraform -chdir="$1" init -reconfigure -input=false \
     -backend-config="resource_group_name=$RG_BACKUP" \

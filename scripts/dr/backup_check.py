@@ -1,14 +1,3 @@
-"""Kiểm tra sao lưu mỗi giờ (mục 4.5 thiết kế), lõi của workflow `backup-check`.
-
-Ngưỡng: WAL mới nhất không cũ hơn 5 phút; bản Velero không cũ hơn 2 giờ; ảnh trong kho chính
-cũ hơn 5 phút phải đã có ở bản chép; mã SAS còn ít nhất 7 ngày. Phiên đã tắt thì chỉ kiểm
-tệp phiên, hạn SAS và hai bản sao lưu lúc tắt phiên. Kho rỗng hay thiếu tệp là lỗi, không phải
-"không có gì để kiểm".
-
-Dòng lệnh: python -m scripts.dr.backup_check --csv <file>
-Mã truy cập lấy từ biến BACKUP_CHECK_SAS_JSON, một JSON {container_url: sas}.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -112,7 +101,6 @@ def _pick(sas: dict[str, str], account_prefix: str, container: str) -> tuple[str
 
 
 def collect(sas: dict[str, str]) -> Snapshot:
-    """Đọc kho bằng các mã chỉ đọc. Tên tài khoản theo bảng tên của kế hoạch hạ tầng."""
     status = _container(*_pick(sas, "drbackup", "status"))
     session = read_session(status)
     sas_expiry = read_sas_expiry(status)
@@ -128,7 +116,6 @@ def collect(sas: dict[str, str]) -> Snapshot:
             if len(parts) >= 4:
                 full_backup_names.add(parts[2])
             if parts[-1] == "backup.info":
-                # Barman ghi tên bản sao lưu (tên đối tượng Backup của CNPG) vào backup.info.
                 info = cnpg.get_blob_client(b.name).download_blob().readall().decode(errors="replace")
                 for line in info.splitlines():
                     if line.startswith("backup_name="):

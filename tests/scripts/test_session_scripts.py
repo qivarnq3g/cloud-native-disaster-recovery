@@ -11,8 +11,6 @@ REPO = Path(__file__).resolve().parents[2]
 SCRIPTS = REPO / "scripts" / "azure"
 BASH = shutil.which("bash")
 
-# Một công cụ giả: ghi dòng lệnh vào calls.log, lỗi nếu dòng lệnh chứa FAKE_FAIL_ON,
-# và trả lời vài câu hỏi mà script cần.
 FAKE_TOOL = r"""#!/usr/bin/env bash
 tool="$(basename "$0")"
 echo "$tool $*" >> "$FAKE_DIR/calls.log"
@@ -111,7 +109,6 @@ def test_start_refuses_third_vm(fake_tools):
 
 
 def test_start_refuses_before_creating_anything_when_later_steps_are_missing(fake_tools, monkeypatch):
-    # install-software.sh và deploy-api.sh thuộc Task 6 và 8; thiếu thì không được dựng máy.
     if (SCRIPTS / "install-software.sh").exists() and (SCRIPTS / "deploy-api.sh").exists():
         pytest.skip("đã có đủ script")
     r = fake_tools.run("session-start.sh", "primary", "abc")
@@ -167,7 +164,6 @@ def test_every_az_call_names_a_group(fake_tools):
 
 
 def test_start_stops_when_session_file_cannot_be_read(fake_tools, monkeypatch):
-    # Đọc session.json lỗi (sai khóa, mất mạng) không được hiểu là "không có phiên nào chạy".
     monkeypatch.setattr(sys, "executable", str(fake_tools.bin / "az"), raising=False)
     fake_tools.fail_on = "-m scripts.dr.session_state"
     r = fake_tools.run("session-start.sh", "primary", "abc")
