@@ -1,0 +1,12 @@
+# Phần chung của API cho mọi nơi chạy. Chỗ khác nhau (loại kho ảnh, cách mở cổng, image)
+# nằm trong overlay: overlays/kind ở đây; bản Azure là một overlay riêng.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: dr-api
+labels:
+  - pairs:
+      app.kubernetes.io/name: api
+    includeSelectors: true
+resources:
+  - deployment.yaml
+  - service.yaml

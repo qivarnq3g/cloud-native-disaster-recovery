@@ -1,0 +1,3 @@
+# Số đo của mỗi lần chạy ghi thẳng vào đây; muốn giữ thì chép sang thư mục con có ngày.
+/*.csv
+/logs/

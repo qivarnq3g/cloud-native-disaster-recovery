@@ -1,0 +1,22 @@
+# Kho sao lưu của CNPG trên SeaweedFS (thay cho kho ở Nhật). Secret backup-store do up.sh tạo.
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: backup-store
+  namespace: dr-api
+spec:
+  retentionPolicy: "7d"
+  configuration:
+    destinationPath: s3://cnpg/
+    endpointURL: http://dr-seaweedfs:8333
+    s3Credentials:
+      accessKeyId:
+        name: backup-store
+        key: ACCESS_KEY_ID
+      secretAccessKey:
+        name: backup-store
+        key: ACCESS_SECRET_KEY
+    wal:
+      compression: gzip
+    data:
+      compression: gzip
