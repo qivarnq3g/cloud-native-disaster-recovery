@@ -43,21 +43,10 @@ pub fn make_thumbnail(original: &[u8], kind: ImageType) -> anyhow::Result<Vec<u8
         &mut dst,
         &ResizeOptions::new().resize_alg(ResizeAlg::Convolution(FilterType::Lanczos3)),
     )?;
-    let pixels: Vec<ravif::RGBA8> = dst
-        .buffer()
-        .chunks_exact(4)
-        .map(|p| ravif::RGBA8::new(p[0], p[1], p[2], p[3]))
-        .collect();
-    let encoded = ravif::Encoder::new()
-        .with_quality(60.0)
-        .with_alpha_quality(60.0)
-        .with_speed(6)
-        .encode_rgba(ravif::Img::new(
-            pixels.as_slice(),
-            thumb_width as usize,
-            thumb_height as usize,
-        ))?;
-    Ok(encoded.avif_file)
+    let encoded = webp::Encoder::from_rgba(dst.buffer(), thumb_width, thumb_height)
+        .encode_simple(false, 75.0)
+        .map_err(|e| anyhow::anyhow!("webp encode failed: {e:?}"))?;
+    Ok(encoded.to_vec())
 }
 
 pub struct ThumbnailCache {
@@ -151,14 +140,14 @@ impl ThumbnailService {
         }
         let cached = self.cache.lock().expect("thumbnail cache lock").get(&id);
         if let Some(b) = cached {
-            return Ok(avif(b));
+            return Ok(webp(b));
         }
         if let Some(b) = self.store.get_thumbnail(id).await? {
             self.cache
                 .lock()
                 .expect("thumbnail cache lock")
                 .put(id, b.clone());
-            return Ok(avif(b));
+            return Ok(webp(b));
         }
         let cell = self
             .in_flight
@@ -177,7 +166,7 @@ impl ThumbnailService {
                 in_flight.remove(&id);
             }
         }
-        Ok(avif(result?))
+        Ok(webp(result?))
     }
 
     async fn generate(&self, id: Uuid, original_kind: ImageType) -> Result<Bytes, ApiError> {
@@ -217,10 +206,10 @@ impl ThumbnailService {
     }
 }
 
-fn avif(data: Bytes) -> ServedImage {
+fn webp(data: Bytes) -> ServedImage {
     ServedImage {
         data,
-        content_type: "image/avif",
+        content_type: "image/webp",
     }
 }
 
@@ -256,9 +245,32 @@ mod tests {
     }
 
     #[test]
-    fn produces_avif() {
+    fn produces_webp() {
         let out = make_thumbnail(&png(1200, 900), ImageType::Png).unwrap();
-        assert_eq!(&out[4..12], b"ftypavif");
+        assert_eq!(&out[0..4], b"RIFF");
+        assert_eq!(&out[8..12], b"WEBP");
+    }
+
+    #[test]
+    fn webp_thumbnail_is_smaller_than_original() {
+        let image = image::DynamicImage::ImageRgb8(image::RgbImage::from_fn(2560, 1920, |x, y| {
+            let n = (x.wrapping_mul(2_654_435_761) ^ y.wrapping_mul(40_503)) % 64;
+            image::Rgb([
+                ((x / 10) % 256) as u8 ^ n as u8,
+                ((y / 8) % 256) as u8,
+                ((x + y) % 256) as u8,
+            ])
+        }));
+        let mut jpeg = Cursor::new(Vec::new());
+        image.write_to(&mut jpeg, image::ImageFormat::Jpeg).unwrap();
+        let jpeg = jpeg.into_inner();
+        let out = make_thumbnail(&jpeg, ImageType::Jpeg).unwrap();
+        assert!(
+            out.len() * 4 < jpeg.len(),
+            "thumbnail {} bytes, original {} bytes",
+            out.len(),
+            jpeg.len()
+        );
     }
 
     #[test]
@@ -303,7 +315,7 @@ mod tests {
         }
         for n in tasks {
             let out = n.await.unwrap().unwrap();
-            assert_eq!(out.content_type, "image/avif");
+            assert_eq!(out.content_type, "image/webp");
         }
         assert_eq!(service.generated_count(), 1);
         assert!(store.get_thumbnail(id).await.unwrap().is_some());

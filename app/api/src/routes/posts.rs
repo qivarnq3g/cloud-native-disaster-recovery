@@ -103,7 +103,7 @@ pub async fn get_post_image(
     get,
     path = "/v1/posts/{id}/thumbnail",
     params(("id" = Uuid, Path)),
-    responses((status = 200, description = "Ảnh nhỏ AVIF, hoặc ảnh gốc nếu ảnh đã nhỏ"), (status = 404, body = ErrorBody))
+    responses((status = 200, description = "Ảnh nhỏ WebP, hoặc ảnh gốc nếu ảnh đã nhỏ"), (status = 404, body = ErrorBody))
 )]
 pub async fn get_post_thumbnail(
     State(state): State<Arc<AppState>>,

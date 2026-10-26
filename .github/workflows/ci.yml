@@ -117,6 +117,32 @@ jobs:
             app/web/test-results
             app/web/.lighthouseci
 
+  infra:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.16.6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/requirements.txt
+      - name: Terraform fmt, validate, test
+        run: |
+          [ -d infra/terraform ] || { echo "chưa có infra/terraform"; exit 0; }
+          terraform fmt -check -recursive infra/terraform
+          for d in infra/terraform/*/; do
+            compgen -G "$d*.tf" > /dev/null || continue
+            echo "== $d"
+            terraform -chdir="$d" init -backend=false -input=false
+            terraform -chdir="$d" validate
+            terraform -chdir="$d" test
+          done
+      - name: Test script
+        run: python -m pytest tests/scripts -q || [ $? -eq 5 ]
+
   deploy:
     needs: [api, web]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
