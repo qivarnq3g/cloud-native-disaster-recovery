@@ -1,14 +1,3 @@
-"""Khóa truy cập và bucket của SeaweedFS trong bản thu nhỏ trên kind.
-
-Mọi khóa là giá trị dùng một lần, sinh ngẫu nhiên vào thư mục trạng thái (mặc định
-`~/.dr-kind`, ngoài kho), không bao giờ commit.
-
-Dòng lệnh:
-    python -m scripts.kind.store init <state_dir>      sinh khóa, credentials.json và s3.json
-    python -m scripts.kind.store buckets <state_dir>   tạo bucket (két có khóa chống xóa)
-    python -m scripts.kind.store get <state_dir> <identity> <access|secret>
-"""
-
 from __future__ import annotations
 
 import json
@@ -17,15 +6,12 @@ import sys
 import time
 from pathlib import Path
 
-# Mỗi thành phần một danh tính, chỉ đúng bucket cần (mục 4.4 thiết kế).
 IDENTITIES: dict[str, list[str]] = {
-    # "Khóa tài khoản": dựng bucket, và là khóa D6 dùng để thử xóa két.
     "admin": ["Admin", "Read", "Write", "List", "Tagging"],
     "cnpg": ["Read:cnpg", "Write:cnpg", "List:cnpg"],
     "velero": ["Read:velero", "Write:velero", "List:velero"],
     "api-primary": ["Read:images", "Write:images"],
     "api-standby": ["Read:images-copy", "Write:images-copy", "Read:images-standby", "Write:images-standby"],
-    # Thay cho object replication của Azure: chép images sang bản chép và kho ảnh dự phòng.
     "image-copy": ["Read:images", "List:images", "Read:images-copy", "Write:images-copy", "List:images-copy",
                    "Read:images-standby", "Write:images-standby", "List:images-standby"],
     "vault-writer": ["Write:vault"],
@@ -47,7 +33,6 @@ def new_credentials() -> dict:
 
 
 def seaweed_config(creds: dict) -> dict:
-    """Tệp `-s3.config` của SeaweedFS từ khóa đã sinh."""
     return {
         "identities": [
             {
@@ -80,7 +65,6 @@ def init(state_dir: Path) -> dict:
     code.chmod(0o600)
     s3 = state_dir / "s3.json"
     s3.write_text(json.dumps(seaweed_config(creds), indent=1))
-    # SeaweedFS chạy trong container với người dùng khác nên phải đọc được tệp này.
     s3.chmod(0o644)
     return creds
 
@@ -117,7 +101,6 @@ def create_buckets(s3) -> None:
         if name not in existing:
             s3.create_bucket(Bucket=name)
     if VAULT_BUCKET not in existing:
-        # Két: bật khóa chống xóa (kéo theo lưu phiên bản), mặc định COMPLIANCE 7 ngày như két trên Azure.
         s3.create_bucket(Bucket=VAULT_BUCKET, ObjectLockEnabledForBucket=True)
     s3.put_object_lock_configuration(
         Bucket=VAULT_BUCKET,
@@ -126,6 +109,9 @@ def create_buckets(s3) -> None:
             "Rule": {"DefaultRetention": {"Mode": "COMPLIANCE", "Days": VAULT_RETENTION_DAYS}},
         },
     )
+
+
+USAGE = 'Dòng lệnh:\n    python -m scripts.kind.store init <state_dir>      sinh khóa, credentials.json và s3.json\n    python -m scripts.kind.store buckets <state_dir>   tạo bucket (két có khóa chống xóa)\n    python -m scripts.kind.store get <state_dir> <identity> <access|secret>'
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -141,7 +127,7 @@ def main(argv: list[str] | None = None) -> int:
     if len(args) == 4 and args[0] == "get" and args[3] in ("access", "secret"):
         print(load(Path(args[1]))["identities"][args[2]][args[3]])
         return 0
-    print(__doc__, file=sys.stderr)
+    print(USAGE, file=sys.stderr)
     return 64
 
 

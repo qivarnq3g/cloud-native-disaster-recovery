@@ -1,8 +1,3 @@
-"""Kiểm tra web còn sống (mục 5.1 thiết kế): mỗi giây gọi `/healthz` của từng cụm.
-
-Gọi hỏng 5 lần liên tiếp thì ghi sự kiện "phát hiện", lấy giờ của lần hỏng thứ năm.
-"""
-
 from __future__ import annotations
 
 import threading
@@ -22,7 +17,6 @@ class FailureDetector:
     detected_at: datetime | None = None
 
     def feed(self, ok: bool, at: datetime) -> bool:
-        """Trả True đúng một lần, ở lần hỏng làm chuỗi đạt ngưỡng."""
         if ok:
             self.streak = 0
             return False
@@ -52,7 +46,6 @@ def check(api: ApiClient) -> tuple[bool, int, dict]:
 
 
 class Prober(threading.Thread):
-    """Gọi mọi cụm mỗi giây; bộ phát hiện chỉ theo dõi cụm `watch`."""
 
     def __init__(self, targets: dict[str, ApiClient], watch: str, interval: float = 1.0):
         super().__init__(daemon=True)
@@ -80,7 +73,6 @@ class Prober(threading.Thread):
 
 
 def wait_healthy(api: ApiClient, timeout: float, writable: bool = True, interval: float = 1.0) -> datetime:
-    """Chờ tới lần `/healthz` đầu tiên trả 200 (và không chỉ đọc nếu `writable`); trả giờ lúc đó."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         ok, _, body = check(api)

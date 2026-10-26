@@ -1,6 +1,3 @@
-# Cần sẵn trong namespace: Secret db-app-user (username, password; CNPG dùng cùng Secret này),
-# Secret api-secret-code (SECRET_CODE), ConfigMap api-site (CLUSTER, REGION,
-# IMAGE_STORE_CONTAINER, IMAGE_STORE_READ_ONLY: khác nhau giữa cụm chính và cụm dự phòng).
 apiVersion: apps/v1
 kind: Deployment
 metadata:

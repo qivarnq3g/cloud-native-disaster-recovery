@@ -1,13 +1,3 @@
-"""Kiểm tra sau khôi phục (mục 5.3 thiết kế): so cơ sở dữ liệu với sổ bài đã xác nhận.
-
-- Bài thiếu ở cuối sổ là dữ liệu mất do RPO; khoảng từ bài cuối còn lại tới lúc sự cố là RPO thật.
-- Bài thiếu nằm giữa (cũ hơn bài cuối còn lại) là lỗ hổng, luôn là lỗi.
-- Bài có trong cơ sở dữ liệu mà không có trong sổ (đang gửi lúc sự cố, chưa kịp xác nhận) được báo
-  riêng, không tính là mất.
-- Mã nội dung giống `content_digest` của thiết kế hạ tầng:
-  md5 của `id:sha256` nối bằng dấu phẩy, xếp theo `id`.
-"""
-
 from __future__ import annotations
 
 import hashlib
@@ -16,11 +6,10 @@ from datetime import datetime
 
 from scripts.kind.workload import LedgerEntry, parse_time
 
-POSTS_RPO_S = 300  # RPO của bài viết: 5 phút (mục 3 thiết kế)
+POSTS_RPO_S = 300
 
 
 def content_digest(rows: dict[str, str]) -> str:
-    """`rows`: mã bài -> sha256 (hex). Trùng công thức md5(string_agg(...)) trong Postgres."""
     joined = ",".join(f"{pid}:{sha}" for pid, sha in sorted(rows.items()))
     return hashlib.md5(joined.encode()).hexdigest()
 
@@ -81,7 +70,6 @@ def compare(ledger: list[LedgerEntry], db_rows: dict[str, str], incident_at: dat
 
 
 def check_images(rows: dict[str, str], fetch) -> list[str]:
-    """Tải từng ảnh gốc bằng `fetch(post_id) -> bytes | None`, trả các bài có ảnh mất hoặc sai mã băm."""
     from concurrent.futures import ThreadPoolExecutor
 
     def bad(item: tuple[str, str]) -> str | None:

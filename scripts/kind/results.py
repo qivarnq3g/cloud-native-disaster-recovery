@@ -1,15 +1,3 @@
-"""Ghi và tóm tắt số đo của bản thu nhỏ trong `data/kind/`.
-
-- `steps.csv`: sáu bước của mục 5.2 thiết kế cho mỗi lần chạy.
-- `runs.csv`: một dòng mỗi lần chạy: RTO, RPO, số bài, mã nội dung, ảnh.
-- `d6.csv`: từng lần thử xóa hay ghi đè két ở D6.
-
-Dòng lệnh:
-    python -m scripts.kind.results summary <thư mục có các CSV> [...]   in bảng Markdown
-    python -m scripts.kind.results matrix <D1,D2,...> <số lần> <số lần mỗi job>
-        in ma trận job cho workflow kind-mini (mỗi job chạy một phần số lần của một tình huống)
-"""
-
 from __future__ import annotations
 
 import csv
@@ -61,7 +49,6 @@ def read_csvs(dirs: list[Path], name: str) -> list[dict]:
 
 
 def describe(values: list[float]) -> str:
-    """Trung vị và khoảng tứ phân vị (mục 5.4), kèm nhỏ nhất và lớn nhất."""
     if not values:
         return "| 0 | | | | |"
     v = sorted(values)
@@ -101,7 +88,7 @@ def summary(dirs: list[Path]) -> str:
 
 
 SCENARIOS = ("D1", "D2", "D3", "D6")
-MAX_JOBS = 256  # giới hạn số job của một ma trận GitHub Actions
+MAX_JOBS = 256
 
 
 def plan_matrix(scenarios: str, iterations: int, per_job: int) -> dict:
@@ -123,6 +110,9 @@ def plan_matrix(scenarios: str, iterations: int, per_job: int) -> dict:
     return {"include": include}
 
 
+USAGE = 'Dòng lệnh:\n    python -m scripts.kind.results summary <thư mục có các CSV> [...]   in bảng Markdown\n    python -m scripts.kind.results matrix <D1,D2,...> <số lần> <số lần mỗi job>\n        in ma trận job cho workflow kind-mini (mỗi job chạy một phần số lần của một tình huống)'
+
+
 def main(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
     if len(args) >= 2 and args[0] == "summary":
@@ -133,7 +123,7 @@ def main(argv: list[str] | None = None) -> int:
 
         print(json.dumps(plan_matrix(args[1], int(args[2]), int(args[3]))))
         return 0
-    print(__doc__, file=sys.stderr)
+    print(USAGE, file=sys.stderr)
     return 64
 
 

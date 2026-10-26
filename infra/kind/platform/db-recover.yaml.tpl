@@ -1,6 +1,3 @@
-# Dựng cơ sở dữ liệu từ bản đầy đủ và WAL của __SOURCE_SERVER__, rồi ghi WAL mới vào __SERVER__.
-# Không đặt thời điểm đích: CNPG đọc hết WAL có trong kho. Cụm cũ đã mất hoặc bị xóa nên WAL cuối cùng
-# trong kho luôn có trước lúc sự cố; đặt thời điểm đích sau đoạn WAL đó thì Postgres dừng với lỗi.
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:

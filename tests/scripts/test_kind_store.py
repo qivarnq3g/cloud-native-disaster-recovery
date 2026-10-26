@@ -7,11 +7,10 @@ def test_credentials_are_random_and_scoped(tmp_path):
     a = store.init(tmp_path / "a")
     b = store.init(tmp_path / "b")
     assert a["identities"]["admin"]["secret"] != b["identities"]["admin"]["secret"]
-    assert len(a["secret_code"]) >= 16  # API đòi mã ít nhất 16 ký tự
+    assert len(a["secret_code"]) >= 16
     cfg = json.loads((tmp_path / "a" / "s3.json").read_text())
     by_name = {i["name"]: i for i in cfg["identities"]}
     assert set(by_name) == set(store.IDENTITIES)
-    # Mỗi danh tính chỉ đúng bucket của nó; chỉ admin có quyền quản trị
     assert all(":" in act for name, i in by_name.items() if name != "admin" for act in i["actions"])
     assert by_name["vault-writer"]["actions"] == ["Write:vault"]
     assert by_name["api-primary"]["credentials"][0]["accessKey"] == a["identities"]["api-primary"]["access"]

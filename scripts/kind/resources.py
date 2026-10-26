@@ -1,10 +1,3 @@
-"""Đo RAM và ổ đĩa của máy trong lúc chạy (câu hỏi cuối của mục 8 thiết kế).
-
-Dòng lệnh:
-    python -m scripts.kind.resources sample <csv> [--interval 5]   ghi một dòng mỗi lần đo tới khi bị dừng
-    python -m scripts.kind.resources peak <csv>...                 in đỉnh RAM và ổ đĩa
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -20,7 +13,6 @@ FIELDS = ["time_utc", "mem_total_mb", "mem_used_mb", "disk_total_gb", "disk_used
 
 
 def parse_meminfo(text: str) -> tuple[int, int]:
-    """Trả (tổng, đang dùng) theo MB; đang dùng = MemTotal - MemAvailable như `free`."""
     values = {}
     for line in text.splitlines():
         key, _, rest = line.partition(":")

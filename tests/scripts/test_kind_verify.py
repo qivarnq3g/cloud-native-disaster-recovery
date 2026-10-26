@@ -17,7 +17,6 @@ def rows(entries):
 
 
 def test_digest_matches_postgres_formula():
-    # md5('a:01,b:02'), cùng thứ tự với ORDER BY id trong Postgres
     assert content_digest({"b": "02", "a": "01"}) == hashlib.md5(b"a:01,b:02").hexdigest()
 
 
@@ -28,8 +27,8 @@ def test_everything_restored_is_ok():
 
 
 def test_tail_loss_within_rpo_is_ok_and_measures_rpo():
-    ledger = [entry(i, 100 - i) for i in range(1, 11)]  # bài 10 xác nhận 90 s trước sự cố
-    r = compare(ledger, rows(ledger[:7]), T0)  # còn tới bài 7, xác nhận 93 s trước sự cố
+    ledger = [entry(i, 100 - i) for i in range(1, 11)]
+    r = compare(ledger, rows(ledger[:7]), T0)
     assert r.ok
     assert r.posts_missing == 3 and r.posts_holes == 0
     assert r.rpo_s == 93
@@ -46,7 +45,7 @@ def test_hole_in_the_middle_fails():
 def test_loss_older_than_rpo_target_fails():
     ledger = [entry(1, 600), entry(2, 400), entry(3, 10)]
     r = compare(ledger, rows(ledger[:1]), T0)
-    assert r.posts_missing_beyond_rpo == 1  # bài 2: 400 s > 300 s
+    assert r.posts_missing_beyond_rpo == 1
     assert not r.ok
 
 

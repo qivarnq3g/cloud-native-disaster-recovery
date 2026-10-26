@@ -1,12 +1,3 @@
-"""Chạy một lần diễn tập trên bản thu nhỏ và ghi số đo (mục 5 và 6 thiết kế).
-
-    python -m scripts.kind.scenario D1|D2|D3|D6 --run-id ID [--iteration N]
-
-Cần môi trường do `up.sh` dựng (D3 cần hồ sơ full). Sáu bước của mục 5.2:
-detect, decide, infra, restore, verify, switch. Bản thu nhỏ không có DNS nên bước switch
-luôn ghi `not_applicable` (mục 6.4), và RTO ở đây là tổng năm bước đầu.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -32,9 +23,6 @@ DATA = Path(os.environ.get("DR_KIND_DATA", ROOT / "data" / "kind"))
 PORTS = {"primary": int(os.environ.get("PRIMARY_PORT", 18080)),
          "standby": int(os.environ.get("STANDBY_PORT", 28080))}
 WARMUP_S = float(os.environ.get("WARMUP_S", 90))
-# Velero sao lưu cấu hình của namespace, không lấy cơ sở dữ liệu (mục 4.2): bỏ Cluster CNPG,
-# ổ đĩa, pod và mọi đối tượng CNPG tự sinh (nhãn app.kubernetes.io/managed-by=cloudnative-pg), để CNPG
-# tự dựng lại cùng cơ sở dữ liệu.
 VELERO_EXCLUDED = [
     "clusters.postgresql.cnpg.io", "backups.postgresql.cnpg.io", "scheduledbackups.postgresql.cnpg.io",
     "persistentvolumeclaims", "persistentvolumes", "pods", "replicasets.apps", "endpoints",
@@ -62,7 +50,6 @@ def kubectl(cluster: str, *args: str, **kw) -> str:
 
 
 def lib(*args: str, timeout: float = 1800) -> str:
-    """Gọi một hàm của lib.sh để Python và bash dùng chung một cách làm."""
     script = f'source "{ROOT}/scripts/kind/lib.sh"; "$@"'
     return run(["bash", "-c", script, "lib", *args], timeout=timeout)
 
@@ -83,8 +70,6 @@ def apply_template(cluster: str, tpl: str, **values: str) -> None:
 
 
 def wait_for(cond, timeout: float, what: str, interval: float = 1.0):
-    """Gọi `cond` tới khi trả giá trị đúng. Lỗi giữa chừng (pod đang khởi động lại, Postgres đang tắt
-    để đổi vai) chỉ là chưa xong; hết giờ thì báo kèm lỗi cuối cùng."""
     deadline = time.monotonic() + timeout
     last_error: Exception | None = None
     while time.monotonic() < deadline:
@@ -97,8 +82,6 @@ def wait_for(cond, timeout: float, what: str, interval: float = 1.0):
         time.sleep(interval)
     raise TimeoutError(f"quá {timeout:.0f} s chờ {what}" + (f"; lỗi cuối: {last_error}" if last_error else ""))
 
-
-# ---------- Velero bằng tài nguyên Kubernetes, không cần CLI velero ----------
 
 VELERO_DONE = ("Completed", "PartiallyFailed", "Failed", "FailedValidation")
 
@@ -127,7 +110,6 @@ def velero_phase(cluster: str, kind: str, name: str) -> str:
 
 
 def velero_restore(cluster: str, backup: str) -> str:
-    # Cụm mới thấy bản sao lưu sau một chu kỳ đồng bộ của Velero (10 s, xem values/velero.yaml.tpl).
     wait_for(lambda: velero_phase(cluster, "backups", backup) == "Completed", 300, f"Velero ở {cluster} thấy {backup}")
     name = f"restore-{now():%Y%m%d%H%M%S}"
     doc = {
@@ -143,8 +125,6 @@ def velero_restore(cluster: str, backup: str) -> str:
         raise RuntimeError(f"Velero khôi phục {backup} kết thúc ở {phase}")
     return phase
 
-
-# ---------- Cơ sở dữ liệu ----------
 
 def db_pod(cluster: str) -> str:
     return kubectl(cluster, "-n", "dr-api", "get", "pod", "-l", "cnpg.io/cluster=db,cnpg.io/instanceRole=primary",
@@ -167,12 +147,9 @@ def db_digest(cluster: str) -> str:
 
 
 def lose_cluster(cluster: str) -> None:
-    """Mất cụm đột ngột như mất máy: dừng ngay container của nút, rồi dọn cụm (không tính giờ)."""
     run(["docker", "kill", f"{cluster}-control-plane"])
     threading.Thread(target=run, args=(["kind", "delete", "cluster", "--name", cluster],), daemon=True).start()
 
-
-# ---------- Một lần diễn tập ----------
 
 class Drill:
     def __init__(self, scenario: str, run_id: str, iteration: int):
@@ -185,7 +162,6 @@ class Drill:
 
     def prepare(self, with_standby: bool) -> tuple[Writer, Prober]:
         wait_healthy(api("primary"), 120)
-        # Trước mỗi lần diễn tập: bản đầy đủ của cơ sở dữ liệu và một bản Velero (mục 4.1).
         self.backup = f"pre-{self.run_id}".lower()[:63]
         log("bản đầy đủ và bản Velero trước diễn tập")
         lib("db_backup", "primary", self.backup)
@@ -211,7 +187,6 @@ class Drill:
         writer.stop()
         log(f"phát hiện sau {(self.times['detected'] - self.times['incident']).total_seconds():.1f} s; "
             f"đã xác nhận {writer.acked} bài trong lúc chạy")
-        # Quyết định kích hoạt: tự động, ngay khi phát hiện (người trực ở bản thu nhỏ là script).
         self.times["decided"] = now()
 
     def verify(self, cluster: str) -> dict:
@@ -226,7 +201,6 @@ class Drill:
         client.timeout = 30
         report.images_checked = len(rows)
         report.images_bad = check_images(rows, client.image)
-        # Chức năng: đăng một bài mới rồi đọc lại ảnh (bài thử giữ lại, mục 5.3).
         try:
             entry = post_one(client, self.ledger, max(e.seq for e in ledger) + 1, "check")
             data = client.image(entry.post_id)
@@ -287,7 +261,6 @@ def runner_info() -> dict:
 
 
 def restore_cold(d: Drill, cluster: str, bucket: str) -> None:
-    """Dựng cơ sở dữ liệu bằng CNPG và cấu hình bằng Velero, chạy song song (mục 3, 6.1)."""
     source = (STATE / "server-primary").read_text().strip()
     new = server_name(cluster)
     lib("site_config", cluster, bucket, "false")
@@ -316,7 +289,6 @@ def restore_cold(d: Drill, cluster: str, bucket: str) -> None:
 def d1(d: Drill) -> None:
     writer, prober = d.prepare(with_standby=False)
     d.incident(lambda: kubectl("primary", "delete", "namespace", "dr-api", "--wait=false"), writer, prober)
-    # Dựng hạ tầng: namespace cũ phải xóa xong mới khôi phục vào được.
     wait_for(lambda: kubectl("primary", "get", "namespace", "dr-api", check=False) == "", 600,
              "namespace dr-api xóa xong")
     d.times["infra_done"] = now()
@@ -334,7 +306,6 @@ def d2(d: Drill) -> None:
     os.environ["DR_KIND_RUN_ID"] = d.run_id
     run([str(ROOT / "scripts/kind/create-cluster.sh"), "standby"], timeout=1800)
     d.times["infra_done"] = now()
-    # Ảnh: dùng bản chép (images-copy), kho ảnh chính coi như mất cùng cụm.
     restore_cold(d, "standby", "images-copy")
     prober.stop()
     d.write(d.verify("standby")) or sys.exit(1)
@@ -344,14 +315,12 @@ def d3(d: Drill) -> None:
     lib("wait_db", "standby", "60s")
     writer, prober = d.prepare(with_standby=True)
     d.incident(lambda: lose_cluster("primary"), writer, prober)
-    # Cách ấm: cụm dự phòng đã chạy sẵn, không phải dựng gì.
     d.times["infra_done"] = now()
     d.step_results["infra"] = "not_needed"
     kubectl("standby", "-n", "dr-api", "patch", "clusters.postgresql.cnpg.io", "db", "--type", "merge",
             "-p", '{"spec":{"replica":{"enabled":false}}}')
     wait_for(lambda: psql("standby", "SELECT pg_is_in_recovery()").strip() == "f", 600, "Postgres dự phòng thành chính")
     log("Postgres ở cụm dự phòng đã thành cụm chính")
-    # API ở cụm dự phòng để 0 bản chạy (xem up.sh), giờ mới bật.
     kubectl("standby", "-n", "dr-api", "scale", "deploy/api", "--replicas=1")
     d.times["restored"] = wait_healthy(api("standby"), 600)
     prober.stop()
@@ -359,7 +328,6 @@ def d3(d: Drill) -> None:
 
 
 D6_ATTEMPTS = [
-    # (tên, danh tính, mong bị từ chối)
     ("delete_version", "admin", True),
     ("delete_version_bypass_governance", "admin", True),
     ("shorten_retention", "admin", True),
@@ -371,7 +339,6 @@ D6_ATTEMPTS = [
 
 
 def d6(d: Drill) -> None:
-    """Thử xóa và ghi đè két bằng khóa tài khoản; đúng là bị từ chối và bản gốc còn nguyên."""
     from botocore.exceptions import ClientError
 
     creds = store.load(STATE)

@@ -1,12 +1,3 @@
-"""Tải giả lập của script đo (mục 5.1 và 5.4 thiết kế): bộ dữ liệu mẫu và đăng 1 bài mỗi giây.
-
-Bài nào API xác nhận đã nhận thì ghi vào sổ (`ledger.csv`): số thứ tự, mã bài, giờ xác nhận,
-mã băm ảnh. Bước kiểm tra sau khôi phục so cơ sở dữ liệu với sổ này.
-
-Dòng lệnh:
-    python -m scripts.kind.workload seed --api URL --code-file F --ledger F --count 1000
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -38,7 +29,6 @@ def parse_time(value: str) -> datetime:
 
 
 def make_png(seed: int, side: int = 256) -> bytes:
-    """Ảnh PNG nhiễu ngẫu nhiên, khó nén nên cạnh 256 cho khoảng 200 KB như bộ mẫu."""
     rng = random.Random(seed)
     raw = b"".join(b"\x00" + rng.randbytes(side * 3) for _ in range(side))
 
@@ -111,7 +101,6 @@ class LedgerEntry:
 
 
 class Ledger:
-    """Sổ ghi các bài đã được xác nhận, ghi thêm từng dòng nên dừng giữa chừng vẫn còn."""
 
     def __init__(self, path: Path):
         self.path = path
@@ -155,7 +144,6 @@ def seed(api: ApiClient, ledger: Ledger, count: int, workers: int = 8) -> None:
 
 
 class Writer(threading.Thread):
-    """Đăng đúng 1 bài mỗi giây (mục 5.4) tới khi được dừng; lần đăng hỏng chỉ được đếm."""
 
     def __init__(self, api: ApiClient, ledger: Ledger, interval: float = 1.0):
         super().__init__(daemon=True)
