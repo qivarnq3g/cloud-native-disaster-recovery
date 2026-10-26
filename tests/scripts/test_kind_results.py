@@ -58,3 +58,25 @@ def test_plan_matrix_rejects_bad_input():
     for args in [("D4", 1, 1), ("", 1, 1), ("D1", 0, 1), ("D1", 1, 0), ("D1,D2,D3,D6", 300, 1)]:
         with pytest.raises(ValueError):
             results.plan_matrix(*args)
+
+
+def test_wait_for_retries_through_transient_errors():
+    import pytest
+
+    from scripts.kind.scenario import wait_for
+
+    calls = iter([RuntimeError("the database system is shutting down"), None, "f"])
+
+    def cond():
+        v = next(calls)
+        if isinstance(v, Exception):
+            raise v
+        return v
+
+    assert wait_for(cond, 5, "thử", interval=0) == "f"
+
+    def always_fails():
+        raise RuntimeError("boom")
+
+    with pytest.raises(TimeoutError, match="boom"):
+        wait_for(always_fails, 0.05, "thử", interval=0.01)

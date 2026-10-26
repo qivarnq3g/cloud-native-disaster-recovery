@@ -83,13 +83,19 @@ def apply_template(cluster: str, tpl: str, **values: str) -> None:
 
 
 def wait_for(cond, timeout: float, what: str, interval: float = 1.0):
+    """Gọi `cond` tới khi trả giá trị đúng. Lỗi giữa chừng (pod đang khởi động lại, Postgres đang tắt
+    để đổi vai) chỉ là chưa xong; hết giờ thì báo kèm lỗi cuối cùng."""
     deadline = time.monotonic() + timeout
+    last_error: Exception | None = None
     while time.monotonic() < deadline:
-        value = cond()
+        try:
+            value = cond()
+        except Exception as e:
+            value, last_error = None, e
         if value:
             return value
         time.sleep(interval)
-    raise TimeoutError(f"quá {timeout:.0f} s chờ {what}")
+    raise TimeoutError(f"quá {timeout:.0f} s chờ {what}" + (f"; lỗi cuối: {last_error}" if last_error else ""))
 
 
 # ---------- Velero bằng tài nguyên Kubernetes, không cần CLI velero ----------
