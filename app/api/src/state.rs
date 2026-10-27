@@ -44,10 +44,15 @@ impl AppState {
 pub fn spawn_migrations(state: Arc<AppState>) -> tokio::task::JoinHandle<()> {
     tokio::spawn(async move {
         loop {
-            match sqlx::migrate!().run(&state.pool).await {
+            let ready = if state.config.read_only {
+                schema_is_current(&state.pool).await
+            } else {
+                sqlx::migrate!().run(&state.pool).await.map_err(Into::into)
+            };
+            match ready {
                 Ok(()) => {
                     state.migrated.store(true, Ordering::Release);
-                    tracing::info!("database schema ready");
+                    tracing::info!(read_only = state.config.read_only, "database schema ready");
                     break;
                 }
                 Err(e) => {
@@ -57,4 +62,46 @@ pub fn spawn_migrations(state: Arc<AppState>) -> tokio::task::JoinHandle<()> {
             }
         }
     })
+}
+
+fn expected_versions() -> Vec<i64> {
+    sqlx::migrate!().iter().map(|m| m.version).collect()
+}
+
+fn missing_versions(expected: &[i64], applied: &[i64]) -> Vec<i64> {
+    expected
+        .iter()
+        .copied()
+        .filter(|v| !applied.contains(v))
+        .collect()
+}
+
+async fn schema_is_current(pool: &PgPool) -> anyhow::Result<()> {
+    let applied: Vec<i64> =
+        sqlx::query_scalar("SELECT version FROM _sqlx_migrations WHERE success")
+            .fetch_all(pool)
+            .await?;
+    let missing = missing_versions(&expected_versions(), &applied);
+    anyhow::ensure!(
+        missing.is_empty(),
+        "read-only database lacks migrations {missing:?}"
+    );
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::missing_versions;
+
+    #[test]
+    fn missing_versions_lists_expected_versions_not_applied() {
+        assert_eq!(missing_versions(&[1, 2, 3], &[1, 3]), vec![2]);
+        assert_eq!(missing_versions(&[1, 2], &[2, 1, 7]), Vec::<i64>::new());
+        assert_eq!(missing_versions(&[1], &[]), vec![1]);
+    }
+
+    #[test]
+    fn embedded_migrations_are_known() {
+        assert!(!super::expected_versions().is_empty());
+    }
 }
