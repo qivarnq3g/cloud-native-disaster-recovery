@@ -1,0 +1,17 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: api-tls
+  namespace: dr-api
+  labels:
+    app.kubernetes.io/part-of: dr-api-tls
+spec:
+  secretName: api-tls
+  secretTemplate:
+    labels:
+      app.kubernetes.io/part-of: dr-api-tls
+  dnsNames:
+    - api.dr.qivarn.id.vn
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-production

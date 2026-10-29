@@ -8,7 +8,7 @@ platform="$REPO_ROOT/infra/k8s/platform"
 sas_file="$PRIVATE_DIR/sas-cnpg-backup.txt"
 [ -s "$sas_file" ] || die 5 "chưa có $sas_file: chạy issue-sas.sh cnpg-backup"
 password_file="$PRIVATE_DIR/db-password"
-[ -s "$password_file" ] || { "$DR_PYTHON" -c 'import secrets; print(secrets.token_urlsafe(24))' > "$password_file"; chmod 600 "$password_file"; }
+[ -s "$password_file" ] || { "$DR_PYTHON" -c 'import secrets; print(secrets.token_urlsafe(24), end="")' > "$password_file"; chmod 600 "$password_file"; }
 
 render() {
   local tpl="$1"; shift
