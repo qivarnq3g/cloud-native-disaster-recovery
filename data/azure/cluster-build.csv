@@ -1,0 +1,6 @@
+cluster,mark,time_utc
+primary,start,2026-10-29T03:03:46Z
+primary,vm_created,2026-10-29T03:06:37Z
+primary,k3s_installed,2026-10-29T03:06:42Z
+primary,node_ready,2026-10-29T03:06:45Z
+primary,traefik_ready,2026-10-29T03:07:02Z

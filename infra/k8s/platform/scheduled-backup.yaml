@@ -1,0 +1,13 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: db-every-6h
+  namespace: dr-api
+spec:
+  schedule: "0 0 */6 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: db
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io

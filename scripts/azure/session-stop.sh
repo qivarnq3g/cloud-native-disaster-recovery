@@ -3,7 +3,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 cluster="${1:-}"
 check_cluster "$cluster"
 export KUBECONFIG="$PRIVATE_DIR/kubeconfig-$cluster"
-db="${DR_DB_NAME:-app}"
+db="${DR_DB_NAME:-dr}"
 name="stop-$(date -u +%Y%m%d%H%M)"
 mark session.csv "$cluster" stop_start
 

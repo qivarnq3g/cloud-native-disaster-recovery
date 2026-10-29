@@ -1,0 +1,20 @@
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: hourly
+  namespace: velero
+spec:
+  schedule: "0 * * * *"
+  useOwnerReferencesInBackup: false
+  template:
+    ttl: 72h0m0s
+    includedNamespaces:
+      - dr-api
+      - cert-manager
+    excludedResources:
+      - clusters.postgresql.cnpg.io
+      - backups.postgresql.cnpg.io
+      - persistentvolumeclaims
+      - persistentvolumes
+      - pods
+    snapshotVolumes: false
