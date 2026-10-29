@@ -131,9 +131,23 @@ def db_pod(cluster: str) -> str:
                    "-o", "jsonpath={.items[0].metadata.name}").strip()
 
 
-def psql(cluster: str, sql: str) -> str:
-    return kubectl(cluster, "-n", "dr-api", "exec", db_pod(cluster), "-c", "postgres", "--",
-                   "psql", "-U", "postgres", "-d", "dr", "-AtF,", "-c", sql)
+TRANSIENT_DB_ERRORS = (
+    "the database system is shutting down",
+    "the database system is starting up",
+    "the database system is not yet accepting connections",
+)
+
+
+def psql(cluster: str, sql: str, timeout: float = 120) -> str:
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            return kubectl(cluster, "-n", "dr-api", "exec", db_pod(cluster), "-c", "postgres", "--",
+                           "psql", "-U", "postgres", "-d", "dr", "-AtF,", "-c", sql)
+        except RuntimeError as e:
+            if time.monotonic() >= deadline or not any(m in str(e) for m in TRANSIENT_DB_ERRORS):
+                raise
+            time.sleep(2)
 
 
 def db_rows(cluster: str) -> dict[str, str]:
