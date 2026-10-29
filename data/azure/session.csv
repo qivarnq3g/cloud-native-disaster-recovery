@@ -24,3 +24,7 @@ primary,software_ready,2026-10-29T08:22:22Z
 primary,api_ready,2026-10-29T08:23:06Z
 primary,dns_switched,2026-10-29T08:24:37Z
 primary,done,2026-10-29T08:24:39Z
+primary,stop_start,2026-10-29T09:40:59Z
+primary,full_backup_done,2026-10-29T09:41:10Z
+primary,velero_backup_done,2026-10-29T09:41:19Z
+primary,stopped,2026-10-29T09:43:39Z

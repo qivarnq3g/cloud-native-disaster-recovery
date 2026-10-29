@@ -69,3 +69,14 @@ Ba lần chạy trước đó đỏ, đều do script, không do sao lưu:
 - Velero CLI không nhận toán tử `!=` trong bộ chọn nhãn, phải dùng `notin`.
 
 Rủi ro ghi vào báo cáo: diễn tập dùng khóa tài khoản kho sao lưu (`DRILL_VELERO_KEY`, có quyền ghi) vì plugin Velero cho Azure v1.14.4 chưa nhận SAS. Velero đặt kho ở chế độ `ReadOnly`, và kiểm tra cuối xác nhận kho không có tệp mới.
+
+### Trang dùng và phiên thứ hai
+
+Ngày 29/10:
+
+- Repo chuyển sang công khai lúc khoảng 09:20 UTC: GitHub Actions của repo riêng tư đã hết phút miễn phí trong tháng, job mới bị từ chối và không chạy. Trước khi công khai, lịch sử được viết lại để họ tên và email riêng của hai thành viên được thay bằng tên GitHub.
+- `API_READY=true`, job `deploy` của `ci` chạy xong: `https://dr.qivarn.id.vn/ready.json` trả `{"ready":true}`, nút "Vào xem" dẫn tới `/view/`. Trang `/view/` hiện nhãn "Cụm chính · Hàn Quốc" và đủ 25 bài.
+- Bật phiên lần hai dừng ở bước đổi DNS: `dns_switch` kiểm tra `/healthz` ngay sau khi API rollout, lúc Ingress chưa định tuyến, nên trả lỗi. Ba bước còn lại làm bằng tay; `dns_switch` giờ thử lại tới 120 s.
+- Tắt phiên lần hai: `session.json` ghi `full_backup=20261029T094102`, đúng mã của Barman, và `backup-check` xanh với `stop_backups` (sửa ở PR #10 đã đúng trên cụm thật).
+- Năm bài thử tạo sáng 29/10 có tiêu đề hỏng dấu ("B?i th? 5") vì được gửi lên với sai bảng mã. Lỗi nằm ở dữ liệu thử, không ở API; API không có lệnh xóa bài nên chúng còn lại.
+- Chi phí Azure của ngày 29/10: chưa xem, Cost Management cập nhật chậm khoảng một ngày.
