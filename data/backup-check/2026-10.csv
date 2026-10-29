@@ -1,0 +1,2 @@
+checked_at,state,session_file,wal_age,velero_age,image_replication,sas_expiry,stop_backups
+2026-10-29T06:03:12Z,running,ok,fail,ok,ok,ok,skip
