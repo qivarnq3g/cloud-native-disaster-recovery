@@ -1,0 +1,7 @@
+cluster,mark,time_utc
+primary,start,2026-10-29T03:12:39Z
+primary,cert_manager_ready,2026-10-29T03:14:27Z
+primary,cnpg_ready,2026-10-29T03:15:30Z
+primary,velero_ready,2026-10-29T03:16:48Z
+primary,db_ready,2026-10-29T03:21:32Z
+primary,schedules_ready,2026-10-29T03:21:34Z
