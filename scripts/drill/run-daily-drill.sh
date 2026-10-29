@@ -112,6 +112,13 @@ velero_restore() {
   velero restore create "$name" --from-backup "$backup" --include-namespaces dr-api \
     --include-resources secrets,configmaps,serviceaccounts,deployments.apps,services --wait
   [ "$(kubectl -n velero get "restores.velero.io/$name" -o jsonpath='{.status.phase}')" = "Completed" ]
+  kubectl -n dr-api get secrets,services,configmaps -o json | "$py" -c '
+import json, sys
+for o in json.load(sys.stdin)["items"]:
+    if any(r.get("kind") == "Cluster" and r.get("apiVersion", "").startswith("postgresql.cnpg.io/")
+           for r in o["metadata"].get("ownerReferences", [])):
+        print("{}/{}".format(o["kind"].lower(), o["metadata"]["name"]))' > "$work/cnpg-owned.txt"
+  if [ -s "$work/cnpg-owned.txt" ]; then xargs kubectl -n dr-api delete < "$work/cnpg-owned.txt"; fi
   kubectl -n dr-api scale deploy/api --replicas=0
   kubectl -n dr-api create secret generic japan-store-sas --from-literal=ACCOUNT="$backup_account" \
     --from-literal=SAS="$(sas_field drbackup cnpg token)" --dry-run=client -o yaml | kubectl apply -f -
