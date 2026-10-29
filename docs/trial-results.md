@@ -15,3 +15,22 @@ Ngày chạy: 24/10/2026. Kế hoạch: `docs/ke-hoach/2026-10-09-chay-thu-azure
 | 9 | Bản thu nhỏ vừa máy GitHub | Vừa. Máy GitHub của kho riêng (2 CPU, 8 GB) dựng xong hai cụm kind, mỗi cụm có cert-manager, CNPG, Barman, Velero và một cơ sở dữ liệu, cộng SeaweedFS: RAM dùng 3,45 GB, còn trống 4,48 GB; ổ đĩa còn 6,5 GB | Giữ bản thu nhỏ hai cụm kind trên GitHub Actions |
 | 10 | Ngân sách Azure có tạo được trên tài khoản sinh viên | Được: ngân sách `dr-trial` 25 USD/tháng, cảnh báo email 50/80/100% (API `2023-05-01` trả `amount` 25.0) | Dùng ngân sách có cảnh báo cho cụm thật, không cần xem số dư bằng tay |
 | 11 | Thời gian tạo ảnh nhỏ AVIF trên B2als v2 (nếu API đã có) | `bench-thumbnail 50` (bản `production`, musl) trên máy cụm dự phòng đang rảnh, còn 62-66 tín dụng CPU nên không bị giới hạn: trung vị 1275 ms, p95 1340 ms | Vượt ngưỡng 500 ms: đổi ảnh nhỏ sang WebP (mục 7 thiết kế web). Đo ở cụm dự phòng thay vì cụm chính vì cụm chính đang chạy tải giả lập |
+
+## Phiên thật đầu tiên
+
+Ngày chạy: 29/10/2026, cụm chính ở `koreacentral`, ảnh API `e10ae45`. Kế hoạch: Task 10 bước 5 của `docs/ke-hoach/2026-10-24-azure-infrastructure.md`. Mốc thời gian nằm trong `data/azure/session.csv` và `data/azure/dns-switch.csv`.
+
+| Bước | Thời gian | Ghi chú |
+|---|---|---|
+| Tiếp phiên (`session-resume.sh`) | 69 s | Từ lệnh bật máy tới `/healthz` trả 200 |
+| Tắt phiên (`session-stop.sh`) | 2 phút 41 s | Bản đầy đủ CNPG 12 s, bản Velero 8 s, xóa máy bằng Terraform 2 phút 21 s |
+| Bật phiên (`session-start.sh`) | 7 phút 9 s | Máy ảo và k3s 2 phút 21 s, phần mềm và khôi phục cơ sở dữ liệu 3 phút 48 s, API 49 s, đổi DNS 9 s |
+| Đổi bản ghi A | 7 s | Từ lúc gọi API Cloudflare tới khi DoH thấy IP mới 6 s sau khi bản ghi đổi |
+
+Kết quả:
+
+- Trước khi tắt có 25 bài (5 bài cũ và 20 bài thử mới). Sau khi bật lại vẫn 25 bài, mã băm nội dung giữ nguyên `d8acda86d97314800b17eef5668007ef`.
+- Chứng chỉ Let's Encrypt giữ nguyên serial `05652BF0…88B3`: Velero khôi phục từ bản `stop-202610290519`, không xin chứng chỉ mới.
+- `session.json` có `server_name` mới `primary-202610290522`, nên WAL của cụm mới không ghi đè lên WAL cũ.
+- Xóa máy ảo thì mất luôn IP tĩnh: IP đổi từ `4.218.8.39` sang `20.200.223.12`, `dns_switch.py` đổi bản ghi A tự động. Máy nào còn nhớ IP cũ thì chờ hết TTL 60 s.
+- IP nhà đổi giữa hai lần làm việc nên `kubectl` bị chặn ở cổng 6443 trong khi API công khai vẫn chạy. Đã sửa: `session-resume.sh` và `session-stop.sh` cập nhật quy tắc `admin` sang IP hiện tại trước khi dùng cụm.

@@ -5,6 +5,7 @@ check_cluster "$cluster"
 export KUBECONFIG="$PRIVATE_DIR/kubeconfig-$cluster"
 db="${DR_DB_NAME:-dr}"
 name="stop-$(date -u +%Y%m%d%H%M)"
+refresh_admin_ip "$cluster"
 mark session.csv "$cluster" stop_start
 
 printf '%s\n' \

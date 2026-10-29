@@ -1,3 +1,14 @@
 cluster,mark,time_utc
 primary,paused,2026-10-29T03:47:18Z
 primary,paused,2026-10-29T04:01:45Z
+primary,resumed,2026-10-29T05:16:26Z
+primary,stop_start,2026-10-29T05:19:09Z
+primary,full_backup_done,2026-10-29T05:19:21Z
+primary,velero_backup_done,2026-10-29T05:19:29Z
+primary,stopped,2026-10-29T05:21:50Z
+primary,start,2026-10-29T05:22:23Z
+primary,vm_ready,2026-10-29T05:24:44Z
+primary,software_ready,2026-10-29T05:28:32Z
+primary,api_ready,2026-10-29T05:29:21Z
+primary,dns_switched,2026-10-29T05:29:30Z
+primary,done,2026-10-29T05:29:32Z
