@@ -1,0 +1,87 @@
+name: daily-drill
+on:
+  schedule:
+    - cron: "40 20 * * *"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/daily-drill.yml
+      - scripts/drill/**
+      - scripts/dr/verify_restore.py
+      - infra/k8s/drill/**
+      - infra/k8s/values/velero-drill.yaml.tpl
+permissions:
+  contents: write
+  packages: read
+concurrency: daily-drill
+env:
+  KIND_VERSION: v0.33.0
+  KUBECTL_VERSION: v1.36.5
+  HELM_VERSION: v4.3.1
+  VELERO_VERSION: v1.18.4
+jobs:
+  drill:
+    if: github.event_name != 'schedule' || vars.DAILY_DRILL_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/requirements.txt
+      - name: Cài kind, kubectl, Helm, Velero CLI
+        run: |
+          sudo curl -fsSLo /usr/local/bin/kind "https://kind.sigs.k8s.io/dl/$KIND_VERSION/kind-linux-amd64"
+          sudo curl -fsSLo /usr/local/bin/kubectl "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl"
+          curl -fsSL "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz" | tar xz -C /tmp
+          sudo mv /tmp/linux-amd64/helm /usr/local/bin/helm
+          curl -fsSL "https://github.com/vmware-tanzu/velero/releases/download/$VELERO_VERSION/velero-$VELERO_VERSION-linux-amd64.tar.gz" | tar xz -C /tmp
+          sudo mv "/tmp/velero-$VELERO_VERSION-linux-amd64/velero" /usr/local/bin/velero
+          sudo chmod +x /usr/local/bin/kind /usr/local/bin/kubectl
+          kind version; kubectl version --client; helm version --short; velero version --client-only
+      - name: Đăng nhập ghcr.io để kéo image API
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Lấy nhánh ops-log
+        run: |
+          if git ls-remote --exit-code --heads origin ops-log > /dev/null; then
+            git clone --quiet --single-branch --branch ops-log "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ops
+          else
+            mkdir ops && git -C ops init --quiet -b ops-log
+            git -C ops remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          fi
+      - name: Diễn tập
+        env:
+          DRILL_READ_SAS_JSON: ${{ secrets.DRILL_READ_SAS_JSON }}
+          DRILL_VELERO_KEY: ${{ secrets.DRILL_VELERO_KEY }}
+          DRILL_OUT_DIR: ${{ github.workspace }}/ops/data/daily-drill
+        run: bash scripts/drill/run-daily-drill.sh
+      - name: Số đo
+        if: always()
+        run: cat ops/data/daily-drill/*.csv 2>/dev/null || true
+      - name: Log của các pod khi lỗi
+        if: failure()
+        run: |
+          kind export logs /tmp/kind-logs --name drill || true
+      - uses: actions/upload-artifact@v5
+        if: failure()
+        with:
+          name: drill-logs
+          path: /tmp/kind-logs
+          if-no-files-found: ignore
+      - name: Ghi CSV vào ops-log
+        if: always() && github.event_name != 'pull_request'
+        working-directory: ops
+        run: |
+          [ -d data ] || { echo "không có dòng CSV mới"; exit 0; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet && exit 0
+          git commit --quiet -m "daily-drill $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3; do
+            git push --quiet origin HEAD:ops-log && exit 0
+            git pull --quiet --rebase origin ops-log || true
+            sleep $((i * 5))
+          done
+          exit 1

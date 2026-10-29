@@ -17,7 +17,7 @@ Phiên bản cụ thể của mọi công cụ dùng trong đồ án (mục 9 th
 | Plugin Velero cho Azure | v1.14.4 | |
 | Helm | 4.3.1 | |
 | kubectl | 1.36 | Kustomize có sẵn trong kubectl |
-| kind | | Dùng cho diễn tập hằng ngày |
+| kind | v0.33.0 | Dùng cho diễn tập hằng ngày và bản thu nhỏ; image nút ở dòng kind mục dưới |
 
 ## Script và kiểm thử
 
