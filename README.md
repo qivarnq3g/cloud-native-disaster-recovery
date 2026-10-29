@@ -1,6 +1,6 @@
 # Đồ án Điện toán đám mây - Nhóm 23
 
-**Đề tài 23: Thiết kế và kiểm chứng kế hoạch sao lưu phục hồi thảm họa cho ứng dụng cloud native.**
+Đề tài 23: thiết kế và kiểm chứng kế hoạch sao lưu phục hồi thảm họa cho ứng dụng cloud native.
 
 Câu hỏi nghiên cứu: kế hoạch phục hồi có thực sự đạt mục tiêu về lượng dữ liệu được phép mất (RPO) và thời gian được phép ngừng (RTO) hay không, nếu chưa từng thử khôi phục ứng dụng, cấu hình và dữ liệu?
 

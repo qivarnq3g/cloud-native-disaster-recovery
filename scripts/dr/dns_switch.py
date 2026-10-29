@@ -5,6 +5,7 @@ import csv
 import http.client
 import ipaddress
 import json
+import math
 import os
 import socket
 import ssl
@@ -93,11 +94,18 @@ def _now() -> datetime:
 
 def switch(dns: CloudflareDns, name: str, ip: str, health: Callable[[str, str], bool],
            resolve: Callable[[str], set[str]], timeout_s: int = 300,
-           sleep: Callable[[float], None] = time.sleep, poll_s: float = 5.0) -> SwitchResult:
+           sleep: Callable[[float], None] = time.sleep, poll_s: float = 5.0,
+           health_timeout_s: float = 120) -> SwitchResult:
     ipaddress.IPv4Address(ip)
     started_at = _now()
-    if not health(name, ip):
-        raise HealthCheckFailed(f"https://{ip}/healthz (SNI {name}) chưa trả 200, không đổi DNS")
+    attempts = max(1, math.ceil(health_timeout_s / poll_s) + 1)
+    for attempt in range(attempts):
+        if health(name, ip):
+            break
+        if attempt == attempts - 1:
+            raise HealthCheckFailed(
+                f"https://{ip}/healthz (SNI {name}) chưa trả 200 sau {health_timeout_s:g} s, không đổi DNS")
+        sleep(poll_s)
     record = dns.get_a_record(name)
     if record["content"] == ip:
         now = _now()

@@ -17,3 +17,9 @@ primary,cnpg_ready,2026-10-29T05:26:09Z
 primary,velero_ready,2026-10-29T05:27:17Z
 primary,db_ready,2026-10-29T05:28:31Z
 primary,schedules_ready,2026-10-29T05:28:32Z
+primary,start,2026-10-29T08:17:28Z
+primary,cert_manager_ready,2026-10-29T08:18:25Z
+primary,cnpg_ready,2026-10-29T08:19:18Z
+primary,velero_ready,2026-10-29T08:20:44Z
+primary,db_ready,2026-10-29T08:22:20Z
+primary,schedules_ready,2026-10-29T08:22:22Z
