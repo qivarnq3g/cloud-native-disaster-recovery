@@ -4,6 +4,7 @@ cluster="${1:-}"
 check_cluster "$cluster"
 name="${DR_API_NAME:-api.dr.qivarn.id.vn}"
 az vm start -g "rg-dr-$cluster" -n "vm-dr-$cluster"
+refresh_admin_ip "$cluster"
 ip="$(az vm show -d -g "rg-dr-$cluster" -n "vm-dr-$cluster" --query publicIps -o tsv)"
 deadline=$((SECONDS + 600))
 until curl -fsS -o /dev/null --resolve "$name:443:$ip" "https://$name/healthz"; do

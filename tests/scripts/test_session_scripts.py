@@ -169,3 +169,16 @@ def test_start_stops_when_session_file_cannot_be_read(fake_tools, monkeypatch):
     r = fake_tools.run("session-start.sh", "primary", "abc")
     assert r.returncode == 1, (r.returncode, r.stderr)
     assert "terraform" not in fake_tools.calls
+
+
+@pytest.mark.parametrize("script", ["session-resume.sh", "session-stop.sh"])
+def test_admin_rule_follows_current_ip_before_cluster_access(fake_tools, script):
+    fake_tools.vms = ["vm-dr-primary"]
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    r = fake_tools.run(script, "primary")
+    assert r.returncode == 0, r.stderr
+    calls = fake_tools.calls
+    rule = "az network nsg rule update -g rg-dr-primary --nsg-name vm-dr-primary-nsg -n admin --source-address-prefixes 203.0.113.7/32"
+    assert rule in calls
+    later = "kubectl" if script == "session-stop.sh" else "curl"
+    assert calls.index(rule) < calls.index(later)

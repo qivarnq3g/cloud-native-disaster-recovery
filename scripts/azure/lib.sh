@@ -34,3 +34,10 @@ if [ -z "${BACKUP_ACCOUNT_KEY:-}" ] && [ -s "$PRIVATE_DIR/key-$BACKUP_ACCOUNT" ]
 fi
 
 session() { (cd "$REPO_ROOT" && "$DR_PYTHON" -m scripts.dr.session_state "$@"); }
+
+refresh_admin_ip() {
+  local ip="${ADMIN_IP:-$(curl -fsS https://api.ipify.org)}"
+  [ -n "$ip" ] || die 1 "không lấy được IP hiện tại cho quy tắc admin"
+  az network nsg rule update -g "rg-dr-$1" --nsg-name "vm-dr-$1-nsg" -n admin \
+    --source-address-prefixes "$ip/32" -o none || die 1 "không cập nhật được quy tắc admin của vm-dr-$1"
+}
