@@ -1,0 +1,6 @@
+time_utc: 2026-10-29T02:56:31Z
+command: az storage blob delete --account-name drvault<suffix> -c vault -n probe.txt (account key)
+ERROR: This operation is not permitted as the blob is immutable due to a policy.
+RequestId:8677a761-901e-0000-1551-67fe50000000
+Time:2026-10-29T02:56:25.0665881Z
+ErrorCode:BlobImmutableDueToPolicy
