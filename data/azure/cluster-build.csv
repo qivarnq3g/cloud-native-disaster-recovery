@@ -9,3 +9,8 @@ primary,vm_created,2026-10-29T05:24:19Z
 primary,k3s_installed,2026-10-29T05:24:24Z
 primary,node_ready,2026-10-29T05:24:27Z
 primary,traefik_ready,2026-10-29T05:24:38Z
+primary,start,2026-10-29T08:14:07Z
+primary,vm_created,2026-10-29T08:16:07Z
+primary,k3s_installed,2026-10-29T08:16:12Z
+primary,node_ready,2026-10-29T08:16:20Z
+primary,traefik_ready,2026-10-29T08:17:23Z

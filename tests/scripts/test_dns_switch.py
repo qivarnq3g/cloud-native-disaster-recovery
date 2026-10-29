@@ -52,7 +52,7 @@ def fake_dns_two_records():
 
 def test_refuses_when_target_not_healthy(fake_dns):
     with pytest.raises(HealthCheckFailed):
-        switch(fake_dns, NAME, "20.0.0.2", health=lambda n, ip: False, resolve=lambda n: set())
+        switch(fake_dns, NAME, "20.0.0.2", health=lambda n, ip: False, resolve=lambda n: set(), sleep=lambda s: None)
     assert fake_dns.patches == []
 
 
@@ -92,3 +92,19 @@ def test_waits_until_resolvers_agree(fake_dns):
     r = switch(fake_dns, NAME, "20.0.0.2", health=ok, resolve=lambda n: next(answers),
                timeout_s=60, sleep=lambda s: None)
     assert r.resolved_at is not None and r.record_updated_at <= r.resolved_at
+
+
+def test_waits_for_target_to_become_healthy(fake_dns):
+    answers = iter([False, False, True])
+    waits = []
+    r = switch(fake_dns, NAME, "20.0.0.2", health=lambda n, ip: next(answers), resolve=lambda n: {"20.0.0.2"},
+               sleep=waits.append, poll_s=5, health_timeout_s=120)
+    assert r.changed and fake_dns.patches and waits == [5, 5]
+
+
+def test_health_gives_up_after_its_timeout(fake_dns):
+    calls = []
+    with pytest.raises(HealthCheckFailed):
+        switch(fake_dns, NAME, "20.0.0.2", health=lambda n, ip: calls.append(1) or False, resolve=lambda n: set(),
+               sleep=lambda s: None, poll_s=5, health_timeout_s=20)
+    assert len(calls) == 5 and fake_dns.patches == []
