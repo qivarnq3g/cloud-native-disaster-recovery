@@ -1,0 +1,4 @@
+#cloud-config
+package_update: false
+runcmd:
+  - curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="${k3s_version}" INSTALL_K3S_EXEC="server --write-kubeconfig-mode=600 --tls-san=${fqdn} --tls-san=${public_ip}" sh -
