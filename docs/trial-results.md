@@ -34,3 +34,15 @@ Kết quả:
 - `session.json` có `server_name` mới `primary-202610290522`, nên WAL của cụm mới không ghi đè lên WAL cũ.
 - Xóa máy ảo thì mất luôn IP tĩnh: IP đổi từ `4.218.8.39` sang `20.200.223.12`, `dns_switch.py` đổi bản ghi A tự động. Máy nào còn nhớ IP cũ thì chờ hết TTL 60 s.
 - IP nhà đổi giữa hai lần làm việc nên `kubectl` bị chặn ở cổng 6443 trong khi API công khai vẫn chạy. Đã sửa: `session-resume.sh` và `session-stop.sh` cập nhật quy tắc `admin` sang IP hiện tại trước khi dùng cụm.
+
+### Kiểm tra sao lưu mỗi giờ chạy thật
+
+Ngày 29/10, workflow `backup-check` chạy tay trên `main` ba lần:
+
+| Lúc | Trạng thái phiên | Kết quả |
+|---|---|---|
+| 06:03 UTC | Đang chạy nhưng máy đã nghỉ 30 phút | Đỏ đúng như mong đợi: `wal_age` báo WAL cũ 1787 s, ngưỡng 300 s |
+| 06:07 UTC | Đang chạy | Xanh: WAL cũ 59 s, bản Velero cũ 128 s, 26 ảnh đủ ở bản chép |
+| 06:14 UTC | Đã tắt | Xanh: chỉ kiểm `session_file`, `sas_expiry`, `stop_backups` |
+
+Lần chạy đầu sau khi tắt phiên báo đỏ ở `stop_backups`. Nguyên nhân: plugin Barman Cloud đặt tên thư mục bản đầy đủ theo mã của nó (`20261029T060730`) và ghi `backup_name=backup-20261029060729` trong `backup.info`, cả hai đều khác tên đối tượng `Backup` của CNPG (`stop-202610290607`) mà `session-stop.sh` lưu vào `session.json`. Đã sửa: `session-stop.sh` lưu `.status.backupId` của đối tượng `Backup`, thiếu thì giữ máy và thoát 1. Từ 06:15 UTC biến `BACKUP_CHECK_ENABLED=true`, kiểm tra chạy mỗi giờ.

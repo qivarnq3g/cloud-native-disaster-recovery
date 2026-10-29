@@ -22,6 +22,8 @@ printf '%s\n' \
   | kubectl -n dr-api apply -f - || die 1 "không tạo được bản đầy đủ $name"
 kubectl -n dr-api wait --for=jsonpath='{.status.phase}'=completed "backups.postgresql.cnpg.io/$name" --timeout=1800s \
   || die 1 "bản đầy đủ $name không hoàn thành, giữ máy"
+backup_id="$(kubectl -n dr-api get "backups.postgresql.cnpg.io/$name" -o jsonpath='{.status.backupId}')" && [ -n "$backup_id" ] \
+  || die 1 "bản đầy đủ $name không có backupId, giữ máy"
 mark session.csv "$cluster" full_backup_done
 
 velero backup create "$name" --from-schedule hourly --ttl 168h0m0s --wait \
@@ -35,7 +37,7 @@ post_count="$(query "SELECT count(*) FROM posts")" || die 1 "không đếm đư�
 digest="$(query "SELECT md5(coalesce(string_agg(id::text || ':' || encode(image_sha256, 'hex'), ',' ORDER BY id), '')) FROM posts")" \
   || die 1 "không tính được mã băm nội dung"
 
-session set state=stopped "stopped_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" "full_backup=$name" \
+session set state=stopped "stopped_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" "full_backup=$backup_id" \
   "velero_backup=$name" "post_count=$post_count" "content_digest=$digest"
 
 stack="$REPO_ROOT/infra/terraform/cluster"
