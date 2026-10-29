@@ -3,6 +3,7 @@ from __future__ import annotations
 import threading
 import time
 from dataclasses import dataclass
+from collections.abc import Callable
 from datetime import UTC, datetime
 
 from scripts.kind.workload import ApiClient
@@ -35,6 +36,7 @@ class Sample:
     status: int
     cluster: str = ""
     read_only: bool | None = None
+    network_ok: bool = True
 
 
 def check(api: ApiClient) -> tuple[bool, int, dict]:
@@ -47,9 +49,11 @@ def check(api: ApiClient) -> tuple[bool, int, dict]:
 
 class Prober(threading.Thread):
 
-    def __init__(self, targets: dict[str, ApiClient], watch: str, interval: float = 1.0):
+    def __init__(self, targets: dict[str, ApiClient], watch: str, interval: float = 1.0,
+                 control: Callable[[], bool] | None = None):
         super().__init__(daemon=True)
         self.targets, self.watch, self.interval = targets, watch, interval
+        self.control = control
         self.samples: list[Sample] = []
         self.detector = FailureDetector()
         self.stop_event = threading.Event()
@@ -58,11 +62,13 @@ class Prober(threading.Thread):
     def run(self) -> None:
         next_at = time.monotonic()
         while not self.stop_event.is_set():
+            network_ok = self.control() if self.control else True
             for name, api in self.targets.items():
                 ok, status, body = check(api)
                 at = datetime.now(UTC)
-                self.samples.append(Sample(at, name, ok, status, body.get("cluster", ""), body.get("read_only")))
-                if name == self.watch and self.detector.feed(ok, at):
+                self.samples.append(Sample(at, name, ok, status, body.get("cluster", ""), body.get("read_only"),
+                                           network_ok))
+                if name == self.watch and network_ok and self.detector.feed(ok, at):
                     self.detected.set()
             next_at += self.interval
             self.stop_event.wait(max(0.0, next_at - time.monotonic()))
