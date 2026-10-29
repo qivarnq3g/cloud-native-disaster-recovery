@@ -13,7 +13,7 @@ Phiên bản cụ thể của mọi công cụ dùng trong đồ án (mục 9 th
 | cert-manager | v1.21.2 | |
 | CloudNativePG | 1.30.1 | Chart Helm chọn theo `app_version` |
 | Barman Cloud Plugin | v0.15.1 | |
-| Velero | v1.18.4 | CLI trên laptop cùng bản; chart Helm chọn theo `app_version` |
+| Velero | v1.18.4 | CLI trên laptop cùng bản; chart Helm `12.2.1` (ghi `app_version` 1.18.2, chưa có chart cho 1.18.4) với `image.tag=v1.18.4` |
 | Plugin Velero cho Azure | v1.14.4 | |
 | Helm | 4.3.1 | |
 | kubectl | 1.36 | Kustomize có sẵn trong kubectl |

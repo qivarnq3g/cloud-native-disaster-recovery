@@ -8,7 +8,7 @@ check_cluster "$cluster"
 state="$(session get state)"
 [ "$state" != "running" ] || die 3 "session.json vẫn là running: tắt phiên trước bằng session-stop.sh"
 ! vm_exists "$cluster" || die 3 "vm-dr-$cluster vẫn còn: tắt phiên trước bằng session-stop.sh"
-for s in install-software.sh deploy-api.sh; do
+for s in cluster-up.sh install-software.sh deploy-api.sh; do
   [ -f "$REPO_ROOT/scripts/azure/$s" ] || die 5 "chưa có scripts/azure/$s"
 done
 
@@ -16,13 +16,8 @@ old_server="$(session get server_name)"
 server_name="$cluster-$(date -u +%Y%m%d%H%M)"
 mark session.csv "$cluster" start
 
-stack="$REPO_ROOT/infra/terraform/cluster"
-tf_init "$stack" "cluster-$cluster.tfstate"
-terraform -chdir="$stack" apply -auto-approve -input=false \
-  -var "cluster=$cluster" -var "suffix=$SFX" \
-  -var "admin_cidrs=[\"${ADMIN_IP:-$(curl -fsS https://api.ipify.org)}/32\"]" \
-  -var "ssh_public_key=$(cat "$SSH_KEY.pub")"
-ip="$(terraform -chdir="$stack" output -raw public_ip)"
+bash "$REPO_ROOT/scripts/azure/cluster-up.sh" "$cluster"
+ip="$(terraform -chdir="$REPO_ROOT/infra/terraform/cluster" output -raw public_ip)"
 mark session.csv "$cluster" vm_ready
 
 bash "$REPO_ROOT/scripts/azure/install-software.sh" "$cluster" "$server_name" "$old_server"

@@ -28,4 +28,9 @@ mark() {
   echo "$2,$3,$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$f"
 }
 
+if [ -z "${BACKUP_ACCOUNT_KEY:-}" ] && [ -s "$PRIVATE_DIR/key-$BACKUP_ACCOUNT" ]; then
+  BACKUP_ACCOUNT_KEY="$(cat "$PRIVATE_DIR/key-$BACKUP_ACCOUNT")"
+  export BACKUP_ACCOUNT_KEY
+fi
+
 session() { (cd "$REPO_ROOT" && "$DR_PYTHON" -m scripts.dr.session_state "$@"); }

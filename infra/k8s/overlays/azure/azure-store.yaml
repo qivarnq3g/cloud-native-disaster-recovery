@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: dr-api
+spec:
+  template:
+    spec:
+      containers:
+        - name: api
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: IMAGE_STORE
+              value: azure
+          envFrom:
+            - configMapRef:
+                name: api-site
+            - secretRef:
+                name: image-store
