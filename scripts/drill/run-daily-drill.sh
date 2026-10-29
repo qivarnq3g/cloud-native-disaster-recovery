@@ -111,7 +111,7 @@ velero_restore() {
   name="drill-$(date -u +%Y%m%d%H%M%S)"
   velero restore create "$name" --from-backup "$backup" --include-namespaces dr-api \
     --include-resources secrets,configmaps,serviceaccounts,deployments.apps,services \
-    --selector 'app.kubernetes.io/managed-by!=cloudnative-pg' --wait
+    --selector 'app.kubernetes.io/managed-by notin (cloudnative-pg)' --wait
   [ "$(kubectl -n velero get "restores.velero.io/$name" -o jsonpath='{.status.phase}')" = "Completed" ]
   if kubectl -n dr-api get services,configmaps,secrets -l app.kubernetes.io/managed-by=cloudnative-pg -o name | grep -q .; then
     echo "Velero vẫn khôi phục đối tượng của CNPG" >&2
