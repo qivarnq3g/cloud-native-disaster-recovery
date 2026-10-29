@@ -46,3 +46,26 @@ Ngày 29/10, workflow `backup-check` chạy tay trên `main` ba lần:
 | 06:14 UTC | Đã tắt | Xanh: chỉ kiểm `session_file`, `sas_expiry`, `stop_backups` |
 
 Lần chạy đầu sau khi tắt phiên báo đỏ ở `stop_backups`. Nguyên nhân: plugin Barman Cloud đặt tên thư mục bản đầy đủ theo mã của nó (`20261029T060730`) và ghi `backup_name=backup-20261029060729` trong `backup.info`, cả hai đều khác tên đối tượng `Backup` của CNPG (`stop-202610290607`) mà `session-stop.sh` lưu vào `session.json`. Đã sửa: `session-stop.sh` lưu `.status.backupId` của đối tượng `Backup`, thiếu thì giữ máy và thoát 1. Từ 06:15 UTC biến `BACKUP_CHECK_ENABLED=true`, kiểm tra chạy mỗi giờ.
+
+### Diễn tập lạnh mỗi ngày chạy thật
+
+Ngày 29/10, workflow `daily-drill` (run 40837880242) trên máy GitHub, khôi phục từ phiên đã tắt `primary-202610290522` và bản Velero `stop-202610290607`:
+
+| Bước | Thời gian |
+|---|---|
+| Dựng cụm kind | 43 s |
+| Cài cert-manager, CNPG, plugin Barman, Velero | 1 phút 25 s |
+| Velero khôi phục secret, configmap, deployment, service | 43 s |
+| CNPG khôi phục cơ sở dữ liệu từ kho Nhật | 1 phút 13 s |
+| API chạy, đọc ảnh ở bản chép | 7 s |
+| Kiểm tra | 7 s |
+| Tổng | 4 phút 18 s |
+
+Kết quả: 25 bài đúng bằng `post_count`, mã băm nội dung khớp, ảnh không hỏng, container `cnpg` không có tệp mới. API trong cụm diễn tập báo `"cluster":"standby"`, `"read_only":true`.
+
+Ba lần chạy trước đó đỏ, đều do script, không do sao lưu:
+
+- Velero khôi phục các service `db-r`, `db-rw`, `db-ro` của CNPG. Velero gỡ `ownerReferences` khi khôi phục, nên CNPG coi chúng là của người khác và không bao giờ tạo pod. Sửa: khôi phục với `--selector 'app.kubernetes.io/managed-by notin (cloudnative-pg)'`.
+- Velero CLI không nhận toán tử `!=` trong bộ chọn nhãn, phải dùng `notin`.
+
+Rủi ro ghi vào báo cáo: diễn tập dùng khóa tài khoản kho sao lưu (`DRILL_VELERO_KEY`, có quyền ghi) vì plugin Velero cho Azure v1.14.4 chưa nhận SAS. Velero đặt kho ở chế độ `ReadOnly`, và kiểm tra cuối xác nhận kho không có tệp mới.
