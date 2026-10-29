@@ -39,7 +39,7 @@ if [ -n "$latest" ] && ! kubectl -n dr-api get secret api-tls >/dev/null 2>&1; t
     || die 1 "khôi phục chứng chỉ từ $latest lỗi"
   phase="$(kubectl -n velero get "restores.velero.io/$restore" -o jsonpath='{.status.phase}')"
   [ "$phase" = "Completed" ] || die 1 "khôi phục $restore đang $phase"
-  restored="$latest"
+  if kubectl -n dr-api get secret api-tls >/dev/null 2>&1; then restored="$latest"; fi
 fi
 mark deploy.csv "$cluster" tls_restored
 

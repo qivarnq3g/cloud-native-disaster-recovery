@@ -2,3 +2,8 @@ cluster,mark,time_utc
 primary,start,2026-10-29T03:27:13Z
 primary,tls_restored,2026-10-29T03:27:17Z
 primary,image_ready,2026-10-29T03:27:58Z
+primary,start,2026-10-29T03:58:43Z
+primary,tls_restored,2026-10-29T03:58:52Z
+primary,image_ready,2026-10-29T03:59:31Z
+primary,api_rolled_out,2026-10-29T03:59:33Z
+primary,certificate_ready,2026-10-29T04:00:02Z
