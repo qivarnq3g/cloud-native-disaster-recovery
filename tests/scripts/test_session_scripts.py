@@ -24,6 +24,7 @@ case "$tool $*" in
   "terraform"*"output -raw public_ip"*) echo 20.0.0.9 ;;
   "kubectl"*"count(*)"*) echo 20 ;;
   "kubectl"*"md5("*) echo 0123abcd ;;
+  "kubectl"*"{.status.backupId}"*) echo 20261027T000000 ;;
 esac
 exit 0
 """
@@ -138,7 +139,7 @@ def test_stop_records_backups_then_destroys(fake_tools):
     assert r.returncode == 0, r.stderr
     doc = json.loads((fake_tools.root / "status" / "session.json").read_text())
     assert doc["state"] == "stopped" and doc["post_count"] == 20 and doc["content_digest"] == "0123abcd"
-    assert doc["full_backup"].startswith("stop-") and doc["full_backup"] == doc["velero_backup"]
+    assert doc["full_backup"] == "20261027T000000" and doc["velero_backup"].startswith("stop-")
     calls = fake_tools.calls
     assert calls.index("velero backup create") < calls.index("destroy")
 
@@ -182,3 +183,10 @@ def test_admin_rule_follows_current_ip_before_cluster_access(fake_tools, script)
     assert rule in calls
     later = "kubectl" if script == "session-stop.sh" else "curl"
     assert calls.index(rule) < calls.index(later)
+
+
+def test_stop_keeps_vm_when_backup_id_is_missing(fake_tools):
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    fake_tools.fail_on = "{.status.backupId}"
+    r = fake_tools.run("session-stop.sh", "primary")
+    assert r.returncode == 1 and "destroy" not in fake_tools.calls
