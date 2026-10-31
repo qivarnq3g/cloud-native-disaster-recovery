@@ -38,3 +38,9 @@ standby,cert_manager_ready,2026-10-31T04:46:05Z
 standby,cnpg_ready,2026-10-31T04:46:46Z
 standby,velero_ready,2026-10-31T04:47:48Z
 standby,db_ready,2026-10-31T04:48:48Z
+primary,start,2026-10-31T06:14:47Z
+primary,cert_manager_ready,2026-10-31T06:15:33Z
+primary,cnpg_ready,2026-10-31T06:16:14Z
+primary,velero_ready,2026-10-31T06:17:16Z
+primary,db_ready,2026-10-31T06:18:29Z
+primary,schedules_ready,2026-10-31T06:18:31Z
