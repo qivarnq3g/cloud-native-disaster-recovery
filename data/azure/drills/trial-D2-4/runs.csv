@@ -1,0 +1,2 @@
+run_id,scenario,iteration,runner,cpus,mem_total_mb,seed_posts,incident_at,detected_at,service_restored_at,verified_at,rto_s,posts_acked,posts_restored,posts_missing,posts_missing_beyond_rpo,posts_holes,posts_extra,rpo_s,digest_match,content_digest,images_checked,images_bad,functional_ok,result
+trial-D2-4,D2,1,DESKTOP-NTPCBOS,12,,1000,2026-10-31T11:46:03.302Z,2026-10-31T11:46:23.487Z,2026-10-31T11:53:34.834Z,2026-10-31T11:54:13.569Z,451.5,1092,1051,41,0,0,26,41.636,true,30d329c3a30b470d457c0b405a16d705,1077,0,true,pass

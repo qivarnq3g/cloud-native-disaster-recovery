@@ -97,3 +97,25 @@ Ngày 31/10, cụm chính `primary-202610310612`:
 - `seed.sh` đăng 1.000 bài (ảnh PNG 256 x 256) với 8 luồng trong 68 s, tạo bản đầy đủ `20261031T062042`; tổng cả lệnh 94 s, dưới mức 20 phút của kế hoạch. Cơ sở dữ liệu đã có 26 bài từ trước nên mẫu có 1.026 bài, mã băm nội dung `dba8fad2810249feb76f196a75b73362`, ghi ở `~/.dr/seed.json`.
 - `reset-seed.sh primary` xóa `db`, dựng lại từ bản `seed` bằng `recoveryTarget.backupID` (CNPG nhận trường này khi dùng Barman Cloud Plugin), khởi động lại API: 3 phút 49 s; sau đó 1.026 bài, mã băm trùng mẫu.
 - Kiểm tra điểm dừng: đăng thêm một bài (1.027 bài), chờ 70 s cho WAL lên kho, chạy lại `reset-seed.sh primary` (3 phút 58 s): còn 1.026 bài, bài thêm không còn. Khôi phục dừng đúng ở bản `seed`, không phát lại WAL sau đó.
+
+## Vòng thử diễn tập
+
+Ngày 31/10, tám lần chạy bằng `python -m scripts.dr.azure_drill`, tải 1 bài/giây, bộ mẫu 1.026 bài. Biên bản từng lần trong `docs/dien-tap/trial-<tình huống>-<lần>.md`, số đo trong `data/azure/drills/`.
+
+| Lần | Kết quả | RTO (s) | RPO (s) | Ghi chú |
+|---|---|---|---|---|
+| D1-1 | không đạt | | | Chưa có bản đầy đủ của server mới; Velero lấy bản phiên cũ |
+| D1-2 | không đạt | | | Câu jsonpath chọn bản Velero sai |
+| D1-3 | đạt | 74,0 | 4,2 | Khôi phục tại chỗ 64 s |
+| D2-1 | không đạt | | | Azure trả `VMStartTimedOut` sau 41 phút |
+| D2-2 | không đạt | 416,5 | 6,4 | Không ghi được ảnh (`OrsPolicyConflict`) |
+| D2-3 | không đạt | 433,6 | 42,8 | 50 ảnh thiếu ở kho dự phòng |
+| D2-4 | đạt | 451,5 | 41,6 | Dựng máy 137,7 s, khôi phục 275,8 s, đổi DNS 16,5 s |
+| D3-1 | đạt | 247,2 | 19,5 | Khôi phục ấm 214,6 s, đổi DNS 11,2 s |
+
+- Cả ba tình huống đã chạy đều có một lần đạt, trong mục tiêu RPO 5 phút, RTO 60 phút (lạnh) và 10 phút (ấm). Mỗi tình huống mới có một lần đạt, chưa đủ để nêu khoảng dao động.
+- Bước khôi phục ấm (214,6 s) vượt mục tiêu 2 phút của từng thành phần ở mục 3 thiết kế. Chưa tách được phần nào chiếm thời gian (nâng cụm, khởi động lại API, chờ kho ảnh nhận ghi).
+- RTO tính từ lúc phá tới khi bước runbook cuối xong, gồm cả 20 s phát hiện; không gồm bước kiểm tra (37 đến 39 s).
+- Năm lần không đạt đều do lỗi trong script hoặc phía Azure, đã sửa và ghi trong lịch sử thay đổi của `docs/runbook.md`.
+- D4 và D5 (xóa cả nhóm `rg-dr-primary`) chưa chạy: hai lần này xóa luôn kho ảnh chính, cần thêm bước chép ảnh từ kho bản sao về kho chính mới trước khi dựng lại.
+- Cuối buổi, `session-stop.sh standby` tắt phiên với 1.100 bài, bản `stop-202610311225`; không còn máy ảo nào.

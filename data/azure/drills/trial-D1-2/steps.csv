@@ -1,0 +1,7 @@
+run_id,scenario,iteration,step,started_at,ended_at,duration_s,result
+trial-D1-2,D1,1,detect,2026-10-31T09:18:43.562Z,2026-10-31T09:18:53.357Z,9.8,ok
+trial-D1-2,D1,1,decide,2026-10-31T09:18:53.357Z,2026-10-31T09:18:53.361Z,0.0,ok
+trial-D1-2,D1,1,infra,,,,not_needed
+trial-D1-2,D1,1,restore,2026-10-31T09:18:53.647Z,2026-10-31T09:19:02.031Z,8.4,fail
+trial-D1-2,D1,1,switch,,,,skipped
+trial-D1-2,D1,1,verify,,,,skipped
