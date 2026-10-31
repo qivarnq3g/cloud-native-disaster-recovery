@@ -15,3 +15,11 @@ primary,start,2026-10-29T08:22:39Z
 primary,tls_restored,2026-10-29T08:22:46Z
 primary,image_ready,2026-10-29T08:23:03Z
 primary,api_rolled_out,2026-10-29T08:23:05Z
+primary,start,2026-10-31T04:16:39Z
+primary,tls_restored,2026-10-31T04:16:46Z
+primary,image_ready,2026-10-31T04:16:58Z
+primary,api_rolled_out,2026-10-31T04:17:00Z
+standby,start,2026-10-31T04:49:00Z
+standby,tls_restored,2026-10-31T04:49:07Z
+standby,image_ready,2026-10-31T04:49:19Z
+standby,api_rolled_out,2026-10-31T04:49:22Z
