@@ -24,7 +24,7 @@ bash "$REPO_ROOT/scripts/azure/install-software.sh" "$cluster" "$server_name" "$
 mark session.csv "$cluster" software_ready
 bash "$REPO_ROOT/scripts/azure/deploy-api.sh" "$cluster" "$image_tag"
 mark session.csv "$cluster" api_ready
-(cd "$REPO_ROOT" && "$DR_PYTHON" -m scripts.dr.dns_switch "$ip" --csv "$DATA_DIR/dns-switch.csv")
+dns_switch "$ip" --csv "$DATA_DIR/dns-switch.csv"
 mark session.csv "$cluster" dns_switched
 
 session set state=running "cluster=$cluster" "server_name=$server_name" \
