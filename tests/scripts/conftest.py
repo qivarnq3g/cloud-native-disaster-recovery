@@ -29,7 +29,7 @@ case "$tool $*" in
   "az storage blob list"*) echo 0 ;;
   "kubectl"*"pg_is_in_recovery()"*) echo "${FAKE_IN_RECOVERY:-f}" ;;
   "terraform"*"output -raw public_ip"*) echo 20.0.0.9 ;;
-  "kubectl"*"count(*)"*) echo 20 ;;
+  "kubectl"*"count(*)"*) echo "${FAKE_POST_COUNT:-20}" ;;
   "kubectl"*"md5("*) echo 0123abcd ;;
   "kubectl"*"{.status.backupId}"*) echo 20261027T000000 ;;
 esac
@@ -58,6 +58,7 @@ class FakeTools:
         self.power_state = "PowerState/deallocated"
         self.fail_on = ""
         self.in_recovery = "f"
+        self.post_count = 20
         self.stubs: list[str] = []
         self.extra_env: dict[str, str] = {}
         private = root / "private"
@@ -101,6 +102,7 @@ class FakeTools:
             "FAKE_POWER_STATE": self.power_state,
             "FAKE_FAIL_ON": self.fail_on,
             "FAKE_IN_RECOVERY": self.in_recovery,
+            "FAKE_POST_COUNT": str(self.post_count),
             "DR_DNS_SWITCH": (self.bin / "dns_switch").as_posix(),
             "DR_PROMOTE_TIMEOUT": "0",
             "DR_FAKE_SESSION": status.as_posix(),

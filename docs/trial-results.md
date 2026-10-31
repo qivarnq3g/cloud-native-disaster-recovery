@@ -89,3 +89,11 @@ Ngày 31/10, cụm chính `primary-202610310410` đang chạy, ảnh API `cf4a69
 - Lần dựng thứ hai (`standby-202610310442`), mốc trong `data/azure/standby.csv`: bản đầy đủ 15 s, dựng máy 2 phút 20 s, bản sao Ready 3 phút 22 s, API chạy 34 s; tổng 6 phút 31 s. Xóa cụm hỏng bằng `standby-down.sh` mất 2 phút 10 s.
 - Cụm dự phòng báo `Cluster in healthy state`, `pg_is_in_recovery()` trả `t`, `/healthz` qua IP dự phòng trả `"read_only":true`.
 - Độ trễ bản sao: một bài đăng ở cụm chính xuất hiện ở cụm dự phòng sau 13 s (đo một lần, kiểm tra 5 s một lần; trước đó 25 bài, sau đó 26 bài ở cả hai cụm). Với `archive_timeout` 60 s, độ trễ có thể lên gần 60 s cộng thời gian đọc WAL nếu bài rơi vào đầu một đoạn WAL; một lần đo chưa đủ để nêu giới hạn.
+
+### Bộ dữ liệu mẫu
+
+Ngày 31/10, cụm chính `primary-202610310612`:
+
+- `seed.sh` đăng 1.000 bài (ảnh PNG 256 x 256) với 8 luồng trong 68 s, tạo bản đầy đủ `20261031T062042`; tổng cả lệnh 94 s, dưới mức 20 phút của kế hoạch. Cơ sở dữ liệu đã có 26 bài từ trước nên mẫu có 1.026 bài, mã băm nội dung `dba8fad2810249feb76f196a75b73362`, ghi ở `~/.dr/seed.json`.
+- `reset-seed.sh primary` xóa `db`, dựng lại từ bản `seed` bằng `recoveryTarget.backupID` (CNPG nhận trường này khi dùng Barman Cloud Plugin), khởi động lại API: 3 phút 49 s; sau đó 1.026 bài, mã băm trùng mẫu.
+- Kiểm tra điểm dừng: đăng thêm một bài (1.027 bài), chờ 70 s cho WAL lên kho, chạy lại `reset-seed.sh primary` (3 phút 58 s): còn 1.026 bài, bài thêm không còn. Khôi phục dừng đúng ở bản `seed`, không phát lại WAL sau đó.

@@ -2,6 +2,7 @@
 source "$(dirname "${BASH_SOURCE[0]}")/env.sh"
 
 SCRIPT_DIR="${DR_SCRIPT_DIR:-$REPO_ROOT/scripts/azure}"
+DIGEST_SQL="SELECT md5(coalesce(string_agg(id::text || ':' || encode(image_sha256, 'hex'), ',' ORDER BY id), '')) FROM posts"
 
 die() { local code="$1"; shift; echo "$*" >&2; exit "$code"; }
 

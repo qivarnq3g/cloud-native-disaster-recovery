@@ -176,3 +176,57 @@ def test_standby_down_refuses_while_standby_is_the_live_cluster(fake_tools):
     fake_tools.vms = ["vm-dr-standby"]
     assert fake_tools.run("standby-down.sh").returncode == 3
     assert "destroy" not in fake_tools.calls
+
+
+SEED_JSON = ('{"backup_id": "20261030T010203", "server_name": "primary-202610300100", '
+             '"post_count": 20, "content_digest": "0123abcd"}')
+
+
+def test_seed_refuses_when_session_not_running(fake_tools):
+    fake_tools.session = {"state": "stopped", "cluster": "primary"}
+    assert fake_tools.run("seed.sh").returncode == 3
+
+
+def test_seed_refuses_non_empty_database(fake_tools):
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    fake_tools.post_count = 125
+    assert fake_tools.run("seed.sh").returncode == 3
+    assert "kind: Backup" not in fake_tools.applied_yaml
+
+
+def test_reset_uses_recorded_backup_id(fake_tools):
+    fake_tools.private.joinpath("seed.json").write_text(SEED_JSON)
+    fake_tools.private.joinpath("seed-ledger.csv").write_text("seq,post_id,acked_at,sha256,source\n")
+    fake_tools.session = {"state": "running", "cluster": "primary", "server_name": "primary-202610310000"}
+    r = fake_tools.run("reset-seed.sh", "primary")
+    assert r.returncode == 0, r.stderr
+    yaml = fake_tools.applied_yaml
+    assert "backupID: 20261030T010203" in yaml and "serverName: primary-202610300100" in yaml
+    c = fake_tools.calls
+    assert c.index("nsg rule update -g rg-dr-primary") < c.index("delete clusters.postgresql.cnpg.io/db")
+    assert "rollout restart deploy/api" in c
+    doc = fake_tools.session_doc()
+    assert doc["server_name"].startswith("primary-2") and doc["server_name"] != "primary-202610310000"
+    assert str(doc["post_count"]) == "20" and doc["content_digest"] == "0123abcd"
+    assert fake_tools.private.joinpath("drill-ledger.csv").read_text().startswith("seq,post_id")
+
+
+def test_reset_fails_when_content_differs_from_seed(fake_tools):
+    fake_tools.private.joinpath("seed.json").write_text(SEED_JSON)
+    fake_tools.private.joinpath("seed-ledger.csv").write_text("seq,post_id,acked_at,sha256,source\n")
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    fake_tools.post_count = 19
+    assert fake_tools.run("reset-seed.sh", "primary").returncode == 1
+    assert not fake_tools.private.joinpath("drill-ledger.csv").exists()
+
+
+def test_reset_refuses_without_seed_record(fake_tools):
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    assert fake_tools.run("reset-seed.sh", "primary").returncode == 5
+    assert "delete" not in fake_tools.calls
+
+
+def test_reset_refuses_cluster_not_serving(fake_tools):
+    fake_tools.private.joinpath("seed.json").write_text(SEED_JSON)
+    fake_tools.session = {"state": "running", "cluster": "standby"}
+    assert fake_tools.run("reset-seed.sh", "primary").returncode == 3

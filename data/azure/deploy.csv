@@ -23,3 +23,7 @@ standby,start,2026-10-31T04:49:00Z
 standby,tls_restored,2026-10-31T04:49:07Z
 standby,image_ready,2026-10-31T04:49:19Z
 standby,api_rolled_out,2026-10-31T04:49:22Z
+primary,start,2026-10-31T06:18:45Z
+primary,tls_restored,2026-10-31T06:18:53Z
+primary,image_ready,2026-10-31T06:19:05Z
+primary,api_rolled_out,2026-10-31T06:19:07Z
