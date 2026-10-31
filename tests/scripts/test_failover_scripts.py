@@ -21,8 +21,17 @@ def test_warm_deletes_only_policies_on_standby_image_account(fake_tools):
     warm(fake_tools).run("failover-warm.sh", "r1")
     c = fake_tools.calls
     assert "or-policy list -g rg-dr-standby --account-name drimgstbabc123" in c
-    assert "destinationAccount=='drimgstbabc123'" in c
     assert "or-policy delete -g rg-dr-standby --account-name drimgstbabc123 --policy-id pol-1" in c
+    assert "--policy-id pol-2" not in c
+    assert c.index("--policy-id pol-1") < c.index("blob upload --account-name drimgstbabc123")
+    assert c.index("blob upload --account-name drimgstbabc123") < c.index("IMAGE_STORE_READ_ONLY")
+
+
+def test_warm_stops_when_standby_images_stay_read_only(fake_tools):
+    warm(fake_tools).fail_on = "blob upload --account-name drimgstbabc123"
+    fake_tools.extra_env["DR_ORS_TIMEOUT"] = "0"
+    assert fake_tools.run("failover-warm.sh", "r1").returncode == 1
+    assert "IMAGE_STORE_READ_ONLY" not in fake_tools.calls
 
 
 def test_warm_switches_dns_and_session_together(fake_tools):
@@ -65,11 +74,44 @@ def test_restore_namespace_skips_cnpg_objects_and_targets_time(fake_tools):
     r = fake_tools.run("restore-namespace.sh", "r1", "2026-10-30T01:02:03Z")
     assert r.returncode == 0, r.stderr
     assert "managed-by notin (cloudnative-pg)" in fake_tools.calls
-    assert "--from-schedule hourly" in fake_tools.calls
+    assert "--from-backup hourly-a" in fake_tools.calls
     assert 'targetTime: "2026-10-30T01:02:03Z"' in fake_tools.applied_yaml
     assert "serverName: primary-202610300100" in fake_tools.applied_yaml
     assert fake_tools.session_doc()["server_name"].startswith("primary-2")
     assert fake_tools.session_doc()["server_name"] != "primary-202610300100"
+
+
+def test_restore_namespace_uses_newest_velero_backup_of_this_session(fake_tools):
+    fake_tools.session = WARM_SESSION
+    fake_tools.velero_backups = ("hourly-new 2026-10-27T02:00:00Z\nhourly-old 2026-10-26T23:00:00Z\n"
+                                 "start-x 2026-10-27T00:05:00Z\n")
+    r = fake_tools.run("restore-namespace.sh", "r1", "2026-10-30T01:02:03Z")
+    assert r.returncode == 0, r.stderr
+    assert "--from-backup hourly-new" in fake_tools.calls
+    assert '{"\\n"}{end}' in fake_tools.calls
+
+
+def test_restore_namespace_refuses_backups_older_than_session(fake_tools):
+    fake_tools.session = WARM_SESSION
+    fake_tools.velero_backups = "hourly-old 2026-10-26T23:00:00Z\n"
+    r = fake_tools.run("restore-namespace.sh", "r1", "2026-10-30T01:02:03Z")
+    assert r.returncode == 5, r.stderr
+    assert "velero restore" not in fake_tools.calls
+
+
+def test_restore_namespace_restores_schedule_and_takes_base_backup(fake_tools):
+    fake_tools.session = WARM_SESSION
+    assert fake_tools.run("restore-namespace.sh", "r1", "2026-10-30T01:02:03Z").returncode == 0
+    c = fake_tools.calls
+    assert c.index("condition=Ready clusters.postgresql.cnpg.io/db") < c.index("scheduled-backup.yaml")
+    assert c.index("condition=Ready clusters.postgresql.cnpg.io/db") < c.index("backups.postgresql.cnpg.io/restore-")
+
+
+def test_warm_takes_base_backup_after_promotion(fake_tools):
+    r = warm(fake_tools).run("failover-warm.sh", "r1")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    assert c.index("pg_is_in_recovery()") < c.index("backups.postgresql.cnpg.io/promote-")
 
 
 def test_restore_namespace_rejects_bad_target_time(fake_tools):
@@ -110,6 +152,12 @@ def test_cold_recovers_from_last_server_and_switches(fake_tools):
     assert [row.split(",")[0] for row in rows[1:]] == ["infra", "restore", "switch"]
 
 
+def test_cold_takes_base_backup_on_new_server(fake_tools):
+    assert cold(fake_tools).run("failover-cold.sh", "r1", "standby").returncode == 0
+    c = fake_tools.calls
+    assert c.index("deploy-api.sh standby") < c.index("backups.postgresql.cnpg.io/cold-") < c.index("dns_switch")
+
+
 def test_cold_skips_cluster_up_when_vm_exists(fake_tools):
     cold(fake_tools).vms = ["vm-dr-standby"]
     r = fake_tools.run("failover-cold.sh", "r1", "standby")
@@ -132,3 +180,30 @@ def test_copy_images_waits_for_every_blob(fake_tools):
     c = fake_tools.calls
     assert "--source-account-name drimgcopyabc123" in c and "--account-name drimgstbabc123" in c
     assert "properties.copy.status!='success'" in c
+
+
+def test_restore_replication_clears_source_half_then_applies_storage(fake_tools):
+    fake_tools.extra_env["DR_BUDGET_EMAIL"] = "x@example.com"
+    r = fake_tools.run("restore-replication.sh")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    delete = "or-policy delete -g rg-dr-primary --account-name drimgpriabc123 --policy-id pol-1"
+    assert delete in c and "--policy-id pol-2" not in c
+    assert c.index(delete) < c.index("terraform -chdir=")
+    assert "-var suffix=abc123" in c and "apply -auto-approve" in c
+
+
+def test_restore_replication_skips_source_when_primary_account_is_gone(fake_tools):
+    fake_tools.extra_env["DR_BUDGET_EMAIL"] = "x@example.com"
+    fake_tools.fail_on = "or-policy list -g rg-dr-primary"
+    r = fake_tools.run("restore-replication.sh")
+    assert r.returncode == 0, r.stderr
+    assert "or-policy delete" not in fake_tools.calls and "apply -auto-approve" in fake_tools.calls
+
+
+def test_warm_promotion_creates_backup_schedules(fake_tools):
+    r = warm(fake_tools).run("failover-warm.sh", "r1")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    assert c.index("pg_is_in_recovery()") < c.index("velero-schedule.yaml")
+    assert c.index("pg_is_in_recovery()") < c.index("scheduled-backup.yaml")

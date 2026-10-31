@@ -66,6 +66,10 @@ take_full_backup() {
   echo "$id"
 }
 
+take_base_backup() {
+  take_full_backup "$1-$(date -u +%Y%m%d%H%M%S)" >/dev/null
+}
+
 account_key() {
   local account="$1" file="$PRIVATE_DIR/key-$1" group
   if [ ! -s "$file" ]; then
@@ -92,13 +96,30 @@ run_step() {
   bash "$REPO_ROOT/scripts/azure/step.sh" "$run_id" "$step" -- "$@"
 }
 
+delete_standby_policies() {
+  local group="$1" account="$2" policies id destination
+  policies="$(az storage account or-policy list -g "$group" --account-name "$account" \
+    --query "[].[policyId, destinationAccount]" -o tsv)" || die 1 "không đọc được chính sách chép ảnh của $account"
+  while IFS=$'\t' read -r id destination; do
+    destination="${destination%$'\r'}"
+    [ "${destination##*/}" = "$IMAGE_STANDBY_ACCOUNT" ] || continue
+    az storage account or-policy delete -g "$group" --account-name "$account" --policy-id "$id" -o none \
+      || die 1 "không gỡ được chính sách chép ảnh $id của $account"
+  done <<< "$policies"
+}
+
 remove_image_replication() {
-  local id
-  for id in $(az storage account or-policy list -g "$RG_STANDBY" --account-name "$IMAGE_STANDBY_ACCOUNT" \
-      --query "[?destinationAccount=='$IMAGE_STANDBY_ACCOUNT'].policyId" -o tsv); do
-    az storage account or-policy delete -g "$RG_STANDBY" --account-name "$IMAGE_STANDBY_ACCOUNT" --policy-id "$id" -o none \
-      || die 1 "không gỡ được chính sách chép ảnh $id"
+  delete_standby_policies "$RG_STANDBY" "$IMAGE_STANDBY_ACCOUNT"
+  local key deadline
+  key="$(account_key "$IMAGE_STANDBY_ACCOUNT")"
+  deadline=$(( $(date +%s) + ${DR_ORS_TIMEOUT:-600} ))
+  until az storage blob upload --account-name "$IMAGE_STANDBY_ACCOUNT" --account-key "$key" -c images \
+      -n .write-probe --data probe --overwrite -o none 2>/dev/null; do
+    [ "$(date +%s)" -lt "$deadline" ] || die 1 "kho ảnh dự phòng vẫn chưa nhận ghi sau ${DR_ORS_TIMEOUT:-600} s"
+    sleep "${DR_POLL_SECONDS:-10}"
   done
+  az storage blob delete --account-name "$IMAGE_STANDBY_ACCOUNT" --account-key "$key" -c images -n .write-probe -o none \
+    2>/dev/null || true
 }
 
 switch_to() {

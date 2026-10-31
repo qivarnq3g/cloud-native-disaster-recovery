@@ -28,6 +28,7 @@ count="$(query "SELECT count(*) FROM posts")" || die 1 "không đếm được b
 digest="$(query "$DIGEST_SQL")" || die 1 "không tính được mã băm nội dung"
 [ "$count" = "$want_count" ] && [ "$digest" = "$want_digest" ] \
   || die 1 "sau khi đưa về mẫu có $count bài, mã băm $digest; mẫu là $want_count bài, $want_digest"
+take_base_backup reset
 cp "$PRIVATE_DIR/seed-ledger.csv" "$PRIVATE_DIR/drill-ledger.csv"
 session set "server_name=$server" "post_count=$count" "content_digest=$digest"
 mark seed.csv "$cluster" reset_done

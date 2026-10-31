@@ -25,13 +25,16 @@ case "$tool $*" in
     exit 3 ;;
   "az vm get-instance-view"*) echo "$FAKE_POWER_STATE" ;;
   "az vm list"*) echo 0 ;;
-  "az storage account or-policy list"*) echo pol-1 ;;
+  "az storage account or-policy list"*)
+    printf 'pol-1\t/subscriptions/s/resourceGroups/rg-dr-standby/providers/Microsoft.Storage/storageAccounts/drimgstbabc123\r\n'
+    printf 'pol-2\t/subscriptions/s/resourceGroups/rg-dr-backup/providers/Microsoft.Storage/storageAccounts/drimgcopyabc123\r\n' ;;
   "az storage blob list"*) echo 0 ;;
   "kubectl"*"pg_is_in_recovery()"*) echo "${FAKE_IN_RECOVERY:-f}" ;;
   "terraform"*"output -raw public_ip"*) echo 20.0.0.9 ;;
   "kubectl"*"count(*)"*) echo "${FAKE_POST_COUNT:-20}" ;;
   "kubectl"*"md5("*) echo 0123abcd ;;
   "kubectl"*"{.status.backupId}"*) echo 20261027T000000 ;;
+  "kubectl -n velero get backups.velero.io"*) printf '%b' "${FAKE_VELERO_BACKUPS:-}" ;;
 esac
 exit 0
 """
@@ -59,6 +62,7 @@ class FakeTools:
         self.fail_on = ""
         self.in_recovery = "f"
         self.post_count = 20
+        self.velero_backups = "hourly-a 2026-10-27T01:00:00Z\n"
         self.stubs: list[str] = []
         self.extra_env: dict[str, str] = {}
         private = root / "private"
@@ -103,6 +107,7 @@ class FakeTools:
             "FAKE_FAIL_ON": self.fail_on,
             "FAKE_IN_RECOVERY": self.in_recovery,
             "FAKE_POST_COUNT": str(self.post_count),
+            "FAKE_VELERO_BACKUPS": self.velero_backups,
             "DR_DNS_SWITCH": (self.bin / "dns_switch").as_posix(),
             "DR_PROMOTE_TIMEOUT": "0",
             "DR_FAKE_SESSION": status.as_posix(),

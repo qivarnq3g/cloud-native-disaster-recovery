@@ -11,11 +11,14 @@ promote() {
     [ "$(date +%s)" -lt "$deadline" ] || die 1 "db chưa thành cụm chính sau ${DR_PROMOTE_TIMEOUT:-600} s"
     sleep "${DR_POLL_SECONDS:-5}"
   done
+  kubectl apply -f "$REPO_ROOT/infra/k8s/platform/scheduled-backup.yaml" >/dev/null || die 1 "không tạo được lịch bản đầy đủ"
+  kubectl apply -f "$REPO_ROOT/infra/k8s/platform/velero-schedule.yaml" >/dev/null || die 1 "không tạo được lịch Velero"
   remove_image_replication
   kubectl -n dr-api patch configmap api-site --type merge -p '{"data":{"IMAGE_STORE_READ_ONLY":"false"}}' >/dev/null \
     || die 1 "không bật được ghi ảnh"
   kubectl -n dr-api rollout restart deploy/api >/dev/null || die 1 "không khởi động lại được API"
   kubectl -n dr-api rollout status deploy/api --timeout=300s >/dev/null || die 1 "API chưa chạy lại sau 300 s"
+  take_base_backup promote
 }
 
 case "${1:-}" in
