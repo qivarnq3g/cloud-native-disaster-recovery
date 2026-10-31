@@ -96,16 +96,20 @@ run_step() {
   bash "$REPO_ROOT/scripts/azure/step.sh" "$run_id" "$step" -- "$@"
 }
 
-remove_image_replication() {
-  local policies id destination
-  policies="$(az storage account or-policy list -g "$RG_STANDBY" --account-name "$IMAGE_STANDBY_ACCOUNT" \
-    --query "[].[policyId, destinationAccount]" -o tsv)" || die 1 "không đọc được chính sách chép ảnh"
+delete_standby_policies() {
+  local group="$1" account="$2" policies id destination
+  policies="$(az storage account or-policy list -g "$group" --account-name "$account" \
+    --query "[].[policyId, destinationAccount]" -o tsv)" || die 1 "không đọc được chính sách chép ảnh của $account"
   while IFS=$'\t' read -r id destination; do
     destination="${destination%$'\r'}"
     [ "${destination##*/}" = "$IMAGE_STANDBY_ACCOUNT" ] || continue
-    az storage account or-policy delete -g "$RG_STANDBY" --account-name "$IMAGE_STANDBY_ACCOUNT" --policy-id "$id" -o none \
-      || die 1 "không gỡ được chính sách chép ảnh $id"
+    az storage account or-policy delete -g "$group" --account-name "$account" --policy-id "$id" -o none \
+      || die 1 "không gỡ được chính sách chép ảnh $id của $account"
   done <<< "$policies"
+}
+
+remove_image_replication() {
+  delete_standby_policies "$RG_STANDBY" "$IMAGE_STANDBY_ACCOUNT"
   local key deadline
   key="$(account_key "$IMAGE_STANDBY_ACCOUNT")"
   deadline=$(( $(date +%s) + ${DR_ORS_TIMEOUT:-600} ))

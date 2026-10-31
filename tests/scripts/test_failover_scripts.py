@@ -180,3 +180,22 @@ def test_copy_images_waits_for_every_blob(fake_tools):
     c = fake_tools.calls
     assert "--source-account-name drimgcopyabc123" in c and "--account-name drimgstbabc123" in c
     assert "properties.copy.status!='success'" in c
+
+
+def test_restore_replication_clears_source_half_then_applies_storage(fake_tools):
+    fake_tools.extra_env["DR_BUDGET_EMAIL"] = "x@example.com"
+    r = fake_tools.run("restore-replication.sh")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    delete = "or-policy delete -g rg-dr-primary --account-name drimgpriabc123 --policy-id pol-1"
+    assert delete in c and "--policy-id pol-2" not in c
+    assert c.index(delete) < c.index("terraform -chdir=")
+    assert "-var suffix=abc123" in c and "apply -auto-approve" in c
+
+
+def test_restore_replication_skips_source_when_primary_account_is_gone(fake_tools):
+    fake_tools.extra_env["DR_BUDGET_EMAIL"] = "x@example.com"
+    fake_tools.fail_on = "or-policy list -g rg-dr-primary"
+    r = fake_tools.run("restore-replication.sh")
+    assert r.returncode == 0, r.stderr
+    assert "or-policy delete" not in fake_tools.calls and "apply -auto-approve" in fake_tools.calls
