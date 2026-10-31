@@ -30,6 +30,13 @@ exit 0
 """
 
 
+STUB_SCRIPT = r"""#!/usr/bin/env bash
+echo "$(basename "$0") $*" >> "$FAKE_DIR/calls.log"
+echo "$(basename "$0") DR_DB_MODE=${DR_DB_MODE:-} DR_READ_ONLY=${DR_READ_ONLY:-}" >> "$FAKE_DIR/env.log"
+exit 0
+"""
+
+
 class FakeTools:
     def __init__(self, root: Path):
         self.root = root
@@ -43,11 +50,21 @@ class FakeTools:
         self.vms = []
         self.power_state = "PowerState/deallocated"
         self.fail_on = ""
+        self.stubs: list[str] = []
+        self.extra_env: dict[str, str] = {}
         private = root / "private"
         private.mkdir()
         (private / "ssh_ed25519").write_text("fake")
         (private / "ssh_ed25519.pub").write_text("ssh-ed25519 AAAA fake")
         self.private = private
+
+    @property
+    def env_log(self) -> str:
+        log = self.root / "env.log"
+        return log.read_text() if log.exists() else ""
+
+    def session_doc(self) -> dict:
+        return json.loads((self.root / "status" / "session.json").read_text())
 
     @property
     def calls(self) -> str:
@@ -78,6 +95,13 @@ class FakeTools:
             "ADMIN_IP": "203.0.113.7",
             "DR_POLL_SECONDS": "0",
         }
+        if self.stubs:
+            stub_dir = self.root / "stubs"
+            stub_dir.mkdir(exist_ok=True)
+            for name in self.stubs:
+                (stub_dir / name).write_text(STUB_SCRIPT, newline="\n")
+            env["DR_SCRIPT_DIR"] = stub_dir.as_posix()
+        env.update(self.extra_env)
         return subprocess.run([BASH, (SCRIPTS / script).as_posix(), *args], env=env,
                               capture_output=True, text=True, timeout=60)
 
@@ -190,3 +214,51 @@ def test_stop_keeps_vm_when_backup_id_is_missing(fake_tools):
     fake_tools.fail_on = "{.status.backupId}"
     r = fake_tools.run("session-stop.sh", "primary")
     assert r.returncode == 1 and "destroy" not in fake_tools.calls
+
+
+STANDBY_STUBS = ["cluster-up.sh", "install-software.sh", "deploy-api.sh"]
+
+
+def test_standby_up_refuses_when_primary_not_running(fake_tools):
+    fake_tools.stubs = STANDBY_STUBS
+    fake_tools.session = {"state": "stopped", "cluster": "primary"}
+    assert fake_tools.run("standby-up.sh", "abc").returncode == 5
+    assert "cluster-up.sh" not in fake_tools.calls
+
+
+def test_standby_up_refuses_when_standby_exists(fake_tools):
+    fake_tools.stubs = STANDBY_STUBS
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    fake_tools.vms = ["vm-dr-standby"]
+    assert fake_tools.run("standby-up.sh", "abc").returncode == 3
+
+
+def test_standby_up_installs_replica_from_primary_server(fake_tools):
+    fake_tools.stubs = STANDBY_STUBS
+    fake_tools.session = {"state": "running", "cluster": "primary", "server_name": "primary-202610300100"}
+    r = fake_tools.run("standby-up.sh", "abc")
+    assert r.returncode == 0, r.stderr
+    calls = fake_tools.calls
+    assert "install-software.sh standby standby-" in calls and "primary-202610300100" in calls
+    assert "install-software.sh DR_DB_MODE=replica" in fake_tools.env_log
+    assert "deploy-api.sh DR_DB_MODE= DR_READ_ONLY=true" in fake_tools.env_log
+    assert (fake_tools.private / "standby-server").read_text().strip().startswith("standby-")
+    assert fake_tools.session_doc()["cluster"] == "primary"
+
+
+def test_standby_down_refreshes_admin_ip_first(fake_tools):
+    fake_tools.vms = ["vm-dr-standby"]
+    (fake_tools.private / "standby-server").write_text("standby-202610300100")
+    r = fake_tools.run("standby-down.sh")
+    assert r.returncode == 0, r.stderr
+    calls = fake_tools.calls
+    assert calls.index("nsg rule update -g rg-dr-standby") < calls.index("destroy")
+    assert "cluster-standby.tfstate" in calls
+    assert not (fake_tools.private / "standby-server").exists()
+
+
+def test_standby_down_refuses_while_standby_is_the_live_cluster(fake_tools):
+    fake_tools.session = {"state": "running", "cluster": "standby"}
+    fake_tools.vms = ["vm-dr-standby"]
+    assert fake_tools.run("standby-down.sh").returncode == 3
+    assert "destroy" not in fake_tools.calls

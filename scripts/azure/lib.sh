@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 source "$(dirname "${BASH_SOURCE[0]}")/env.sh"
 
+SCRIPT_DIR="${DR_SCRIPT_DIR:-$REPO_ROOT/scripts/azure}"
+
 die() { local code="$1"; shift; echo "$*" >&2; exit "$code"; }
 
 check_cluster() {

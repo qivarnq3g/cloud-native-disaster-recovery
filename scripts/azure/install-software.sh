@@ -60,7 +60,12 @@ kubectl -n dr-api create secret generic db-app-user --type=kubernetes.io/basic-a
   --dry-run=client -o yaml | kubectl apply -f - >/dev/null
 render "$platform/object-store.yaml.tpl" "BACKUP_ACCOUNT=$BACKUP_ACCOUNT" | kubectl apply -f - >/dev/null
 
-if [ -n "$recover_from" ]; then
+db_mode="${DR_DB_MODE:-}"
+case "$db_mode" in ""|replica) ;; *) die 64 "DR_DB_MODE chỉ nhận replica" ;; esac
+if [ "$db_mode" = replica ]; then
+  [ -n "$recover_from" ] || die 64 "chế độ replica cần <recover_from_server> của cụm chính"
+  render "$platform/db-replica.yaml.tpl" "SERVER=$server_name" "SOURCE_SERVER=$recover_from" | kubectl apply -f - >/dev/null
+elif [ -n "$recover_from" ]; then
   render "$platform/db-recover.yaml.tpl" "SERVER=$server_name" "SOURCE_SERVER=$recover_from" | kubectl apply -f - >/dev/null
 else
   render "$platform/db-new.yaml.tpl" "SERVER=$server_name" | kubectl apply -f - >/dev/null
@@ -70,6 +75,10 @@ kubectl -n dr-api wait --for=condition=Ready clusters.postgresql.cnpg.io/db --ti
   || die 1 "cơ sở dữ liệu db chưa Ready sau 15 phút"
 mark install.csv "$cluster" db_ready
 
+if [ "$db_mode" = replica ]; then
+  echo "đã cài phần mềm trên $cluster, server_name $server_name, bản sao đọc WAL của $recover_from"
+  exit 0
+fi
 kubectl apply -f "$platform/scheduled-backup.yaml" >/dev/null
 kubectl apply -f "$platform/velero-schedule.yaml" >/dev/null
 mark install.csv "$cluster" schedules_ready
