@@ -11,6 +11,8 @@ promote() {
     [ "$(date +%s)" -lt "$deadline" ] || die 1 "db chưa thành cụm chính sau ${DR_PROMOTE_TIMEOUT:-600} s"
     sleep "${DR_POLL_SECONDS:-5}"
   done
+  kubectl apply -f "$REPO_ROOT/infra/k8s/platform/scheduled-backup.yaml" >/dev/null || die 1 "không tạo được lịch bản đầy đủ"
+  kubectl apply -f "$REPO_ROOT/infra/k8s/platform/velero-schedule.yaml" >/dev/null || die 1 "không tạo được lịch Velero"
   remove_image_replication
   kubectl -n dr-api patch configmap api-site --type merge -p '{"data":{"IMAGE_STORE_READ_ONLY":"false"}}' >/dev/null \
     || die 1 "không bật được ghi ảnh"

@@ -199,3 +199,11 @@ def test_restore_replication_skips_source_when_primary_account_is_gone(fake_tool
     r = fake_tools.run("restore-replication.sh")
     assert r.returncode == 0, r.stderr
     assert "or-policy delete" not in fake_tools.calls and "apply -auto-approve" in fake_tools.calls
+
+
+def test_warm_promotion_creates_backup_schedules(fake_tools):
+    r = warm(fake_tools).run("failover-warm.sh", "r1")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    assert c.index("pg_is_in_recovery()") < c.index("velero-schedule.yaml")
+    assert c.index("pg_is_in_recovery()") < c.index("scheduled-backup.yaml")
