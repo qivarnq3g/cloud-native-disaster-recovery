@@ -65,11 +65,43 @@ def test_restore_namespace_skips_cnpg_objects_and_targets_time(fake_tools):
     r = fake_tools.run("restore-namespace.sh", "r1", "2026-10-30T01:02:03Z")
     assert r.returncode == 0, r.stderr
     assert "managed-by notin (cloudnative-pg)" in fake_tools.calls
-    assert "--from-schedule hourly" in fake_tools.calls
+    assert "--from-backup hourly-a" in fake_tools.calls
     assert 'targetTime: "2026-10-30T01:02:03Z"' in fake_tools.applied_yaml
     assert "serverName: primary-202610300100" in fake_tools.applied_yaml
     assert fake_tools.session_doc()["server_name"].startswith("primary-2")
     assert fake_tools.session_doc()["server_name"] != "primary-202610300100"
+
+
+def test_restore_namespace_uses_newest_velero_backup_of_this_session(fake_tools):
+    fake_tools.session = WARM_SESSION
+    fake_tools.velero_backups = ("hourly-new 2026-10-27T02:00:00Z\nhourly-old 2026-10-26T23:00:00Z\n"
+                                 "start-x 2026-10-27T00:05:00Z\n")
+    r = fake_tools.run("restore-namespace.sh", "r1", "2026-10-30T01:02:03Z")
+    assert r.returncode == 0, r.stderr
+    assert "--from-backup hourly-new" in fake_tools.calls
+
+
+def test_restore_namespace_refuses_backups_older_than_session(fake_tools):
+    fake_tools.session = WARM_SESSION
+    fake_tools.velero_backups = "hourly-old 2026-10-26T23:00:00Z\n"
+    r = fake_tools.run("restore-namespace.sh", "r1", "2026-10-30T01:02:03Z")
+    assert r.returncode == 5, r.stderr
+    assert "velero restore" not in fake_tools.calls
+
+
+def test_restore_namespace_restores_schedule_and_takes_base_backup(fake_tools):
+    fake_tools.session = WARM_SESSION
+    assert fake_tools.run("restore-namespace.sh", "r1", "2026-10-30T01:02:03Z").returncode == 0
+    c = fake_tools.calls
+    assert c.index("condition=Ready clusters.postgresql.cnpg.io/db") < c.index("scheduled-backup.yaml")
+    assert c.index("condition=Ready clusters.postgresql.cnpg.io/db") < c.index("backups.postgresql.cnpg.io/restore-")
+
+
+def test_warm_takes_base_backup_after_promotion(fake_tools):
+    r = warm(fake_tools).run("failover-warm.sh", "r1")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    assert c.index("pg_is_in_recovery()") < c.index("backups.postgresql.cnpg.io/promote-")
 
 
 def test_restore_namespace_rejects_bad_target_time(fake_tools):
@@ -108,6 +140,12 @@ def test_cold_recovers_from_last_server_and_switches(fake_tools):
     assert doc["server_name"].startswith("standby-")
     rows = (fake_tools.root / "data" / "drills" / "r1" / "steps.csv").read_text().splitlines()
     assert [row.split(",")[0] for row in rows[1:]] == ["infra", "restore", "switch"]
+
+
+def test_cold_takes_base_backup_on_new_server(fake_tools):
+    assert cold(fake_tools).run("failover-cold.sh", "r1", "standby").returncode == 0
+    c = fake_tools.calls
+    assert c.index("deploy-api.sh standby") < c.index("backups.postgresql.cnpg.io/cold-") < c.index("dns_switch")
 
 
 def test_cold_skips_cluster_up_when_vm_exists(fake_tools):

@@ -22,6 +22,7 @@ case "${1:-}" in
       die 1 "khôi phục trên $cluster lỗi"
     fi
     [ -z "$copy_pid" ] || wait "$copy_pid" || die 1 "chép ảnh sang kho dự phòng lỗi"
+    KUBECONFIG="$PRIVATE_DIR/kubeconfig-$cluster" take_base_backup cold
     [ "$cluster" != standby ] || remove_image_replication
     echo "$server" > "$server_file"
     exit 0 ;;

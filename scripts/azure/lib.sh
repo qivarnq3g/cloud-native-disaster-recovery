@@ -66,6 +66,10 @@ take_full_backup() {
   echo "$id"
 }
 
+take_base_backup() {
+  take_full_backup "$1-$(date -u +%Y%m%d%H%M%S)" >/dev/null
+}
+
 account_key() {
   local account="$1" file="$PRIVATE_DIR/key-$1" group
   if [ ! -s "$file" ]; then

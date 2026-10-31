@@ -32,6 +32,7 @@ case "$tool $*" in
   "kubectl"*"count(*)"*) echo "${FAKE_POST_COUNT:-20}" ;;
   "kubectl"*"md5("*) echo 0123abcd ;;
   "kubectl"*"{.status.backupId}"*) echo 20261027T000000 ;;
+  "kubectl -n velero get backups.velero.io"*) printf '%b' "${FAKE_VELERO_BACKUPS:-}" ;;
 esac
 exit 0
 """
@@ -59,6 +60,7 @@ class FakeTools:
         self.fail_on = ""
         self.in_recovery = "f"
         self.post_count = 20
+        self.velero_backups = "hourly-a 2026-10-27T01:00:00Z\n"
         self.stubs: list[str] = []
         self.extra_env: dict[str, str] = {}
         private = root / "private"
@@ -103,6 +105,7 @@ class FakeTools:
             "FAKE_FAIL_ON": self.fail_on,
             "FAKE_IN_RECOVERY": self.in_recovery,
             "FAKE_POST_COUNT": str(self.post_count),
+            "FAKE_VELERO_BACKUPS": self.velero_backups,
             "DR_DNS_SWITCH": (self.bin / "dns_switch").as_posix(),
             "DR_PROMOTE_TIMEOUT": "0",
             "DR_FAKE_SESSION": status.as_posix(),

@@ -5,21 +5,32 @@ platform="$REPO_ROOT/infra/k8s/platform"
 resources=secrets,configmaps,serviceaccounts,deployments.apps,services,ingresses.networking.k8s.io
 resources="$resources,certificates.cert-manager.io,objectstores.barmancloud.cnpg.io"
 
+latest_session_backup() {
+  local since
+  since="$(session get started_at)"
+  kubectl -n velero get backups.velero.io     -o jsonpath='{range .items[?(@.status.phase=="Completed")]}{.metadata.name} {.metadata.creationTimestamp}{"
+"}{end}'     | awk -v since="$since" '$2 >= since' | sort -k2 | tail -n 1 | cut -d' ' -f1
+}
+
 restore() {
-  local target="$1" source_server server name deadline
+  local target="$1" source_server server name deadline backup
   source_server="$(session get server_name)"
   [ -n "$source_server" ] || die 5 "session.json chưa có server_name để khôi phục"
   server="primary-$(date -u +%Y%m%d%H%M)"
   name="ns-$(date -u +%Y%m%d%H%M%S)"
   refresh_admin_ip primary
+  backup="$(latest_session_backup)"
+  [ -n "$backup" ] || die 5 "chưa có bản Velero nào từ lúc bật phiên, không khôi phục bằng bản của phiên cũ"
   kubectl create namespace dr-api --dry-run=client -o yaml | kubectl apply -f - >/dev/null
-  velero restore create "$name" --from-schedule hourly --include-namespaces dr-api --include-resources "$resources" \
+  velero restore create "$name" --from-backup "$backup" --include-namespaces dr-api --include-resources "$resources" \
     --selector 'app.kubernetes.io/managed-by notin (cloudnative-pg)' --wait || die 1 "Velero khôi phục $name lỗi"
   sed -e "s|__SERVER__|$server|g" -e "s|__SOURCE_SERVER__|$source_server|g" \
     -e "s|^      source: previous\$|      source: previous\n      recoveryTarget:\n        targetTime: \"$target\"|" \
     "$platform/db-recover.yaml.tpl" | kubectl apply -f - >/dev/null || die 1 "không tạo được db"
   kubectl -n dr-api wait --for=condition=Ready clusters.postgresql.cnpg.io/db --timeout=900s >/dev/null \
     || die 1 "db chưa Ready sau 15 phút"
+  kubectl apply -f "$platform/scheduled-backup.yaml" >/dev/null || die 1 "không tạo lại được lịch bản đầy đủ"
+  take_base_backup restore
   deadline=$(( $(date +%s) + ${DR_HEALTH_TIMEOUT:-300} ))
   until curl -fsS -o /dev/null https://api.dr.qivarn.id.vn/healthz; do
     [ "$(date +%s)" -lt "$deadline" ] || die 1 "/healthz chưa trả 200 sau ${DR_HEALTH_TIMEOUT:-300} s"

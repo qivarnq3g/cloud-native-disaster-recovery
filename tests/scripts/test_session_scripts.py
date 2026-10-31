@@ -211,6 +211,26 @@ def test_reset_uses_recorded_backup_id(fake_tools):
     assert fake_tools.private.joinpath("drill-ledger.csv").read_text().startswith("seq,post_id")
 
 
+def test_reset_takes_base_backup_on_new_server(fake_tools):
+    fake_tools.private.joinpath("seed.json").write_text(SEED_JSON)
+    fake_tools.private.joinpath("seed-ledger.csv").write_text("seq,post_id,acked_at,sha256,source\n")
+    fake_tools.session = {"state": "running", "cluster": "primary", "server_name": "primary-202610310000"}
+    assert fake_tools.run("reset-seed.sh", "primary").returncode == 0
+    c = fake_tools.calls
+    assert c.index("rollout restart deploy/api") < c.index("backups.postgresql.cnpg.io/reset-")
+
+
+def test_start_takes_base_and_velero_backups_of_new_session(fake_tools):
+    fake_tools.stubs = ["cluster-up.sh", "install-software.sh", "deploy-api.sh"]
+    fake_tools.session = {"state": "stopped", "cluster": "primary"}
+    r = fake_tools.run("session-start.sh", "primary", "abc")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    assert c.index("deploy-api.sh primary abc") < c.index("backups.postgresql.cnpg.io/start-")
+    assert c.index("deploy-api.sh primary abc") < c.index("velero backup create start-")
+    assert fake_tools.session_doc()["state"] == "running"
+
+
 def test_reset_fails_when_content_differs_from_seed(fake_tools):
     fake_tools.private.joinpath("seed.json").write_text(SEED_JSON)
     fake_tools.private.joinpath("seed-ledger.csv").write_text("seq,post_id,acked_at,sha256,source\n")

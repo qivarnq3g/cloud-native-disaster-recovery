@@ -16,6 +16,7 @@ promote() {
     || die 1 "không bật được ghi ảnh"
   kubectl -n dr-api rollout restart deploy/api >/dev/null || die 1 "không khởi động lại được API"
   kubectl -n dr-api rollout status deploy/api --timeout=300s >/dev/null || die 1 "API chưa chạy lại sau 300 s"
+  take_base_backup promote
 }
 
 case "${1:-}" in

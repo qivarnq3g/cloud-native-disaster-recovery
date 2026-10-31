@@ -5,6 +5,7 @@ import csv
 import hashlib
 import os
 import platform
+import shutil
 import subprocess
 import sys
 import time
@@ -23,6 +24,7 @@ PRIVATE = Path(os.environ.get("DR_PRIVATE_DIR", Path.home() / ".dr"))
 DRILLS = Path(os.environ.get("DR_DATA_DIR", ROOT / "data" / "azure")) / "drills"
 DOMAIN = "api.dr.qivarn.id.vn"
 PUBLIC = f"https://{DOMAIN}"
+BASH = os.environ.get("DR_BASH") or shutil.which("bash") or "bash"
 CONTROL_URL = "https://www.gstatic.com/generate_204"
 WARMUP_S = float(os.environ.get("WARMUP_S", 90))
 DETECT_TIMEOUT_S = 180
@@ -56,7 +58,7 @@ def secret_code() -> str:
 
 
 def vm_ip(cluster: str) -> str | None:
-    p = subprocess.run(["az", "vm", "show", "-d", "-g", f"rg-dr-{cluster}", "-n", f"vm-dr-{cluster}",
+    p = subprocess.run([shutil.which("az") or "az", "vm", "show", "-d", "-g", f"rg-dr-{cluster}", "-n", f"vm-dr-{cluster}",
                         "--query", "publicIps", "-o", "tsv"], capture_output=True, text=True, timeout=120)
     return p.stdout.strip() or None if p.returncode == 0 else None
 
@@ -131,7 +133,7 @@ class AzureEnv:
 
     def sh(self, cmd: list[str], extra_env: dict | None = None) -> int:
         env = {**os.environ, "DR_DATA_DIR": DRILLS.parent.as_posix(), **(extra_env or {})}
-        return subprocess.run(["bash", *cmd], cwd=ROOT, env=env).returncode
+        return subprocess.run([BASH, *cmd], cwd=ROOT, env=env).returncode
 
     def psql(self, cluster: str, sql: str) -> str:
         env = {**os.environ, "KUBECONFIG": str(PRIVATE / f"kubeconfig-{cluster}")}
@@ -142,7 +144,7 @@ class AzureEnv:
         return p.stdout
 
     def verify(self, cluster: str, ledger: Ledger, incident: datetime) -> dict:
-        refresh = subprocess.run(["bash", "-c", 'source scripts/azure/lib.sh; refresh_admin_ip "$1"', "lib", cluster],
+        refresh = subprocess.run([BASH, "-c", 'source scripts/azure/lib.sh; refresh_admin_ip "$1"', "lib", cluster],
                                  cwd=ROOT, timeout=120)
         if refresh.returncode != 0:
             raise RuntimeError(f"không cập nhật được quy tắc admin của {cluster}")
