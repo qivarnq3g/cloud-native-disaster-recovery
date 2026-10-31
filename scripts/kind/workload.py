@@ -54,14 +54,18 @@ def multipart(fields: dict[str, str], file_field: str, filename: str, content: b
 
 
 class ApiClient:
-    def __init__(self, base: str, code: str = "", timeout: float = 5):
+    def __init__(self, base: str, code: str = "", timeout: float = 5, host: str | None = None):
         self.base = base.rstrip("/")
         self.code = code
         self.timeout = timeout
+        self.host = host
 
     def _request(self, method: str, path: str, body: bytes | None = None, headers: dict | None = None,
                  timeout: float | None = None) -> tuple[int, bytes]:
-        req = urllib.request.Request(self.base + path, data=body, method=method, headers=headers or {})
+        headers = dict(headers or {})
+        if self.host:
+            headers["Host"] = self.host
+        req = urllib.request.Request(self.base + path, data=body, method=method, headers=headers)
         try:
             with urllib.request.urlopen(req, timeout=timeout or self.timeout) as resp:
                 return resp.status, resp.read()

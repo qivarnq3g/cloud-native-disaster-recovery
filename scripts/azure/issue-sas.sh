@@ -6,6 +6,7 @@ expiry="$(date -u -d "+$days days" +%Y-%m-%dT%H:%MZ)"
 
 case "$name" in
   api-images-primary) targets=("$IMAGE_PRIMARY_ACCOUNT/images"); perms=racwl; secret= ;;
+  api-images-standby) targets=("$IMAGE_STANDBY_ACCOUNT/images"); perms=racwl; secret= ;;
   cnpg-backup) targets=("$BACKUP_ACCOUNT/cnpg"); perms=racwdl; secret= ;;
   check-read)
     targets=("$BACKUP_ACCOUNT/cnpg" "$BACKUP_ACCOUNT/velero" "$BACKUP_ACCOUNT/status"
@@ -15,7 +16,7 @@ case "$name" in
     targets=("$BACKUP_ACCOUNT/cnpg" "$BACKUP_ACCOUNT/velero" "$BACKUP_ACCOUNT/status"
              "$IMAGE_COPY_ACCOUNT/images")
     perms=rl; secret=DRILL_READ_SAS_JSON ;;
-  *) die 64 "cách dùng: issue-sas.sh api-images-primary|cnpg-backup|check-read|drill-read" ;;
+  *) die 64 "cách dùng: issue-sas.sh api-images-primary|api-images-standby|cnpg-backup|check-read|drill-read" ;;
 esac
 
 account_key() {

@@ -27,3 +27,5 @@ Thumbs.db
 !*.tfvars.example
 
 *.tfplan
+
+.superpowers/

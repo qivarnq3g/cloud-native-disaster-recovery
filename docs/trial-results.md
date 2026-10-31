@@ -80,3 +80,12 @@ Ngày 29/10:
 - Tắt phiên lần hai: `session.json` ghi `full_backup=20261029T094102`, đúng mã của Barman, và `backup-check` xanh với `stop_backups` (sửa ở PR #10 đã đúng trên cụm thật).
 - Năm bài thử tạo sáng 29/10 có tiêu đề hỏng dấu ("B?i th? 5") vì được gửi lên với sai bảng mã. Lỗi nằm ở dữ liệu thử, không ở API; API không có lệnh xóa bài nên chúng còn lại.
 - Chi phí Azure của ngày 29/10: chưa xem, Cost Management cập nhật chậm khoảng một ngày.
+
+### Cụm dự phòng ấm
+
+Ngày 31/10, cụm chính `primary-202610310410` đang chạy, ảnh API `cf4a692`:
+
+- Lần dựng đầu hỏng: cơ sở dữ liệu bản sao không Ready sau 15 phút, mọi job `db-1-full-recovery` báo `no target backup found`. Cụm chính vừa bật lại dưới tên server mới, mà bản đầy đủ theo lịch 6 giờ chưa chạy, nên kho Nhật chưa có bản đầy đủ nào của tên đó. `standby-up.sh` giờ tạo một bản đầy đủ trên cụm chính và chờ nó xong rồi mới dựng máy.
+- Lần dựng thứ hai (`standby-202610310442`), mốc trong `data/azure/standby.csv`: bản đầy đủ 15 s, dựng máy 2 phút 20 s, bản sao Ready 3 phút 22 s, API chạy 34 s; tổng 6 phút 31 s. Xóa cụm hỏng bằng `standby-down.sh` mất 2 phút 10 s.
+- Cụm dự phòng báo `Cluster in healthy state`, `pg_is_in_recovery()` trả `t`, `/healthz` qua IP dự phòng trả `"read_only":true`.
+- Độ trễ bản sao: một bài đăng ở cụm chính xuất hiện ở cụm dự phòng sau 13 s (đo một lần, kiểm tra 5 s một lần; trước đó 25 bài, sau đó 26 bài ở cả hai cụm). Với `archive_timeout` 60 s, độ trễ có thể lên gần 60 s cộng thời gian đọc WAL nếu bài rơi vào đầu một đoạn WAL; một lần đo chưa đủ để nêu giới hạn.

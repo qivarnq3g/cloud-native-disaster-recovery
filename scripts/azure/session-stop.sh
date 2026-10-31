@@ -8,22 +8,7 @@ name="stop-$(date -u +%Y%m%d%H%M)"
 refresh_admin_ip "$cluster"
 mark session.csv "$cluster" stop_start
 
-printf '%s\n' \
-  "apiVersion: postgresql.cnpg.io/v1" \
-  "kind: Backup" \
-  "metadata:" \
-  "  name: $name" \
-  "spec:" \
-  "  cluster:" \
-  "    name: db" \
-  "  method: plugin" \
-  "  pluginConfiguration:" \
-  "    name: barman-cloud.cloudnative-pg.io" \
-  | kubectl -n dr-api apply -f - || die 1 "không tạo được bản đầy đủ $name"
-kubectl -n dr-api wait --for=jsonpath='{.status.phase}'=completed "backups.postgresql.cnpg.io/$name" --timeout=1800s \
-  || die 1 "bản đầy đủ $name không hoàn thành, giữ máy"
-backup_id="$(kubectl -n dr-api get "backups.postgresql.cnpg.io/$name" -o jsonpath='{.status.backupId}')" && [ -n "$backup_id" ] \
-  || die 1 "bản đầy đủ $name không có backupId, giữ máy"
+backup_id="$(take_full_backup "$name")" || exit 1
 mark session.csv "$cluster" full_backup_done
 
 velero backup create "$name" --from-schedule hourly --ttl 168h0m0s --wait \

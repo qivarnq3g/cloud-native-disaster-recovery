@@ -28,3 +28,13 @@ primary,stop_start,2026-10-29T09:40:59Z
 primary,full_backup_done,2026-10-29T09:41:10Z
 primary,velero_backup_done,2026-10-29T09:41:19Z
 primary,stopped,2026-10-29T09:43:39Z
+primary,start,2026-10-31T04:10:19Z
+primary,vm_ready,2026-10-31T04:12:44Z
+primary,software_ready,2026-10-31T04:16:25Z
+primary,api_ready,2026-10-31T04:17:01Z
+primary,dns_switched,2026-10-31T04:17:14Z
+primary,done,2026-10-31T04:17:16Z
+primary,stop_start,2026-10-31T04:52:48Z
+primary,full_backup_done,2026-10-31T04:52:57Z
+primary,velero_backup_done,2026-10-31T04:53:01Z
+primary,stopped,2026-10-31T04:55:03Z
