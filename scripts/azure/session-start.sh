@@ -31,7 +31,8 @@ session set state=running "cluster=$cluster" "server_name=$server_name" \
   "started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" stopped_at= full_backup= velero_backup= post_count= content_digest=
 export KUBECONFIG="$PRIVATE_DIR/kubeconfig-$cluster"
 take_base_backup start
-velero backup create "start-$(date -u +%Y%m%d%H%M%S)" --from-schedule hourly --wait >/dev/null   || die 1 "bản Velero đầu phiên lỗi"
+velero backup create "start-$(date -u +%Y%m%d%H%M%S)" --from-schedule hourly --wait >/dev/null \
+  || die 1 "bản Velero đầu phiên lỗi"
 mark session.csv "$cluster" start_backups_done
 mark session.csv "$cluster" done
 echo "phiên $cluster đã chạy, server_name $server_name, IP $ip"

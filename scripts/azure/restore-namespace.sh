@@ -8,8 +8,9 @@ resources="$resources,certificates.cert-manager.io,objectstores.barmancloud.cnpg
 latest_session_backup() {
   local since
   since="$(session get started_at)"
-  kubectl -n velero get backups.velero.io     -o jsonpath='{range .items[?(@.status.phase=="Completed")]}{.metadata.name} {.metadata.creationTimestamp}{"
-"}{end}'     | awk -v since="$since" '$2 >= since' | sort -k2 | tail -n 1 | cut -d' ' -f1
+  kubectl -n velero get backups.velero.io \
+    -o jsonpath='{range .items[?(@.status.phase=="Completed")]}{.metadata.name} {.metadata.creationTimestamp}{"\n"}{end}' \
+    | awk -v since="$since" '$2 >= since' | sort -k2 | tail -n 1 | cut -d' ' -f1
 }
 
 restore() {

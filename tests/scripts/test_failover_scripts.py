@@ -79,6 +79,7 @@ def test_restore_namespace_uses_newest_velero_backup_of_this_session(fake_tools)
     r = fake_tools.run("restore-namespace.sh", "r1", "2026-10-30T01:02:03Z")
     assert r.returncode == 0, r.stderr
     assert "--from-backup hourly-new" in fake_tools.calls
+    assert '{"\\n"}{end}' in fake_tools.calls
 
 
 def test_restore_namespace_refuses_backups_older_than_session(fake_tools):
