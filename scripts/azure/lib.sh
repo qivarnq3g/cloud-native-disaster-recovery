@@ -64,3 +64,47 @@ take_full_backup() {
     || die 1 "bản đầy đủ $name không có backupId, giữ máy"
   echo "$id"
 }
+
+account_key() {
+  local account="$1" file="$PRIVATE_DIR/key-$1" group
+  if [ ! -s "$file" ]; then
+    case "$account" in
+      "$IMAGE_PRIMARY_ACCOUNT") group="$RG_PRIMARY" ;;
+      "$IMAGE_STANDBY_ACCOUNT") group="$RG_STANDBY" ;;
+      *) group="$RG_BACKUP" ;;
+    esac
+    az storage account keys list -g "$group" -n "$account" --query "[0].value" -o tsv > "$file"
+    chmod 600 "$file"
+  fi
+  cat "$file"
+}
+
+dns_switch() {
+  if [ -n "${DR_DNS_SWITCH:-}" ]; then "$DR_DNS_SWITCH" "$@"
+  else (cd "$REPO_ROOT" && "$DR_PYTHON" -m scripts.dr.dns_switch "$@"); fi
+}
+
+run_step() {
+  local run_id="$1" step="$2"; shift 2
+  if [ -z "$run_id" ]; then "$@"; return; fi
+  [ -f "$DATA_DIR/drills/$run_id/steps.csv" ] || bash "$REPO_ROOT/scripts/azure/step.sh" "$run_id" --new
+  bash "$REPO_ROOT/scripts/azure/step.sh" "$run_id" "$step" -- "$@"
+}
+
+remove_image_replication() {
+  local id
+  for id in $(az storage account or-policy list -g "$RG_STANDBY" --account-name "$IMAGE_STANDBY_ACCOUNT" \
+      --query "[?destinationAccount=='$IMAGE_STANDBY_ACCOUNT'].policyId" -o tsv); do
+    az storage account or-policy delete -g "$RG_STANDBY" --account-name "$IMAGE_STANDBY_ACCOUNT" --policy-id "$id" -o none \
+      || die 1 "không gỡ được chính sách chép ảnh $id"
+  done
+}
+
+switch_to() {
+  local cluster="$1" server="$2" ip
+  [ -n "$server" ] || die 5 "chưa biết server_name mới của $cluster"
+  ip="$(az vm show -d -g "rg-dr-$cluster" -n "vm-dr-$cluster" --query publicIps -o tsv)" || ip=
+  [ -n "$ip" ] || die 1 "không lấy được IP của vm-dr-$cluster"
+  dns_switch "$ip" --csv "$DATA_DIR/dns-switch.csv" || die 1 "đổi DNS sang $cluster lỗi"
+  session set "cluster=$cluster" "server_name=$server" state=running
+}

@@ -19,20 +19,6 @@ case "$name" in
   *) die 64 "cách dùng: issue-sas.sh api-images-primary|api-images-standby|cnpg-backup|check-read|drill-read" ;;
 esac
 
-account_key() {
-  local account="$1" file="$PRIVATE_DIR/key-$1" group
-  if [ ! -s "$file" ]; then
-    case "$account" in
-      "$IMAGE_PRIMARY_ACCOUNT") group="$RG_PRIMARY" ;;
-      "$IMAGE_STANDBY_ACCOUNT") group="$RG_STANDBY" ;;
-      *) group="$RG_BACKUP" ;;
-    esac
-    az storage account keys list -g "$group" -n "$account" --query "[0].value" -o tsv > "$file"
-    chmod 600 "$file"
-  fi
-  cat "$file"
-}
-
 json="{"
 first=1
 for t in "${targets[@]}"; do
