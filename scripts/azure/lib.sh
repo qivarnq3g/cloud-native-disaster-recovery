@@ -97,12 +97,25 @@ run_step() {
 }
 
 remove_image_replication() {
-  local id
-  for id in $(az storage account or-policy list -g "$RG_STANDBY" --account-name "$IMAGE_STANDBY_ACCOUNT" \
-      --query "[?destinationAccount=='$IMAGE_STANDBY_ACCOUNT'].policyId" -o tsv); do
+  local policies id destination
+  policies="$(az storage account or-policy list -g "$RG_STANDBY" --account-name "$IMAGE_STANDBY_ACCOUNT" \
+    --query "[].[policyId, destinationAccount]" -o tsv)" || die 1 "không đọc được chính sách chép ảnh"
+  while IFS=$'\t' read -r id destination; do
+    destination="${destination%$'\r'}"
+    [ "${destination##*/}" = "$IMAGE_STANDBY_ACCOUNT" ] || continue
     az storage account or-policy delete -g "$RG_STANDBY" --account-name "$IMAGE_STANDBY_ACCOUNT" --policy-id "$id" -o none \
       || die 1 "không gỡ được chính sách chép ảnh $id"
+  done <<< "$policies"
+  local key deadline
+  key="$(account_key "$IMAGE_STANDBY_ACCOUNT")"
+  deadline=$(( $(date +%s) + ${DR_ORS_TIMEOUT:-600} ))
+  until az storage blob upload --account-name "$IMAGE_STANDBY_ACCOUNT" --account-key "$key" -c images \
+      -n .write-probe --data probe --overwrite -o none 2>/dev/null; do
+    [ "$(date +%s)" -lt "$deadline" ] || die 1 "kho ảnh dự phòng vẫn chưa nhận ghi sau ${DR_ORS_TIMEOUT:-600} s"
+    sleep "${DR_POLL_SECONDS:-10}"
   done
+  az storage blob delete --account-name "$IMAGE_STANDBY_ACCOUNT" --account-key "$key" -c images -n .write-probe -o none \
+    2>/dev/null || true
 }
 
 switch_to() {

@@ -21,8 +21,17 @@ def test_warm_deletes_only_policies_on_standby_image_account(fake_tools):
     warm(fake_tools).run("failover-warm.sh", "r1")
     c = fake_tools.calls
     assert "or-policy list -g rg-dr-standby --account-name drimgstbabc123" in c
-    assert "destinationAccount=='drimgstbabc123'" in c
     assert "or-policy delete -g rg-dr-standby --account-name drimgstbabc123 --policy-id pol-1" in c
+    assert "--policy-id pol-2" not in c
+    assert c.index("--policy-id pol-1") < c.index("blob upload --account-name drimgstbabc123")
+    assert c.index("blob upload --account-name drimgstbabc123") < c.index("IMAGE_STORE_READ_ONLY")
+
+
+def test_warm_stops_when_standby_images_stay_read_only(fake_tools):
+    warm(fake_tools).fail_on = "blob upload --account-name drimgstbabc123"
+    fake_tools.extra_env["DR_ORS_TIMEOUT"] = "0"
+    assert fake_tools.run("failover-warm.sh", "r1").returncode == 1
+    assert "IMAGE_STORE_READ_ONLY" not in fake_tools.calls
 
 
 def test_warm_switches_dns_and_session_together(fake_tools):
