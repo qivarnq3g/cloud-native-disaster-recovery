@@ -19,7 +19,7 @@ mark session.csv "$cluster" velero_backup_done
 
 query() { kubectl -n dr-api exec db-1 -c postgres -- psql -d "$db" -tAc "$1"; }
 post_count="$(query "SELECT count(*) FROM posts")" || die 1 "không đếm được bài"
-digest="$(query "SELECT md5(coalesce(string_agg(id::text || ':' || encode(image_sha256, 'hex'), ',' ORDER BY id), '')) FROM posts")" \
+digest="$(query "$DIGEST_SQL")" \
   || die 1 "không tính được mã băm nội dung"
 
 session set state=stopped "stopped_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" "full_backup=$backup_id" \
