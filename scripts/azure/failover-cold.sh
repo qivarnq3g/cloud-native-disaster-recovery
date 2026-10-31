@@ -11,6 +11,7 @@ case "${1:-}" in
     source_server="$(session get server_name)"
     [ -n "$source_server" ] || die 5 "session.json chưa có server_name để khôi phục"
     server="$cluster-$(date -u +%Y%m%d%H%M)"
+    refresh_admin_ip "$cluster"
     copy_pid=
     if [ "${DR_IMAGES_FROM_COPY:-false}" = true ]; then
       bash "$REPO_ROOT/scripts/azure/copy-images.sh" & copy_pid=$!

@@ -114,7 +114,9 @@ def test_cold_skips_cluster_up_when_vm_exists(fake_tools):
     cold(fake_tools).vms = ["vm-dr-standby"]
     r = fake_tools.run("failover-cold.sh", "r1", "standby")
     assert r.returncode == 0, r.stderr
-    assert "cluster-up.sh" not in fake_tools.calls
+    c = fake_tools.calls
+    assert "cluster-up.sh" not in c
+    assert c.index("nsg rule update -g rg-dr-standby") < c.index("install-software.sh")
 
 
 def test_cold_stops_before_switch_when_image_copy_fails(fake_tools):
