@@ -43,3 +43,24 @@ refresh_admin_ip() {
   az network nsg rule update -g "rg-dr-$1" --nsg-name "vm-dr-$1-nsg" -n admin \
     --source-address-prefixes "$ip/32" -o none || die 1 "không cập nhật được quy tắc admin của vm-dr-$1"
 }
+
+take_full_backup() {
+  local name="$1" id
+  printf '%s\n' \
+    "apiVersion: postgresql.cnpg.io/v1" \
+    "kind: Backup" \
+    "metadata:" \
+    "  name: $name" \
+    "spec:" \
+    "  cluster:" \
+    "    name: db" \
+    "  method: plugin" \
+    "  pluginConfiguration:" \
+    "    name: barman-cloud.cloudnative-pg.io" \
+    | kubectl -n dr-api apply -f - >&2 || die 1 "không tạo được bản đầy đủ $name"
+  kubectl -n dr-api wait --for=jsonpath='{.status.phase}'=completed "backups.postgresql.cnpg.io/$name" --timeout=1800s >&2 \
+    || die 1 "bản đầy đủ $name không hoàn thành, giữ máy"
+  id="$(kubectl -n dr-api get "backups.postgresql.cnpg.io/$name" -o jsonpath='{.status.backupId}')" && [ -n "$id" ] \
+    || die 1 "bản đầy đủ $name không có backupId, giữ máy"
+  echo "$id"
+}

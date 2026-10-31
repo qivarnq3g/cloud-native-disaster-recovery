@@ -246,6 +246,25 @@ def test_standby_up_installs_replica_from_primary_server(fake_tools):
     assert fake_tools.session_doc()["cluster"] == "primary"
 
 
+def test_standby_up_takes_full_backup_on_primary_before_building(fake_tools):
+    fake_tools.stubs = STANDBY_STUBS
+    fake_tools.session = {"state": "running", "cluster": "primary", "server_name": "primary-202610300100"}
+    r = fake_tools.run("standby-up.sh", "abc")
+    assert r.returncode == 0, r.stderr
+    calls = fake_tools.calls
+    refresh = calls.index("nsg rule update -g rg-dr-primary")
+    backup = calls.index("kubectl -n dr-api wait --for=jsonpath={.status.phase}=completed backups.postgresql.cnpg.io/seed-")
+    assert refresh < backup < calls.index("cluster-up.sh standby")
+
+
+def test_standby_up_stops_before_building_when_full_backup_fails(fake_tools):
+    fake_tools.stubs = STANDBY_STUBS
+    fake_tools.session = {"state": "running", "cluster": "primary", "server_name": "primary-202610300100"}
+    fake_tools.fail_on = "backups.postgresql.cnpg.io/seed-"
+    assert fake_tools.run("standby-up.sh", "abc").returncode == 1
+    assert "cluster-up.sh" not in fake_tools.calls
+
+
 def test_standby_down_refreshes_admin_ip_first(fake_tools):
     fake_tools.vms = ["vm-dr-standby"]
     (fake_tools.private / "standby-server").write_text("standby-202610300100")

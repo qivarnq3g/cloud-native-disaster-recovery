@@ -12,6 +12,10 @@ source_server="$(session get server_name)"
 server_name="standby-$(date -u +%Y%m%d%H%M)"
 mark standby.csv standby start
 
+refresh_admin_ip primary
+KUBECONFIG="$PRIVATE_DIR/kubeconfig-primary" take_full_backup "seed-$(date -u +%Y%m%d%H%M)" >/dev/null || exit 1
+mark standby.csv standby seed_backup_done
+
 bash "$SCRIPT_DIR/cluster-up.sh" standby
 mark standby.csv standby vm_ready
 DR_DB_MODE=replica bash "$SCRIPT_DIR/install-software.sh" standby "$server_name" "$source_server"
