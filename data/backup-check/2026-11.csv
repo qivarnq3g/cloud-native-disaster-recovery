@@ -4,3 +4,4 @@ checked_at,state,session_file,wal_age,velero_age,image_replication,sas_expiry,st
 2026-11-01T18:26:04Z,stopped,ok,skip,skip,skip,ok,ok
 2026-11-01T22:47:02Z,stopped,ok,skip,skip,skip,ok,ok
 2026-11-02T02:28:49Z,stopped,ok,skip,skip,skip,ok,ok
+2026-11-02T10:57:18Z,stopped,ok,skip,skip,skip,ok,ok
