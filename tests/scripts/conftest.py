@@ -26,6 +26,8 @@ case "$tool $*" in
   "az vm get-instance-view"*) echo "$FAKE_POWER_STATE" ;;
   "az vm list"*) echo 0 ;;
   "az storage account show"*) [ -z "${FAKE_PRIMARY_GONE:-}" ] && echo drimgpriabc123 || exit 3 ;;
+  "kubectl -n velero get schedules.velero.io hourly"*)
+    echo '{"spec": {"template": {"ttl": "72h0m0s", "includedNamespaces": ["dr-api", "cert-manager"]}}}' ;;
   "az group exists"*) echo "${FAKE_GROUP_EXISTS:-false}" ;;
   "terraform"*"state list"*)
     printf 'azurerm_resource_group.cluster["primary"]\r\nazurerm_resource_group.cluster["standby"]\r\n'
