@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
-src="$IMAGE_COPY_ACCOUNT"; dst="$IMAGE_STANDBY_ACCOUNT"
+src="${1:-$IMAGE_COPY_ACCOUNT}"; dst="${2:-$IMAGE_STANDBY_ACCOUNT}"
 dst_key="$(account_key "$dst")"
 started=$(date +%s)
 

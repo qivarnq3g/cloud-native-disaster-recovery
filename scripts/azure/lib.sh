@@ -96,17 +96,19 @@ run_step() {
   bash "$REPO_ROOT/scripts/azure/step.sh" "$run_id" "$step" -- "$@"
 }
 
-delete_standby_policies() {
-  local group="$1" account="$2" policies id destination
+delete_policies() {
+  local group="$1" account="$2" side="$3" match="$4" policies id other
   policies="$(az storage account or-policy list -g "$group" --account-name "$account" \
-    --query "[].[policyId, destinationAccount]" -o tsv)" || die 1 "không đọc được chính sách chép ảnh của $account"
-  while IFS=$'\t' read -r id destination; do
-    destination="${destination%$'\r'}"
-    [ "${destination##*/}" = "$IMAGE_STANDBY_ACCOUNT" ] || continue
+    --query "[].[policyId, $side]" -o tsv)" || die 1 "không đọc được chính sách chép ảnh của $account"
+  while IFS=$'\t' read -r id other; do
+    other="${other%$'\r'}"
+    [ "${other##*/}" = "$match" ] || continue
     az storage account or-policy delete -g "$group" --account-name "$account" --policy-id "$id" -o none \
       || die 1 "không gỡ được chính sách chép ảnh $id của $account"
   done <<< "$policies"
 }
+
+delete_standby_policies() { delete_policies "$1" "$2" destinationAccount "$IMAGE_STANDBY_ACCOUNT"; }
 
 remove_image_replication() {
   delete_standby_policies "$RG_STANDBY" "$IMAGE_STANDBY_ACCOUNT"

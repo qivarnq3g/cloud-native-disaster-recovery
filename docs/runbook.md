@@ -49,6 +49,7 @@ Sau khi chuyển sang `standby`, đưa hệ thống về trạng thái ban đầ
 
 1. Xóa ổ đĩa mồ côi của máy chính nếu còn: `az disk delete -g rg-dr-primary -n vm-dr-primary-os --yes`.
 2. `bash scripts/azure/session-stop.sh standby` (lấy bản đầy đủ và bản Velero rồi xóa máy dự phòng).
+   Nếu cả nhóm `rg-dr-primary` đã mất (D4, D5), chạy thêm `bash scripts/azure/rebuild-primary-storage.sh` khi `az group exists -n rg-dr-primary` đã trả `false`. Script bỏ các tài nguyên đã mất khỏi trạng thái Terraform, gỡ chính sách chép ảnh còn sót ở kho đích, dựng lại nhóm, kho ảnh chính và chính sách chép ảnh, chép toàn bộ ảnh từ kho dự phòng về kho chính mới, rồi cấp lại SAS cho API. Kho mới có khóa mới nên người có quyền GitHub chạy thêm `bash scripts/azure/issue-sas.sh check-read` để cập nhật secret của backup-check.
 3. `bash scripts/azure/session-start.sh primary main`.
 4. `bash scripts/azure/restore-replication.sh`: dựng lại chính sách chép ảnh sang kho dự phòng. Chỉ chạy sau bước 3; chạy khi cụm dự phòng đang phục vụ sẽ làm kho ảnh dự phòng thành chỉ đọc.
 5. `bash scripts/azure/reset-seed.sh primary`: đưa cơ sở dữ liệu về bộ mẫu 1.026 bài và làm mới sổ ghi bài.
