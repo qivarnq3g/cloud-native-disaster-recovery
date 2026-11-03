@@ -39,7 +39,7 @@ case "$tool $*" in
   "az storage account or-policy list"*)
     printf 'pol-1\t/subscriptions/s/resourceGroups/rg-dr-standby/providers/Microsoft.Storage/storageAccounts/drimgstbabc123\r\n'
     printf 'pol-2\t/subscriptions/s/resourceGroups/rg-dr-backup/providers/Microsoft.Storage/storageAccounts/drimgcopyabc123\r\n' ;;
-  "az storage blob list"*) echo 0 ;;
+  "az storage blob list"*) printf '0\r\n' ;;
   "kubectl"*"pg_is_in_recovery()"*) echo "${FAKE_IN_RECOVERY:-f}" ;;
   "terraform"*"output -raw public_ip"*) echo 20.0.0.9 ;;
   "kubectl"*"count(*)"*) echo "${FAKE_POST_COUNT:-20}" ;;

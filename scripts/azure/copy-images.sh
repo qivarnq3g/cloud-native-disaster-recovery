@@ -7,9 +7,13 @@ started=$(date +%s)
 az storage blob copy start-batch --account-name "$dst" --account-key "$dst_key" --destination-container images \
   --source-account-name "$src" --source-account-key "$(account_key "$src")" --source-container images -o none \
   || die 1 "không bắt đầu chép được ảnh từ $src"
-until [ "$(az storage blob list --account-name "$dst" --account-key "$dst_key" -c images --include c --num-results '*' \
-    --query "length([?properties.copy.status!='success'])" -o tsv)" = 0 ]; do
+copy_count() {
+  az storage blob list --account-name "$dst" --account-key "$dst_key" -c images --include c --num-results '*' \
+    --query "length([?properties.copy.status=='$1'])" -o tsv | tr -d '\r'
+}
+until [ "$(copy_count pending)" = 0 ]; do
   sleep "${DR_POLL_SECONDS:-5}"
 done
+[ "$(copy_count failed)" = 0 ] && [ "$(copy_count aborted)" = 0 ] || die 1 "có ảnh chép lỗi từ $src sang $dst"
 count="$(az storage blob list --account-name "$dst" --account-key "$dst_key" -c images --num-results '*' --query "length(@)" -o tsv)"
 echo "đã chép $count ảnh từ $src sang $dst trong $(( $(date +%s) - started )) s"

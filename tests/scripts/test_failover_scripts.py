@@ -179,7 +179,8 @@ def test_copy_images_waits_for_every_blob(fake_tools):
     assert r.returncode == 0, r.stderr
     c = fake_tools.calls
     assert "--source-account-name drimgcopyabc123" in c and "--account-name drimgstbabc123" in c
-    assert "properties.copy.status!='success'" in c
+    assert "properties.copy.status=='pending'" in c and "properties.copy.status=='failed'" in c
+    assert "!='success'" not in c
 
 
 def test_restore_replication_clears_source_half_then_applies_storage(fake_tools):
