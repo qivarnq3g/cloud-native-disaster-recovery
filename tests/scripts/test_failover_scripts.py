@@ -139,6 +139,17 @@ def test_cold_copies_images_only_when_asked(fake_tools):
     assert "copy start-batch" in fake_tools.calls
 
 
+def test_cold_frees_standby_images_from_replication_before_copying(fake_tools):
+    fake_tools = cold(fake_tools)
+    fake_tools.extra_env["DR_IMAGES_FROM_COPY"] = "true"
+    r = fake_tools.run("failover-cold.sh", "r1", "standby")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    delete = "or-policy delete -g rg-dr-standby --account-name drimgstbabc123 --policy-id pol-1"
+    assert c.index(delete) < c.index("copy start-batch")
+    assert c.count(delete) == 1
+
+
 def test_cold_recovers_from_last_server_and_switches(fake_tools):
     r = cold(fake_tools).run("failover-cold.sh", "r1", "standby")
     assert r.returncode == 0, r.stderr
