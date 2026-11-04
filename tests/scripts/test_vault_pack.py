@@ -263,8 +263,8 @@ def test_run_takes_pack_time_before_listing_images_and_packs_only_newer(tmp_path
     assert manifest["created_at"] == "2026-10-30T03:00:00Z" and manifest["images"] == ["new.png"]
     assert manifest["images_since"] == "2026-10-30T01:00:00Z" and manifest["post_count"] == 7
     assert manifest["velero_backup"] == "stop-1"
-    assert sorted(x.name for x in tmp_path.iterdir()) == ["age-args.json", "age.cmd" if os.name == "nt" else "age",
-                                                          "db.dump", "fake_age.py", "r.txt", "sealed.tar"]
+    assert sorted(x.name for x in tmp_path.iterdir()) == sorted(["age-args.json", "age.cmd" if os.name == "nt" else "age",
+                                                                 "db.dump", "fake_age.py", "r.txt", "sealed.tar"])
 
 
 def test_seal_pack_never_leaves_a_partial_pack_when_an_image_download_fails(fake_age, tmp_path):
