@@ -100,7 +100,7 @@ Ngày 31/10, cụm chính `primary-202610310612`:
 
 ## Vòng thử diễn tập
 
-Ngày 31/10, tám lần chạy bằng `python -m scripts.dr.azure_drill`, tải 1 bài/giây, bộ mẫu 1.026 bài. Biên bản từng lần trong `docs/dien-tap/trial-<tình huống>-<lần>.md`, số đo trong `data/azure/drills/`.
+Ngày 31/10 tám lần và ngày 04/11 bốn lần, chạy bằng `python -m scripts.dr.azure_drill`, tải 1 bài/giây, bộ mẫu 1.026 bài. Biên bản từng lần trong `docs/dien-tap/trial-<tình huống>-<lần>.md`, số đo trong `data/azure/drills/`.
 
 | Lần | Kết quả | RTO (s) | RPO (s) | Ghi chú |
 |---|---|---|---|---|
@@ -112,10 +112,16 @@ Ngày 31/10, tám lần chạy bằng `python -m scripts.dr.azure_drill`, tải 
 | D2-3 | không đạt | 433,6 | 42,8 | 50 ảnh thiếu ở kho dự phòng |
 | D2-4 | đạt | 451,5 | 41,6 | Dựng máy 137,7 s, khôi phục 275,8 s, đổi DNS 16,5 s |
 | D3-1 | đạt | 247,2 | 19,5 | Khôi phục ấm 214,6 s, đổi DNS 11,2 s |
+| D4-1 (04/11) | không đạt | | | Vòng chờ chép ảnh không dừng: kho đích có sẵn 4 ảnh không thuộc đợt chép |
+| D4-2 (04/11) | không đạt | | | Chép ảnh vào kho dự phòng bị từ chối (`OrsPolicyConflict`) |
+| D4-3 (04/11) | đạt khi chấm lại | 588,4 | 18,1 | Dựng máy 200,1 s, khôi phục 344,6 s (gồm chép 2.022 ảnh trong 294 s), đổi DNS 13,9 s; 16 ảnh mất trong RPO ảnh |
+| D5-1 (04/11) | đạt | 262,3 | 47,0 | Khôi phục ấm 216,3 s, đổi DNS 13,2 s |
 
-- Cả ba tình huống đã chạy đều có một lần đạt, trong mục tiêu RPO 5 phút, RTO 60 phút (lạnh) và 10 phút (ấm). Mỗi tình huống mới có một lần đạt, chưa đủ để nêu khoảng dao động.
+- Cả năm tình huống đều có một lần đạt, trong mục tiêu RPO 5 phút, RTO 60 phút (lạnh) và 10 phút (ấm). Mỗi tình huống mới có một lần đạt, chưa đủ để nêu khoảng dao động.
 - Bước khôi phục ấm (214,6 s) vượt mục tiêu 2 phút của từng thành phần ở mục 3 thiết kế. Chưa tách được phần nào chiếm thời gian (nâng cụm, khởi động lại API, chờ kho ảnh nhận ghi).
 - RTO tính từ lúc phá tới khi bước runbook cuối xong, gồm cả 20 s phát hiện; không gồm bước kiểm tra (37 đến 39 s).
-- Năm lần không đạt đều do lỗi trong script hoặc phía Azure, đã sửa và ghi trong lịch sử thay đổi của `docs/runbook.md`.
-- D4 và D5 (xóa cả nhóm `rg-dr-primary`) chưa chạy: hai lần này xóa luôn kho ảnh chính, cần thêm bước chép ảnh từ kho bản sao về kho chính mới trước khi dựng lại.
+- Bảy lần không đạt đều do lỗi trong script, luật kiểm tra hoặc phía Azure, đã sửa và ghi trong lịch sử thay đổi của `docs/runbook.md`.
+- D4-3 lúc chạy bị chấm không đạt vì 16 ảnh không tải được. Đó là ảnh của 16 bài đăng 17 đến 32 s trước sự cố: bài đã lên kho sao lưu cơ sở dữ liệu nhưng ảnh chưa kịp chép sang Nhật thì kho ảnh chính mất. Thiết kế đặt RPO ảnh 5 phút, nên luật kiểm tra được sửa để tính các ảnh này là mất trong RPO ảnh; chấm lại trên đúng dữ liệu đã khôi phục thì đạt. Biên bản ghi cả hai kết quả.
+- D4, D5 xóa cả kho ảnh chính. Dựng lại sau đó bằng `rebuild-primary-storage.sh`: ba lần chạy thật, mỗi lần 9 đến 11 phút, chủ yếu là chép 1.901 đến 2.023 ảnh từ kho dự phòng về kho chính mới.
 - Cuối buổi, `session-stop.sh standby` tắt phiên với 1.100 bài, bản `stop-202610311225`; không còn máy ảo nào.
+- Cuối buổi 04/11, `session-stop.sh standby` tắt phiên với 1.073 bài, bản `stop-202611040252` (giữ 720 giờ), rồi `rebuild-primary-storage.sh` dựng lại kho ảnh chính (2.084 ảnh, 278 s) để phiên sau bật thẳng `session-start.sh primary main`; không còn máy ảo nào.

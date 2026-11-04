@@ -71,3 +71,6 @@ Khóa và mã bí mật nằm trong `~/.dr/` trên máy người chạy, không 
 | 31/10/2026 | trial-D2-2 | Gỡ chính sách chép ảnh theo ID đầy đủ, chờ kho ảnh dự phòng nhận ghi |
 | 31/10/2026 | trial-D2-3 | Thêm `restore-replication.sh` vào bước dựng lại |
 | 31/10/2026 | trial-D3-1 | Chuyển ấm tạo lại lịch backup đầy đủ và lịch Velero |
+| 04/11/2026 | trial-D4-1 | Chép ảnh từ kho bản sao chỉ chờ các ảnh đang chép dở, không chờ mọi ảnh ở kho đích |
+| 04/11/2026 | trial-D4-2 | Chuyển lạnh gỡ chính sách chép ảnh của kho dự phòng trước khi chép ảnh từ kho bản sao |
+| 04/11/2026 | trial-D4-3 | Kiểm tra tính ảnh thiếu của bài đăng trong 5 phút trước sự cố là mất trong RPO ảnh; thêm `rebuild-primary-storage.sh` vào bước dựng lại sau khi mất cả nhóm `rg-dr-primary` |
