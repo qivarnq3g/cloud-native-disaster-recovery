@@ -158,11 +158,24 @@ verify() {
     --store-before "$work/store-before.txt"
 }
 
+vault_restore() {
+  : "${VAULT_DRILL_AGE_KEY:?thiếu VAULT_DRILL_AGE_KEY}"
+  ( umask 077; printf '%s\n' "$VAULT_DRILL_AGE_KEY" > "$work/vault.key" )
+  kubectl run vault-pg --image=postgres:18.6-trixie --env=POSTGRES_PASSWORD=drill --env=POSTGRES_DB=dr >/dev/null
+  kubectl wait --for=condition=Ready pod/vault-pg --timeout=180s >/dev/null
+  until kubectl exec vault-pg -- pg_isready -U postgres -d dr >/dev/null 2>&1; do sleep 2; done
+  AGE_SHA256="$(sed -n 's/^export AGE_SHA256=//p' scripts/azure/env.sh)" "$py" -m scripts.vault.restore_test \
+    --key "$work/vault.key" --work "$work/vault" \
+    --psql "kubectl exec vault-pg -- psql -U postgres -d dr -tAc" \
+    --pg-restore "kubectl exec -i vault-pg -- pg_restore -U postgres -d dr --no-owner --no-acl --exit-on-error"
+}
+
 step kind_up kind_up
 step install install
 step velero_restore velero_restore
 step db_restore db_restore
 step api_up api_up
 step verify verify
+step vault_restore vault_restore
 kill "$(cat "$work/port-forward.pid")" 2>/dev/null || true
 echo "diễn tập xong: $csv"
