@@ -27,8 +27,8 @@ run "vault_is_worm_7_days" {
   }
 
   assert {
-    condition     = azurerm_storage_container_immutability_policy.vault.locked == false
-    error_message = "vault policy must start unlocked"
+    condition     = azurerm_storage_container_immutability_policy.vault.locked == true
+    error_message = "vault policy must stay locked"
   }
 }
 

@@ -33,5 +33,5 @@ variable "budget_start" {
 
 variable "vault_locked" {
   type    = bool
-  default = false
+  default = true
 }
