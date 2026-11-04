@@ -125,3 +125,11 @@ Ngày 31/10 tám lần và ngày 04/11 bốn lần, chạy bằng `python -m scr
 - D4, D5 xóa cả kho ảnh chính. Dựng lại sau đó bằng `rebuild-primary-storage.sh`: ba lần chạy thật, mỗi lần 9 đến 11 phút, chủ yếu là chép 1.901 đến 2.023 ảnh từ kho dự phòng về kho chính mới.
 - Cuối buổi, `session-stop.sh standby` tắt phiên với 1.100 bài, bản `stop-202610311225`; không còn máy ảo nào.
 - Cuối buổi 04/11, `session-stop.sh standby` tắt phiên với 1.073 bài, bản `stop-202611040252` (giữ 720 giờ), rồi `rebuild-primary-storage.sh` dựng lại kho ảnh chính (2.084 ảnh, 278 s) để phiên sau bật thẳng `session-start.sh primary main`; không còn máy ảo nào.
+
+## Két
+
+Ngày 04/11, chạy trên nhánh `vault-age`.
+
+- Job két chạy lần đầu khi `session-stop.sh primary` tắt phiên `primary-202611040433` (1.073 bài, bản Velero `stop-202611040443`). Thời gian từ lúc bản Velero xong tới lúc job xong là 87 s; cả lần tắt phiên, kể cả xóa máy, mất 230 s.
+- Gói `primary-202611040433/20261104T044519Z.tar.age` nặng 410.038.298 byte. Đây là gói đầu tiên nên chứa mọi ảnh trong kho chính; các gói sau chỉ chứa ảnh mới hơn gói trước.
+- D6 (`docs/dien-tap/d6-1.md`) đạt: bốn cách xóa và ghi đè gói đều bị từ chối, bằng khóa tài khoản (409 `BlobImmutableDueToPolicy`) và bằng SAS của job két (403). Rút ngắn WORM còn 1 ngày thì được vì chính sách chưa khóa cứng; script đặt lại 7 ngày ngay. Phải khóa cứng trước vòng chính thức.
