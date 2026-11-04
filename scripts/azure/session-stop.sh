@@ -49,10 +49,22 @@ apply_object secret generic vault-sas "--from-literal=VAULT_SAS=$(cat "$PRIVATE_
   "--from-literal=VELERO_SAS=$velero_sas" || die 1 "không tạo được secret vault-sas, giữ máy"
 sed "s|__NAME__|$vault_job|g" "$REPO_ROOT/infra/k8s/platform/vault-pack.yaml.tpl" | kubectl apply -f - >/dev/null \
   || die 1 "không tạo được job $vault_job, giữ máy"
-if ! kubectl -n dr-api wait --for=condition=complete "job/$vault_job" --timeout=1800s; then
+vault_failed() {
   kubectl -n dr-api logs "job/$vault_job" --all-containers --tail=30 >&2 || true
-  die 1 "job két $vault_job lỗi, giữ máy"
-fi
+  die 1 "job két $vault_job lỗi ($1), giữ máy"
+}
+deadline=$(( $(date +%s) + ${DR_VAULT_TIMEOUT:-1800} ))
+while :; do
+  job_status="$(kubectl -n dr-api get "job/$vault_job" -o jsonpath='{.status.succeeded}/{.status.failed}')" \
+    || vault_failed "không đọc được trạng thái"
+  job_status="${job_status%$'\r'}"
+  case "$job_status" in
+    [1-9]*/*) break ;;
+    */[1-9]*) vault_failed "Job báo failed" ;;
+  esac
+  [ "$(date +%s)" -lt "$deadline" ] || vault_failed "quá ${DR_VAULT_TIMEOUT:-1800} s"
+  sleep "${DR_POLL_SECONDS:-5}"
+done
 vault_pack="$(kubectl -n dr-api logs "job/$vault_job" -c pack --tail=1)"
 vault_pack="${vault_pack%$'\r'}"
 [[ "$vault_pack" == "$server/"*.tar.age ]] || die 1 "job két không in tên gói hợp lệ: $vault_pack"

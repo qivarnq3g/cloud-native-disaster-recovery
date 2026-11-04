@@ -50,6 +50,7 @@ case "$tool $*" in
   "kubectl"*"count(*)"*) echo "${FAKE_POST_COUNT:-20}" ;;
   "kubectl"*"md5("*) echo 0123abcd ;;
   "kubectl"*"{.status.backupId}"*) echo 20261027T000000 ;;
+  "kubectl"*"get job/vault-"*) echo "${FAKE_JOB_STATUS:-1/}" ;;
   "kubectl"*"logs job/vault-"*) printf 'primary-202610270000/20261027T010000Z.tar.age\r\n' ;;
   "kubectl -n velero get backups.velero.io"*) printf '%b' "${FAKE_VELERO_BACKUPS:-}" ;;
 esac

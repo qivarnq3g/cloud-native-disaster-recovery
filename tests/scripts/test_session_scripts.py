@@ -282,8 +282,9 @@ def test_drill_read_sas_covers_vault_read_only(fake_tools):
 
 def test_stop_keeps_vm_when_vault_job_fails(fake_tools):
     fake_tools.session = {"state": "running", "cluster": "primary"}
-    fake_tools.fail_on = "condition=complete"
+    fake_tools.extra_env = {"FAKE_JOB_STATUS": "/1", "DR_VAULT_TIMEOUT": "600"}
     r = fake_tools.run("session-stop.sh", "primary")
+    assert "vault-" in r.stderr and "Job" in r.stderr and "failed" in r.stderr
     assert r.returncode == 1
     assert "destroy" not in fake_tools.calls
     assert fake_tools.session_doc()["state"] == "running"
@@ -310,3 +311,10 @@ def test_stop_gives_vault_job_only_its_own_sas(fake_tools):
     assert "SERVER_NAME=primary-202610270000" in config and "POST_COUNT=20" in config
     assert "VAULT_CONTAINER_URL=https://drvaultabc123.blob.core.windows.net/vault" in config
     assert "IMAGE_CONTAINER_URL=https://drimgpriabc123.blob.core.windows.net/images" in config
+
+
+def test_stop_gives_up_on_vault_job_after_timeout(fake_tools):
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    fake_tools.extra_env = {"FAKE_JOB_STATUS": "/", "DR_VAULT_TIMEOUT": "0"}
+    r = fake_tools.run("session-stop.sh", "primary")
+    assert r.returncode == 1 and "destroy" not in fake_tools.calls
