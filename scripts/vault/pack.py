@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import io
 import json
@@ -10,6 +11,7 @@ import subprocess
 import sys
 import tarfile
 import urllib.request
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -42,25 +44,43 @@ def select_images(images: list[BlobInfo], since: datetime | None) -> list[str]:
     return sorted(b.name for b in images if since is None or b.last_modified > since)
 
 
-def build_tar(work: Path, dump: Path, images: dict[str, Path], velero: Path, manifest: dict) -> Path:
-    out = work / "pack.tar"
-    with tarfile.open(out, "w") as t:
-        t.add(dump, arcname="db.dump")
-        for name, path in sorted(images.items()):
-            t.add(path, arcname=f"images/{name}")
-        t.add(velero, arcname=f"velero/{velero.name}")
-        body = json.dumps(manifest, ensure_ascii=False, indent=2).encode()
-        info = tarfile.TarInfo("manifest.json")
-        info.size = len(body)
-        info.mtime = int(datetime.now(UTC).timestamp())
-        t.addfile(info, io.BytesIO(body))
-    return out
-
-
-def encrypt(age_bin: Path, recipients_file: Path, src: Path) -> Path:
-    out = src.with_name(src.name + ".age")
-    subprocess.run([str(age_bin), "-R", str(recipients_file), "-o", str(out), str(src)], check=True)
-    return out
+def seal_pack(age_bin: Path, recipients_file: Path, out: Path, dump: Path, image_names: list[str],
+              fetch: Callable[[str, Path], None], velero: Path, manifest: dict, scratch: Path) -> None:
+    cmd = [str(age_bin), "-R", str(recipients_file), "-o", str(out)]
+    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+    failure: OSError | None = None
+    try:
+        with tarfile.open(fileobj=proc.stdin, mode="w|") as t:
+            t.add(dump, arcname="db.dump")
+            for name in image_names:
+                held = scratch / "image"
+                fetch(name, held)
+                t.add(held, arcname=f"images/{name}")
+                held.unlink()
+            t.add(velero, arcname=f"velero/{velero.name}")
+            body = json.dumps(manifest, ensure_ascii=False, indent=2).encode()
+            info = tarfile.TarInfo("manifest.json")
+            info.size = len(body)
+            info.mtime = int(datetime.now(UTC).timestamp())
+            t.addfile(info, io.BytesIO(body))
+    except OSError as e:
+        failure = e
+    finally:
+        try:
+            proc.stdin.close()
+        except OSError:
+            pass
+    pipe_closed = isinstance(failure, BrokenPipeError) or getattr(failure, "errno", None) == errno.EINVAL
+    if failure is not None and not pipe_closed:
+        proc.kill()
+        proc.wait()
+        out.unlink(missing_ok=True)
+        raise failure
+    if proc.wait() != 0:
+        out.unlink(missing_ok=True)
+        raise subprocess.CalledProcessError(proc.returncode, cmd) from failure
+    if failure is not None:
+        raise failure
 
 
 def fetch_age(dest: Path, sha256: str, http=urllib.request.urlopen) -> Path:
@@ -89,7 +109,8 @@ def _env(name: str) -> str:
     return value
 
 
-def run(work: Path) -> str:
+def run(work: Path, now: Callable[[], datetime] = lambda: datetime.now(UTC)) -> str:
+    created = now().replace(microsecond=0)
     server = _env("SERVER_NAME")
     vault_url, vault_sas = _env("VAULT_CONTAINER_URL"), _env("VAULT_SAS")
     image_url, image_sas = _env("IMAGE_CONTAINER_URL"), _env("IMAGE_SAS")
@@ -101,18 +122,9 @@ def run(work: Path) -> str:
 
     since = newest_pack_time([b.name for b in list_blobs(vault_url, vault_sas, prefix=f"{server}/")], server)
     names = select_images(list_blobs(image_url, image_sas), since)
-    image_dir = work / "images"
-    image_dir.mkdir(exist_ok=True)
-    images = {}
-    for i, name in enumerate(names):
-        path = image_dir / f"{i:06d}"
-        download(image_url, image_sas, name, path)
-        images[name] = path
-
     velero = work / f"{velero_backup}.tar.gz"
     download(velero_url, velero_sas, f"backups/{velero_backup}/{velero_backup}.tar.gz", velero)
 
-    created = datetime.now(UTC).replace(microsecond=0)
     manifest = {
         "created_at": created.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "server_name": server,
@@ -122,11 +134,14 @@ def run(work: Path) -> str:
         "images_since": since.strftime("%Y-%m-%dT%H:%M:%SZ") if since else None,
         "velero_backup": velero_backup,
     }
-    tar = build_tar(work, dump, images, velero, manifest)
-    shutil.rmtree(image_dir)
     age_bin = fetch_age(work / "age", _env("AGE_SHA256"))
-    sealed = encrypt(age_bin, Path(_env("RECIPIENTS_FILE")), tar)
-    tar.unlink()
+    scratch = work / "scratch"
+    scratch.mkdir(exist_ok=True)
+    sealed = work / "pack.tar.age"
+    seal_pack(age_bin, Path(_env("RECIPIENTS_FILE")), sealed, dump, names,
+              lambda name, dest: download(image_url, image_sas, name, dest), velero, manifest, scratch)
+    scratch.rmdir()
+    velero.unlink()
     name = pack_name(server, created)
     upload_new(vault_url, vault_sas, name, sealed)
     sealed.unlink()

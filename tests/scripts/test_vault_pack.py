@@ -2,6 +2,7 @@ import hashlib
 import io
 import json
 import os
+import subprocess
 import sys
 import tarfile
 import urllib.error
@@ -11,7 +12,7 @@ from pathlib import Path
 import pytest
 
 from scripts.vault.blob import BlobExists, BlobInfo, download, list_blobs, upload_new
-from scripts.vault.pack import build_tar, encrypt, fetch_age, newest_pack_time, select_images
+from scripts.vault.pack import fetch_age, newest_pack_time, run, seal_pack, select_images
 
 T0 = datetime(2026, 10, 30, 1, 0, tzinfo=UTC)
 
@@ -126,26 +127,17 @@ def test_upload_new_reraises_other_errors(tmp_path):
         upload_new("https://x/vault", "sig", "n", tmp_file(tmp_path), http=status(403))
 
 
-def test_build_tar_streams_to_disk(tmp_path):
-    big = tmp_path / "big.png"
-    big.write_bytes(os.urandom(5_000_000))
-    out = build_tar(tmp_path, dump=small(tmp_path, "d"), images={"big.png": big},
-                    velero=small(tmp_path, "v.tar.gz"), manifest={"k": 1})
-    assert out.is_file() and out.stat().st_size > 5_000_000
-    with tarfile.open(out) as t:
-        assert {"db.dump", "images/big.png", "manifest.json", "velero/v.tar.gz"} <= set(t.getnames())
-        assert json.loads(t.extractfile("manifest.json").read()) == {"k": 1}
-
-
 @pytest.fixture
 def fake_age(tmp_path):
     log = tmp_path / "age-args.json"
     script = tmp_path / "fake_age.py"
     script.write_text(
-        "import json, sys\n"
+        "import json, shutil, sys\n"
         f"json.dump(sys.argv[1:], open({str(log)!r}, 'w'))\n"
+        "if 'FAIL' in open(sys.argv[2]).read():\n"
+        "    sys.exit(1)\n"
         "out = sys.argv[sys.argv.index('-o') + 1]\n"
-        "open(out, 'wb').write(b'age')\n")
+        "shutil.copyfileobj(sys.stdin.buffer, open(out, 'wb'))\n")
     if os.name == "nt":
         path = tmp_path / "age.cmd"
         path.write_text(f'@"{sys.executable}" "{script}" %*\n')
@@ -164,11 +156,40 @@ def fake_age(tmp_path):
     return fake
 
 
-def test_encrypt_uses_recipients_file(fake_age, tmp_path):
-    src = small(tmp_path, "x.tar")
-    out = encrypt(fake_age.path, tmp_path / "r.txt", src)
+def recipients(tmp_path, body="age1quang\n"):
+    r = tmp_path / "r.txt"
+    r.write_text(body)
+    return r
+
+
+def test_seal_pack_streams_tar_through_age_one_image_at_a_time(fake_age, tmp_path):
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    big = os.urandom(5_000_000)
+    held = []
+
+    def fetch(name, dest):
+        held.append(len(list(scratch.iterdir())))
+        dest.write_bytes(big if name == "big.png" else b"s")
+
+    out = tmp_path / "pack.tar.age"
+    seal_pack(fake_age.path, recipients(tmp_path), out, small(tmp_path, "d"), ["big.png", "s.png"], fetch,
+              small(tmp_path, "v.tar.gz"), {"k": 1}, scratch)
     assert fake_age.args[:2] == ["-R", str(tmp_path / "r.txt")]
-    assert out == src.with_name("x.tar.age") and out.read_bytes() == b"age"
+    assert held == [0, 0] and list(scratch.iterdir()) == []
+    assert not list(tmp_path.glob("*.tar"))
+    with tarfile.open(out) as t:
+        assert set(t.getnames()) == {"db.dump", "images/big.png", "images/s.png", "velero/v.tar.gz", "manifest.json"}
+        assert t.extractfile("images/big.png").read() == big
+        assert json.loads(t.extractfile("manifest.json").read()) == {"k": 1}
+
+
+def test_seal_pack_raises_when_age_fails(fake_age, tmp_path):
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    with pytest.raises(subprocess.CalledProcessError):
+        seal_pack(fake_age.path, recipients(tmp_path, "FAIL"), tmp_path / "o.age", small(tmp_path, "d"), [],
+                  lambda n, d: None, small(tmp_path, "v.tar.gz"), {}, scratch)
 
 
 def age_archive(binary: bytes) -> bytes:
@@ -199,37 +220,62 @@ def test_fetch_age_unpacks_binary_when_hash_matches(tmp_path, fake_release):
     assert path.read_bytes() == b"\x7fELF fake age"
 
 
-def test_run_packs_new_images_and_uploads_under_server_folder(tmp_path, monkeypatch, fake_age):
+
+def test_run_takes_pack_time_before_listing_images_and_packs_only_newer(tmp_path, monkeypatch, fake_age):
     import scripts.vault.pack as pack
     (tmp_path / "db.dump").write_bytes(b"dump")
     stores = {
         "https://v/vault": [BlobInfo("srv/20261030T010000Z.tar.age", T0, 1)],
         "https://i/images": [BlobInfo("old.png", T0 - timedelta(hours=1), 1), BlobInfo("new.png", T0 + timedelta(hours=1), 1)],
     }
-    uploads = []
-    monkeypatch.setattr(pack, "list_blobs", lambda url, sas, prefix="": stores[url])
-    monkeypatch.setattr(pack, "download", lambda url, sas, name, dest: dest.write_bytes(name.encode()))
-    monkeypatch.setattr(pack, "fetch_age", lambda dest, sha256: fake_age.path)
+    events, uploads = [], []
+    started = T0 + timedelta(hours=2, microseconds=5)
+
+    def list_blobs(url, sas, prefix=""):
+        events.append(f"list {url}")
+        return stores[url]
+
+    def clock():
+        events.append("clock")
+        return started
 
     def upload(url, sas, name, src):
         uploads.append((url, name, src.read_bytes()))
+    monkeypatch.setattr(pack, "list_blobs", list_blobs)
+    monkeypatch.setattr(pack, "download", lambda url, sas, name, dest: dest.write_bytes(name.encode()))
+    monkeypatch.setattr(pack, "fetch_age", lambda dest, sha256: fake_age.path)
     monkeypatch.setattr(pack, "upload_new", upload)
     for k, v in {"SERVER_NAME": "srv", "POST_COUNT": "7", "CONTENT_DIGEST": "abc", "VELERO_BACKUP": "stop-1",
                  "IMAGE_CONTAINER_URL": "https://i/images", "IMAGE_SAS": "s", "VELERO_CONTAINER_URL": "https://b/velero",
                  "VELERO_SAS": "s", "VAULT_CONTAINER_URL": "https://v/vault", "VAULT_SAS": "s", "AGE_SHA256": "00",
-                 "RECIPIENTS_FILE": str(tmp_path / "r.txt")}.items():
+                 "RECIPIENTS_FILE": str(recipients(tmp_path))}.items():
         monkeypatch.setenv(k, v)
-    real_build = pack.build_tar
-    seen = {}
 
-    def build(work, dump, images, velero, manifest):
-        seen.update(manifest=manifest, images=sorted(images), velero=velero.name)
-        return real_build(work, dump, images, velero, manifest)
-    monkeypatch.setattr(pack, "build_tar", build)
+    name = run(tmp_path, now=clock)
+    assert events.index("clock") < events.index("list https://i/images")
+    assert name == "srv/20261030T030000Z.tar.age"
+    assert [(u, n) for u, n, _ in uploads] == [("https://v/vault", name)]
+    sealed = tmp_path / "sealed.tar"
+    sealed.write_bytes(uploads[0][2])
+    with tarfile.open(sealed) as t:
+        assert [m for m in t.getnames() if m.startswith("images/")] == ["images/new.png"]
+        manifest = json.loads(t.extractfile("manifest.json").read())
+    assert manifest["created_at"] == "2026-10-30T03:00:00Z" and manifest["images"] == ["new.png"]
+    assert manifest["images_since"] == "2026-10-30T01:00:00Z" and manifest["post_count"] == 7
+    assert manifest["velero_backup"] == "stop-1"
+    assert sorted(x.name for x in tmp_path.iterdir()) == ["age-args.json", "age.cmd" if os.name == "nt" else "age",
+                                                          "db.dump", "fake_age.py", "r.txt", "sealed.tar"]
 
-    name = pack.run(tmp_path)
-    assert name.startswith("srv/") and name.endswith(".tar.age")
-    assert uploads == [("https://v/vault", name, b"age")]
-    assert seen["images"] == ["new.png"] and seen["velero"] == "stop-1.tar.gz"
-    assert seen["manifest"]["images_since"] == "2026-10-30T01:00:00Z" and seen["manifest"]["post_count"] == 7
-    assert not (tmp_path / "pack.tar").exists() and not (tmp_path / "images").exists()
+
+def test_seal_pack_never_leaves_a_partial_pack_when_an_image_download_fails(fake_age, tmp_path):
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    out = tmp_path / "o.age"
+
+    def fetch(name, dest):
+        raise urllib.error.URLError("timed out")
+
+    with pytest.raises(urllib.error.URLError):
+        seal_pack(fake_age.path, recipients(tmp_path), out, small(tmp_path, "d"), ["a.png"], fetch,
+                  small(tmp_path, "v.tar.gz"), {}, scratch)
+    assert not out.exists()
