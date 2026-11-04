@@ -126,3 +126,13 @@ standby,vm_created,2026-11-04T02:40:28Z
 standby,k3s_installed,2026-11-04T02:40:33Z
 standby,node_ready,2026-11-04T02:40:35Z
 standby,traefik_ready,2026-11-04T02:40:44Z
+primary,start,2026-11-04T04:33:34Z
+primary,vm_created,2026-11-04T04:34:55Z
+primary,k3s_installed,2026-11-04T04:35:00Z
+primary,node_ready,2026-11-04T04:35:03Z
+primary,traefik_ready,2026-11-04T04:35:42Z
+primary,start,2026-11-04T05:18:49Z
+primary,vm_created,2026-11-04T05:20:09Z
+primary,k3s_installed,2026-11-04T05:20:14Z
+primary,node_ready,2026-11-04T05:20:17Z
+primary,traefik_ready,2026-11-04T05:21:03Z

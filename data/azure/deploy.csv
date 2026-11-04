@@ -106,3 +106,11 @@ standby,start,2026-11-04T02:44:38Z
 standby,tls_restored,2026-11-04T02:44:45Z
 standby,image_ready,2026-11-04T02:45:01Z
 standby,api_rolled_out,2026-11-04T02:45:03Z
+primary,start,2026-11-04T04:40:16Z
+primary,tls_restored,2026-11-04T04:40:24Z
+primary,image_ready,2026-11-04T04:40:39Z
+primary,api_rolled_out,2026-11-04T04:40:41Z
+primary,start,2026-11-04T05:25:11Z
+primary,tls_restored,2026-11-04T05:25:19Z
+primary,image_ready,2026-11-04T05:25:33Z
+primary,api_rolled_out,2026-11-04T05:25:35Z
