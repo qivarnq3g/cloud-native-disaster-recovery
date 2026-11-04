@@ -278,3 +278,35 @@ def test_drill_read_sas_covers_vault_read_only(fake_tools):
     assert r.returncode == 0, r.stderr
     vault = [l for l in fake_tools.calls.splitlines() if "generate-sas" in l and "drvaultabc123" in l]
     assert len(vault) == 1 and "--permissions rl " in vault[0]
+
+
+def test_stop_keeps_vm_when_vault_job_fails(fake_tools):
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    fake_tools.fail_on = "condition=complete"
+    r = fake_tools.run("session-stop.sh", "primary")
+    assert r.returncode == 1
+    assert "destroy" not in fake_tools.calls
+    assert fake_tools.session_doc()["state"] == "running"
+
+
+def test_stop_runs_vault_after_velero_and_before_destroy(fake_tools):
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    r = fake_tools.run("session-stop.sh", "primary")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    assert c.index("get schedules.velero.io hourly") < c.index("job/vault-") < c.index("destroy")
+    job = fake_tools.applied_yaml.split("kind: Job", 1)[1]
+    assert "name: vault-" in job
+    assert fake_tools.session_doc()["vault_pack"] == "primary-202610270000/20261027T010000Z.tar.age"
+
+
+def test_stop_gives_vault_job_only_its_own_sas(fake_tools):
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    r = fake_tools.run("session-stop.sh", "primary")
+    assert r.returncode == 0, r.stderr
+    sas = next(line for line in fake_tools.calls.splitlines() if "secret generic vault-sas" in line)
+    assert "VAULT_SAS=vault-cl" in sas and "IMAGE_SAS=images-pri" in sas and "VELERO_SAS=velero-rl" in sas
+    config = next(line for line in fake_tools.calls.splitlines() if "configmap vault-config" in line)
+    assert "SERVER_NAME=primary-202610270000" in config and "POST_COUNT=20" in config
+    assert "VAULT_CONTAINER_URL=https://drvaultabc123.blob.core.windows.net/vault" in config
+    assert "IMAGE_CONTAINER_URL=https://drimgpriabc123.blob.core.windows.net/images" in config

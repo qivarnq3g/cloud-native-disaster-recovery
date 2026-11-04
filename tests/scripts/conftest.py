@@ -46,6 +46,7 @@ case "$tool $*" in
   "kubectl"*"count(*)"*) echo "${FAKE_POST_COUNT:-20}" ;;
   "kubectl"*"md5("*) echo 0123abcd ;;
   "kubectl"*"{.status.backupId}"*) echo 20261027T000000 ;;
+  "kubectl"*"logs job/vault-"*) printf 'primary-202610270000/20261027T010000Z.tar.age\r\n' ;;
   "kubectl -n velero get backups.velero.io"*) printf '%b' "${FAKE_VELERO_BACKUPS:-}" ;;
 esac
 exit 0
@@ -82,6 +83,13 @@ class FakeTools:
         private.mkdir()
         (private / "ssh_ed25519").write_text("fake")
         (private / "ssh_ed25519.pub").write_text("ssh-ed25519 AAAA fake")
+        (private / "sas-vault-writer.txt").write_text("vault-cl")
+        (private / "vault-recipients.txt").write_text("age1quang\nage1github\n")
+        (private / "sas-api-images-primary.txt").write_text("images-pri")
+        (private / "sas-api-images-standby.txt").write_text("images-stb")
+        (private / "sas-check-read.txt").write_text(
+            '{"https://drbackupabc123.blob.core.windows.net/velero":"velero-rl",'
+            '"https://drbackupabc123.blob.core.windows.net/cnpg":"cnpg-rl"}')
         self.private = private
 
     @property
@@ -127,6 +135,7 @@ class FakeTools:
             "DR_FAKE_SESSION": status.as_posix(),
             "DR_PYTHON": Path(sys.executable).as_posix(),
             "DR_PRIVATE_DIR": self.private.as_posix(),
+            "DR_VAULT_RECIPIENTS": (self.private / "vault-recipients.txt").as_posix(),
             "DR_DATA_DIR": (self.root / "data").as_posix(),
             "DR_SUFFIX": "abc123",
             "ADMIN_IP": "203.0.113.7",
