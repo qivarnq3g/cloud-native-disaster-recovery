@@ -40,6 +40,11 @@ def test_running_session_checks_images_only():
     assert r.ok
 
 
+def test_running_session_ignores_count_recorded_before_new_posts():
+    r = compare(session(state="running", post_count=1026, digest="seed"), 1118, "later", [ImageCheck("p1", "aa", "aa")])
+    assert r.ok and r.extra_posts == 0 and r.missing_posts == 0
+
+
 def test_running_session_with_no_posts_is_not_ok():
     r = compare(session(state="running", post_count=None, digest=None), 0, "", [])
     assert not r.ok
