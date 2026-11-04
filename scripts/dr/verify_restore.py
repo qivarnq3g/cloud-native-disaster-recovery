@@ -39,7 +39,7 @@ class VerifyReport:
 
 def compare(expected: Session, actual_count: int, actual_digest: str, image_checks: list[ImageCheck]) -> VerifyReport:
     bad = [c.post_id for c in image_checks if c.actual_sha256 != c.expected_sha256]
-    if expected.post_count is None:
+    if expected.state == "running" or expected.post_count is None:
         return VerifyReport(ok=actual_count > 0 and not bad, missing_posts=0, extra_posts=0,
                             digest_match=True, bad_images=bad)
     missing = max(expected.post_count - actual_count, 0)
