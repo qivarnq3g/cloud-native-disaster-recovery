@@ -125,3 +125,14 @@ Ngày 31/10 tám lần và ngày 04/11 bốn lần, chạy bằng `python -m scr
 - D4, D5 xóa cả kho ảnh chính. Dựng lại sau đó bằng `rebuild-primary-storage.sh`: ba lần chạy thật, mỗi lần 9 đến 11 phút, chủ yếu là chép 1.901 đến 2.023 ảnh từ kho dự phòng về kho chính mới.
 - Cuối buổi, `session-stop.sh standby` tắt phiên với 1.100 bài, bản `stop-202610311225`; không còn máy ảo nào.
 - Cuối buổi 04/11, `session-stop.sh standby` tắt phiên với 1.073 bài, bản `stop-202611040252` (giữ 720 giờ), rồi `rebuild-primary-storage.sh` dựng lại kho ảnh chính (2.084 ảnh, 278 s) để phiên sau bật thẳng `session-start.sh primary main`; không còn máy ảo nào.
+
+## Két
+
+Ngày 04/11, chạy trên nhánh `vault-age`.
+
+- Job két chạy lần đầu khi `session-stop.sh primary` tắt phiên `primary-202611040433` (1.073 bài, bản Velero `stop-202611040443`). Thời gian từ lúc bản Velero xong tới lúc job xong là 87 s; cả lần tắt phiên, kể cả xóa máy, mất 230 s.
+- Gói `primary-202611040433/20261104T044519Z.tar.age` nặng 410.038.298 byte. Đây là gói đầu tiên nên chứa mọi ảnh trong kho chính; các gói sau chỉ chứa ảnh mới hơn gói trước.
+- D6 (`docs/dien-tap/d6-1.md`) đạt: bốn cách xóa và ghi đè gói đều bị từ chối, bằng khóa tài khoản (409 `BlobImmutableDueToPolicy`) và bằng SAS của job két (403). Rút ngắn WORM còn 1 ngày thì được vì chính sách chưa khóa cứng; script đặt lại 7 ngày ngay. Phải khóa cứng trước vòng chính thức.
+- D7 trên laptop đạt, không cần cụm Azure. `scripts.vault.restore_test` tải gói về bằng SAS chỉ đọc, giải mã bằng khóa `age` của Quang, rồi `pg_restore` vào Postgres 18.6 trong Docker. Kết quả: 1.073 bài, mã băm nội dung khớp `manifest.json`, 2.084 ảnh trong gói, không thiếu ảnh của bài nào (so cả mã băm SHA-256). Cả bước mất 298 s, gần hết là tải 410 MB về laptop.
+- Bước `vault_restore` của `daily-drill` trên PR #26 đạt: giải mã bằng khóa diễn tập của GitHub, 1.073 bài, mã băm khớp, không thiếu ảnh, 25 s.
+- Sau khi rà soát cả nhánh, job két được sửa để tar chảy thẳng vào `age`, không ghi tệp tar ra đĩa. Chạy thật lại: job 110 s, gói `primary-202611040518/20261104T052644Z.tar.age` cùng kích thước 410.038.298 byte; D7 trên laptop với gói này đạt, 328 s.

@@ -150,3 +150,15 @@ standby,cert_manager_ready,2026-11-04T02:41:33Z
 standby,cnpg_ready,2026-11-04T02:42:18Z
 standby,velero_ready,2026-11-04T02:43:23Z
 standby,db_ready,2026-11-04T02:44:22Z
+primary,start,2026-11-04T04:35:48Z
+primary,cert_manager_ready,2026-11-04T04:36:30Z
+primary,cnpg_ready,2026-11-04T04:37:15Z
+primary,velero_ready,2026-11-04T04:38:21Z
+primary,db_ready,2026-11-04T04:39:58Z
+primary,schedules_ready,2026-11-04T04:40:00Z
+primary,start,2026-11-04T05:21:08Z
+primary,cert_manager_ready,2026-11-04T05:21:52Z
+primary,cnpg_ready,2026-11-04T05:22:34Z
+primary,velero_ready,2026-11-04T05:23:38Z
+primary,db_ready,2026-11-04T05:24:54Z
+primary,schedules_ready,2026-11-04T05:24:56Z

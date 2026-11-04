@@ -14,9 +14,10 @@ case "$name" in
     perms=rl; secret=BACKUP_CHECK_SAS_JSON ;;
   drill-read)
     targets=("$BACKUP_ACCOUNT/cnpg" "$BACKUP_ACCOUNT/velero" "$BACKUP_ACCOUNT/status"
-             "$IMAGE_COPY_ACCOUNT/images")
+             "$IMAGE_COPY_ACCOUNT/images" "$VAULT_ACCOUNT/vault")
     perms=rl; secret=DRILL_READ_SAS_JSON ;;
-  *) die 64 "cách dùng: issue-sas.sh api-images-primary|api-images-standby|cnpg-backup|check-read|drill-read" ;;
+  vault-writer) targets=("$VAULT_ACCOUNT/vault"); perms=cl; secret= ;;
+  *) die 64 "cách dùng: issue-sas.sh api-images-primary|api-images-standby|cnpg-backup|check-read|drill-read|vault-writer" ;;
 esac
 
 json="{"

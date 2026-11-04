@@ -40,11 +40,18 @@ case "$tool $*" in
     printf 'pol-1\t/subscriptions/s/resourceGroups/rg-dr-standby/providers/Microsoft.Storage/storageAccounts/drimgstbabc123\r\n'
     printf 'pol-2\t/subscriptions/s/resourceGroups/rg-dr-backup/providers/Microsoft.Storage/storageAccounts/drimgcopyabc123\r\n' ;;
   "az storage blob list"*) printf '0\r\n' ;;
+  "az storage container generate-sas"*) echo "sv=fake&sig=fake" ;;
+  "az storage account generate-sas"*) echo "sv=acct&sig=acct" ;;
+  "az storage container immutability-policy show"*) echo etag-1 ;;
+  "curl"*"-X DELETE"*) printf %s "${FAKE_HTTP_DELETE:-409}" ;;
+  "curl"*"-X PUT"*) printf %s "${FAKE_HTTP_PUT:-409}" ;;
   "kubectl"*"pg_is_in_recovery()"*) echo "${FAKE_IN_RECOVERY:-f}" ;;
   "terraform"*"output -raw public_ip"*) echo 20.0.0.9 ;;
   "kubectl"*"count(*)"*) echo "${FAKE_POST_COUNT:-20}" ;;
   "kubectl"*"md5("*) echo 0123abcd ;;
   "kubectl"*"{.status.backupId}"*) echo 20261027T000000 ;;
+  "kubectl"*"get job/vault-"*) echo "${FAKE_JOB_STATUS:-1/}" ;;
+  "kubectl"*"logs job/vault-"*) printf 'primary-202610270000/20261027T010000Z.tar.age\r\n' ;;
   "kubectl -n velero get backups.velero.io"*) printf '%b' "${FAKE_VELERO_BACKUPS:-}" ;;
 esac
 exit 0
@@ -63,7 +70,7 @@ class FakeTools:
         self.root = root
         self.bin = root / "bin"
         self.bin.mkdir()
-        for tool in ("az", "terraform", "kubectl", "velero", "curl", "ssh-keygen", "dns_switch"):
+        for tool in ("az", "terraform", "kubectl", "velero", "curl", "ssh-keygen", "dns_switch", "gh"):
             p = self.bin / tool
             p.write_text(FAKE_TOOL, newline="\n")
             p.chmod(0o755)
@@ -81,6 +88,13 @@ class FakeTools:
         private.mkdir()
         (private / "ssh_ed25519").write_text("fake")
         (private / "ssh_ed25519.pub").write_text("ssh-ed25519 AAAA fake")
+        (private / "sas-vault-writer.txt").write_text("vault-cl")
+        (private / "vault-recipients.txt").write_text("age1quang\nage1github\n")
+        (private / "sas-api-images-primary.txt").write_text("images-pri")
+        (private / "sas-api-images-standby.txt").write_text("images-stb")
+        (private / "sas-check-read.txt").write_text(
+            '{"https://drbackupabc123.blob.core.windows.net/velero":"velero-rl",'
+            '"https://drbackupabc123.blob.core.windows.net/cnpg":"cnpg-rl"}')
         self.private = private
 
     @property
@@ -126,6 +140,7 @@ class FakeTools:
             "DR_FAKE_SESSION": status.as_posix(),
             "DR_PYTHON": Path(sys.executable).as_posix(),
             "DR_PRIVATE_DIR": self.private.as_posix(),
+            "DR_VAULT_RECIPIENTS": (self.private / "vault-recipients.txt").as_posix(),
             "DR_DATA_DIR": (self.root / "data").as_posix(),
             "DR_SUFFIX": "abc123",
             "ADMIN_IP": "203.0.113.7",

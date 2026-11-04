@@ -24,6 +24,7 @@ class Session:
     velero_backup: str | None = None
     post_count: int | None = None
     content_digest: str | None = None
+    vault_pack: str | None = None
 
     def __post_init__(self) -> None:
         if self.state not in STATES:

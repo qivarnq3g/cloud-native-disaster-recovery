@@ -62,7 +62,7 @@ def test_session_json_has_every_field(fake_container):
     write_session(fake_container, Session(state="running", cluster="primary", server_name="p", started_at="t"))
     doc = json.loads(fake_container.blobs["session.json"])
     assert set(doc) == {"state", "cluster", "server_name", "started_at", "stopped_at", "full_backup",
-                        "velero_backup", "post_count", "content_digest"}
+                        "velero_backup", "post_count", "content_digest", "vault_pack"}
 
 
 def test_cli_set_then_get_with_fake_file(tmp_path, monkeypatch, capsys):

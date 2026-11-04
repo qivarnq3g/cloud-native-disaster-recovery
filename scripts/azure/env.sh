@@ -31,6 +31,7 @@ export IMAGE_COPY_ACCOUNT="drimgcopy${SFX}"
 export VAULT_ACCOUNT="drvault${SFX}"
 export IMAGE_PRIMARY_ACCOUNT="drimgpri${SFX}"
 export IMAGE_STANDBY_ACCOUNT="drimgstb${SFX}"
+export AGE_SHA256=7df45a6cc87d4da11cc03a539a7470c15b1041ab2b396af088fe9990f7c79d50
 
 tf_init() {
   terraform -chdir="$1" init -reconfigure -input=false \

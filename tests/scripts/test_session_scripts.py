@@ -261,3 +261,60 @@ def test_reset_refuses_cluster_not_serving(fake_tools):
     fake_tools.private.joinpath("seed.json").write_text(SEED_JSON)
     fake_tools.session = {"state": "running", "cluster": "standby"}
     assert fake_tools.run("reset-seed.sh", "primary").returncode == 3
+
+
+def test_vault_writer_sas_can_only_create_and_list(fake_tools):
+    r = fake_tools.run("issue-sas.sh", "vault-writer")
+    assert r.returncode == 0, r.stderr
+    sas_calls = [l for l in fake_tools.calls.splitlines() if "generate-sas" in l]
+    assert len(sas_calls) == 1
+    assert "--account-name drvaultabc123" in sas_calls[0] and "-n vault" in sas_calls[0]
+    assert "--permissions cl " in sas_calls[0]
+    assert "gh secret" not in fake_tools.calls
+
+
+def test_drill_read_sas_covers_vault_read_only(fake_tools):
+    r = fake_tools.run("issue-sas.sh", "drill-read")
+    assert r.returncode == 0, r.stderr
+    vault = [l for l in fake_tools.calls.splitlines() if "generate-sas" in l and "drvaultabc123" in l]
+    assert len(vault) == 1 and "--permissions rl " in vault[0]
+
+
+def test_stop_keeps_vm_when_vault_job_fails(fake_tools):
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    fake_tools.extra_env = {"FAKE_JOB_STATUS": "/1", "DR_VAULT_TIMEOUT": "600"}
+    r = fake_tools.run("session-stop.sh", "primary")
+    assert "vault-" in r.stderr and "Job" in r.stderr and "failed" in r.stderr
+    assert r.returncode == 1
+    assert "destroy" not in fake_tools.calls
+    assert fake_tools.session_doc()["state"] == "running"
+
+
+def test_stop_runs_vault_after_velero_and_before_destroy(fake_tools):
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    r = fake_tools.run("session-stop.sh", "primary")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    assert c.index("get schedules.velero.io hourly") < c.index("job/vault-") < c.index("destroy")
+    job = fake_tools.applied_yaml.split("kind: Job", 1)[1]
+    assert "name: vault-" in job
+    assert fake_tools.session_doc()["vault_pack"] == "primary-202610270000/20261027T010000Z.tar.age"
+
+
+def test_stop_gives_vault_job_only_its_own_sas(fake_tools):
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    r = fake_tools.run("session-stop.sh", "primary")
+    assert r.returncode == 0, r.stderr
+    sas = next(line for line in fake_tools.calls.splitlines() if "secret generic vault-sas" in line)
+    assert "VAULT_SAS=vault-cl" in sas and "IMAGE_SAS=images-pri" in sas and "VELERO_SAS=velero-rl" in sas
+    config = next(line for line in fake_tools.calls.splitlines() if "configmap vault-config" in line)
+    assert "SERVER_NAME=primary-202610270000" in config and "POST_COUNT=20" in config
+    assert "VAULT_CONTAINER_URL=https://drvaultabc123.blob.core.windows.net/vault" in config
+    assert "IMAGE_CONTAINER_URL=https://drimgpriabc123.blob.core.windows.net/images" in config
+
+
+def test_stop_gives_up_on_vault_job_after_timeout(fake_tools):
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    fake_tools.extra_env = {"FAKE_JOB_STATUS": "/", "DR_VAULT_TIMEOUT": "0"}
+    r = fake_tools.run("session-stop.sh", "primary")
+    assert r.returncode == 1 and "destroy" not in fake_tools.calls

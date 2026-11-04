@@ -54,6 +54,7 @@ jobs:
         env:
           DRILL_READ_SAS_JSON: ${{ secrets.DRILL_READ_SAS_JSON }}
           DRILL_VELERO_KEY: ${{ secrets.DRILL_VELERO_KEY }}
+          VAULT_DRILL_AGE_KEY: ${{ secrets.VAULT_DRILL_AGE_KEY }}
           DRILL_OUT_DIR: ${{ github.workspace }}/ops/data/daily-drill
         run: bash scripts/drill/run-daily-drill.sh
       - name: Số đo
