@@ -261,3 +261,20 @@ def test_reset_refuses_cluster_not_serving(fake_tools):
     fake_tools.private.joinpath("seed.json").write_text(SEED_JSON)
     fake_tools.session = {"state": "running", "cluster": "standby"}
     assert fake_tools.run("reset-seed.sh", "primary").returncode == 3
+
+
+def test_vault_writer_sas_can_only_create_and_list(fake_tools):
+    r = fake_tools.run("issue-sas.sh", "vault-writer")
+    assert r.returncode == 0, r.stderr
+    sas_calls = [l for l in fake_tools.calls.splitlines() if "generate-sas" in l]
+    assert len(sas_calls) == 1
+    assert "--account-name drvaultabc123" in sas_calls[0] and "-n vault" in sas_calls[0]
+    assert "--permissions cl " in sas_calls[0]
+    assert "gh secret" not in fake_tools.calls
+
+
+def test_drill_read_sas_covers_vault_read_only(fake_tools):
+    r = fake_tools.run("issue-sas.sh", "drill-read")
+    assert r.returncode == 0, r.stderr
+    vault = [l for l in fake_tools.calls.splitlines() if "generate-sas" in l and "drvaultabc123" in l]
+    assert len(vault) == 1 and "--permissions rl " in vault[0]

@@ -26,6 +26,8 @@ Phiên bản cụ thể của mọi công cụ dùng trong đồ án (mục 9 th
 | Python | 3.12 trong `ci` |
 | `azure-storage-blob` | 12.x |
 | `pytest` | 8.x |
+| `age` | v1.2.1, tệp `age-v1.2.1-linux-amd64.tar.gz` SHA-256 `7df45a6cc87d4da11cc03a539a7470c15b1041ab2b396af088fe9990f7c79d50` (tính sau khi tải, 04/11; bản phát hành không kèm tệp `.sha256`). Job két dùng đúng mã băm này |
+| Image job két | `ghcr.io/cloudnative-pg/postgresql:18.6-minimal-trixie` (xuất `pg_dump`), `python:3.12-slim` (gói, mã hóa, tải lên) |
 
 ## Ứng dụng
 

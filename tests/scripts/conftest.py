@@ -40,6 +40,7 @@ case "$tool $*" in
     printf 'pol-1\t/subscriptions/s/resourceGroups/rg-dr-standby/providers/Microsoft.Storage/storageAccounts/drimgstbabc123\r\n'
     printf 'pol-2\t/subscriptions/s/resourceGroups/rg-dr-backup/providers/Microsoft.Storage/storageAccounts/drimgcopyabc123\r\n' ;;
   "az storage blob list"*) printf '0\r\n' ;;
+  "az storage container generate-sas"*) echo "sv=fake&sig=fake" ;;
   "kubectl"*"pg_is_in_recovery()"*) echo "${FAKE_IN_RECOVERY:-f}" ;;
   "terraform"*"output -raw public_ip"*) echo 20.0.0.9 ;;
   "kubectl"*"count(*)"*) echo "${FAKE_POST_COUNT:-20}" ;;
@@ -63,7 +64,7 @@ class FakeTools:
         self.root = root
         self.bin = root / "bin"
         self.bin.mkdir()
-        for tool in ("az", "terraform", "kubectl", "velero", "curl", "ssh-keygen", "dns_switch"):
+        for tool in ("az", "terraform", "kubectl", "velero", "curl", "ssh-keygen", "dns_switch", "gh"):
             p = self.bin / tool
             p.write_text(FAKE_TOOL, newline="\n")
             p.chmod(0o755)
