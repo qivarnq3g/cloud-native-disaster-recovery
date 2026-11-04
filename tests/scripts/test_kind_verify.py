@@ -1,7 +1,7 @@
 import hashlib
 from datetime import UTC, datetime, timedelta
 
-from scripts.kind.verify import check_images, compare, content_digest
+from scripts.kind.verify import check_images, compare, content_digest, settle_images
 from scripts.kind.workload import LedgerEntry
 
 T0 = datetime(2026, 10, 26, 12, 0, 0, tzinfo=UTC)
@@ -74,3 +74,23 @@ def test_check_images_reports_missing_and_corrupt():
     data = {"a": good, "b": b"corrupt", "c": None}
     expected = {k: hashlib.sha256(good).hexdigest() for k in data}
     assert check_images(expected, data.get) == ["b", "c"]
+
+
+def test_missing_images_of_recent_posts_count_as_lost_within_image_rpo():
+    recent, old, corrupt = entry(1, 30), entry(2, 400), entry(3, 20)
+    ledger = [recent, old, corrupt]
+    expected = rows(ledger) | {"seed": "aa" * 32}
+    data = {old.post_id: None, recent.post_id: None, corrupt.post_id: b"wrong", "seed": None}
+    r = compare(ledger, rows(ledger), T0)
+    settle_images(r, expected, data.get, ledger, T0)
+    assert r.images_lost_within_rpo == [recent.post_id]
+    assert r.images_bad == sorted([old.post_id, corrupt.post_id, "seed"])
+    assert r.images_checked == 4 and not r.ok
+
+
+def test_report_passes_when_only_recent_images_are_missing():
+    ledger = [entry(1, 400, sha=hashlib.sha256(b"x").hexdigest()), entry(2, 30)]
+    data = {ledger[0].post_id: b"x", ledger[1].post_id: None}
+    r = compare(ledger, rows(ledger), T0)
+    settle_images(r, rows(ledger), data.get, ledger, T0)
+    assert r.images_bad == [] and r.images_lost_within_rpo == [ledger[1].post_id] and r.ok

@@ -16,7 +16,7 @@ from pathlib import Path
 
 from scripts.kind import results
 from scripts.kind.probe import Prober, check
-from scripts.kind.verify import check_images, compare, content_digest
+from scripts.kind.verify import compare, content_digest, settle_images
 from scripts.kind.workload import ApiClient, Ledger, Writer, parse_time, post_one, read_ledger
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -159,8 +159,7 @@ class AzureEnv:
         client = direct(cluster, timeout=30)
         if client is None:
             raise RuntimeError(f"không lấy được IP của vm-dr-{cluster}")
-        report.images_checked = len(rows)
-        report.images_bad = check_images(rows, client.image)
+        settle_images(report, rows, client.image, entries, incident)
         try:
             entry = post_one(client, ledger, max((e.seq for e in entries), default=0) + 1, "check")
             data = client.image(entry.post_id)
@@ -171,6 +170,7 @@ class AzureEnv:
         log(f"kiểm tra {cluster}: {report.posts_restored}/{report.posts_acked} bài còn, thiếu {report.posts_missing} "
             f"(RPO {report.rpo_s} s), lỗ hổng {report.posts_holes}, ngoài sổ {report.posts_extra}, "
             f"mã nội dung {'khớp' if report.digest_match else 'KHÁC'}, ảnh hỏng {len(report.images_bad)}, "
+            f"ảnh mất trong RPO ảnh {len(report.images_lost_within_rpo)}, "
             f"chức năng {'đạt' if functional else 'LỖI'}")
         return {"report": report, "digest": digest, "functional": functional}
 
