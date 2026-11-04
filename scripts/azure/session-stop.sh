@@ -11,9 +11,8 @@ mark session.csv "$cluster" stop_start
 backup_id="$(take_full_backup "$name")" || exit 1
 mark session.csv "$cluster" full_backup_done
 
-velero backup create "$name" --from-schedule hourly --ttl 168h0m0s --wait \
-  || die 1 "bản Velero $name lỗi, giữ máy"
-kubectl -n velero wait --for=jsonpath='{.status.phase}'=Completed "backups.velero.io/$name" --timeout=60s \
+velero_backup_from_schedule "$name" "${DR_STOP_BACKUP_TTL:-720h0m0s}" || die 1 "bản Velero $name lỗi, giữ máy"
+kubectl -n velero wait --for=jsonpath='{.status.phase}'=Completed "backups.velero.io/$name" --timeout=600s \
   || die 1 "bản Velero $name không Completed, giữ máy"
 mark session.csv "$cluster" velero_backup_done
 

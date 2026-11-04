@@ -139,6 +139,17 @@ def test_cold_copies_images_only_when_asked(fake_tools):
     assert "copy start-batch" in fake_tools.calls
 
 
+def test_cold_frees_standby_images_from_replication_before_copying(fake_tools):
+    fake_tools = cold(fake_tools)
+    fake_tools.extra_env["DR_IMAGES_FROM_COPY"] = "true"
+    r = fake_tools.run("failover-cold.sh", "r1", "standby")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    delete = "or-policy delete -g rg-dr-standby --account-name drimgstbabc123 --policy-id pol-1"
+    assert c.index(delete) < c.index("copy start-batch")
+    assert c.count(delete) == 1
+
+
 def test_cold_recovers_from_last_server_and_switches(fake_tools):
     r = cold(fake_tools).run("failover-cold.sh", "r1", "standby")
     assert r.returncode == 0, r.stderr
@@ -179,7 +190,8 @@ def test_copy_images_waits_for_every_blob(fake_tools):
     assert r.returncode == 0, r.stderr
     c = fake_tools.calls
     assert "--source-account-name drimgcopyabc123" in c and "--account-name drimgstbabc123" in c
-    assert "properties.copy.status!='success'" in c
+    assert "properties.copy.status=='pending'" in c and "properties.copy.status=='failed'" in c
+    assert "!='success'" not in c
 
 
 def test_restore_replication_clears_source_half_then_applies_storage(fake_tools):
@@ -207,3 +219,66 @@ def test_warm_promotion_creates_backup_schedules(fake_tools):
     c = fake_tools.calls
     assert c.index("pg_is_in_recovery()") < c.index("velero-schedule.yaml")
     assert c.index("pg_is_in_recovery()") < c.index("scheduled-backup.yaml")
+
+
+def test_copy_images_takes_source_and_destination(fake_tools):
+    r = fake_tools.run("copy-images.sh", "drimgstbabc123", "drimgpriabc123")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    assert "--source-account-name drimgstbabc123" in c and "--account-name drimgpriabc123" in c
+
+
+def rebuild(fake_tools):
+    fake_tools.extra_env["DR_BUDGET_EMAIL"] = "x@example.com"
+    fake_tools.stubs = ["restore-replication.sh", "copy-images.sh", "issue-sas.sh"]
+    fake_tools.primary_gone = True
+    (fake_tools.private / "key-drimgpriabc123").write_text("old")
+    return fake_tools
+
+
+def test_rebuild_primary_storage_forgets_lost_resources_then_restores_in_order(fake_tools):
+    r = rebuild(fake_tools).run("rebuild-primary-storage.sh")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    assert 'state rm azurerm_resource_group.cluster["primary"]' in c
+    assert 'state rm azurerm_storage_account.this["image_primary"]' in c
+    assert 'state rm azurerm_storage_object_replication.images["copy"]' in c
+    assert '["standby"]' not in c.replace('images["standby"]', "") and '["image_copy"]' not in c
+    assert "copy-images.sh drimgstbabc123 drimgpriabc123" in c
+    order = [c.index(s) for s in ("state rm", "or-policy delete", "restore-replication.sh",
+                                    "copy-images.sh", "issue-sas.sh api-images-primary")]
+    assert order == sorted(order)
+    assert not (fake_tools.private / "key-drimgpriabc123").exists()
+
+
+def test_rebuild_primary_storage_deletes_only_policies_from_lost_primary(fake_tools):
+    r = rebuild(fake_tools).run("rebuild-primary-storage.sh")
+    assert r.returncode == 0, r.stderr
+    c = fake_tools.calls
+    assert "--account-name drimgcopyabc123 --policy-id pol-7" in c
+    assert "--account-name drimgstbabc123 --policy-id pol-7" in c
+    assert "pol-8" not in c
+
+
+def test_rebuild_primary_storage_does_nothing_when_primary_store_exists(fake_tools):
+    fake_tools = rebuild(fake_tools)
+    fake_tools.primary_gone = False
+    r = fake_tools.run("rebuild-primary-storage.sh")
+    assert r.returncode == 0, r.stderr
+    assert "state rm" not in fake_tools.calls and "restore-replication.sh" not in fake_tools.calls
+
+
+def test_rebuild_primary_storage_waits_for_group_deletion(fake_tools):
+    fake_tools = rebuild(fake_tools)
+    fake_tools.extra_env["FAKE_GROUP_EXISTS"] = "true"
+    r = fake_tools.run("rebuild-primary-storage.sh")
+    assert r.returncode == 3
+    assert "state rm" not in fake_tools.calls
+
+
+def test_rebuild_primary_storage_refuses_while_standby_runs(fake_tools):
+    fake_tools = rebuild(fake_tools)
+    fake_tools.vms = ["vm-dr-standby"]
+    r = fake_tools.run("rebuild-primary-storage.sh")
+    assert r.returncode == 3
+    assert "state rm" not in fake_tools.calls

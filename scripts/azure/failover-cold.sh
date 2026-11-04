@@ -12,8 +12,9 @@ case "${1:-}" in
     [ -n "$source_server" ] || die 5 "session.json chưa có server_name để khôi phục"
     server="$cluster-$(date -u +%Y%m%d%H%M)"
     refresh_admin_ip "$cluster"
-    copy_pid=
+    copy_pid=; replication_removed=
     if [ "${DR_IMAGES_FROM_COPY:-false}" = true ]; then
+      remove_image_replication; replication_removed=1
       bash "$REPO_ROOT/scripts/azure/copy-images.sh" & copy_pid=$!
     fi
     if ! { bash "$SCRIPT_DIR/install-software.sh" "$cluster" "$server" "$source_server" \
@@ -23,7 +24,7 @@ case "${1:-}" in
     fi
     [ -z "$copy_pid" ] || wait "$copy_pid" || die 1 "chép ảnh sang kho dự phòng lỗi"
     KUBECONFIG="$PRIVATE_DIR/kubeconfig-$cluster" take_base_backup cold
-    [ "$cluster" != standby ] || remove_image_replication
+    [ "$cluster" != standby ] || [ -n "$replication_removed" ] || remove_image_replication
     echo "$server" > "$server_file"
     exit 0 ;;
   --switch)

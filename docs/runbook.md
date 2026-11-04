@@ -49,6 +49,7 @@ Sau khi chuyển sang `standby`, đưa hệ thống về trạng thái ban đầ
 
 1. Xóa ổ đĩa mồ côi của máy chính nếu còn: `az disk delete -g rg-dr-primary -n vm-dr-primary-os --yes`.
 2. `bash scripts/azure/session-stop.sh standby` (lấy bản đầy đủ và bản Velero rồi xóa máy dự phòng).
+   Nếu cả nhóm `rg-dr-primary` đã mất (D4, D5), chạy thêm `bash scripts/azure/rebuild-primary-storage.sh` khi `az group exists -n rg-dr-primary` đã trả `false`. Script bỏ các tài nguyên đã mất khỏi trạng thái Terraform, gỡ chính sách chép ảnh còn sót ở kho đích, dựng lại nhóm, kho ảnh chính và chính sách chép ảnh, chép toàn bộ ảnh từ kho dự phòng về kho chính mới, rồi cấp lại SAS cho API. Kho mới có khóa mới nên người có quyền GitHub chạy thêm `bash scripts/azure/issue-sas.sh check-read` để cập nhật secret của backup-check.
 3. `bash scripts/azure/session-start.sh primary main`.
 4. `bash scripts/azure/restore-replication.sh`: dựng lại chính sách chép ảnh sang kho dự phòng. Chỉ chạy sau bước 3; chạy khi cụm dự phòng đang phục vụ sẽ làm kho ảnh dự phòng thành chỉ đọc.
 5. `bash scripts/azure/reset-seed.sh primary`: đưa cơ sở dữ liệu về bộ mẫu 1.026 bài và làm mới sổ ghi bài.
@@ -70,3 +71,6 @@ Khóa và mã bí mật nằm trong `~/.dr/` trên máy người chạy, không 
 | 31/10/2026 | trial-D2-2 | Gỡ chính sách chép ảnh theo ID đầy đủ, chờ kho ảnh dự phòng nhận ghi |
 | 31/10/2026 | trial-D2-3 | Thêm `restore-replication.sh` vào bước dựng lại |
 | 31/10/2026 | trial-D3-1 | Chuyển ấm tạo lại lịch backup đầy đủ và lịch Velero |
+| 04/11/2026 | trial-D4-1 | Chép ảnh từ kho bản sao chỉ chờ các ảnh đang chép dở, không chờ mọi ảnh ở kho đích |
+| 04/11/2026 | trial-D4-2 | Chuyển lạnh gỡ chính sách chép ảnh của kho dự phòng trước khi chép ảnh từ kho bản sao |
+| 04/11/2026 | trial-D4-3 | Kiểm tra tính ảnh thiếu của bài đăng trong 5 phút trước sự cố là mất trong RPO ảnh; thêm `rebuild-primary-storage.sh` vào bước dựng lại sau khi mất cả nhóm `rg-dr-primary` |

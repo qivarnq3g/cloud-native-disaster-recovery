@@ -15,3 +15,12 @@ standby,seed_backup_done,2026-10-31T12:09:05Z
 standby,vm_ready,2026-10-31T12:11:49Z
 standby,replica_ready,2026-10-31T12:15:04Z
 standby,api_ready,2026-10-31T12:15:41Z
+standby,down_start,2026-11-03T16:59:24Z
+standby,down_done,2026-11-03T17:03:07Z
+standby,down_start,2026-11-04T01:28:16Z
+standby,down_done,2026-11-04T01:30:36Z
+standby,start,2026-11-04T02:38:22Z
+standby,seed_backup_done,2026-11-04T02:38:37Z
+standby,vm_ready,2026-11-04T02:40:44Z
+standby,replica_ready,2026-11-04T02:44:22Z
+standby,api_ready,2026-11-04T02:45:04Z

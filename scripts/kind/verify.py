@@ -7,6 +7,7 @@ from datetime import datetime
 from scripts.kind.workload import LedgerEntry, parse_time
 
 POSTS_RPO_S = 300
+IMAGES_RPO_S = 300
 
 
 def content_digest(rows: dict[str, str]) -> str:
@@ -29,6 +30,7 @@ class VerifyReport:
     rpo_target_s: float = POSTS_RPO_S
     images_checked: int = 0
     images_bad: list[str] = field(default_factory=list)
+    images_lost_within_rpo: list[str] = field(default_factory=list)
 
     @property
     def digest_match(self) -> bool:
@@ -69,13 +71,32 @@ def compare(ledger: list[LedgerEntry], db_rows: dict[str, str], incident_at: dat
     )
 
 
-def check_images(rows: dict[str, str], fetch) -> list[str]:
+def image_faults(rows: dict[str, str], fetch) -> tuple[list[str], list[str]]:
     from concurrent.futures import ThreadPoolExecutor
 
-    def bad(item: tuple[str, str]) -> str | None:
+    def fault(item: tuple[str, str]) -> tuple[str, str] | None:
         pid, sha = item
         data = fetch(pid)
-        return pid if data is None or hashlib.sha256(data).hexdigest() != sha else None
+        if data is None:
+            return pid, "missing"
+        return (pid, "corrupt") if hashlib.sha256(data).hexdigest() != sha else None
 
     with ThreadPoolExecutor(16) as pool:
-        return sorted(p for p in pool.map(bad, rows.items()) if p)
+        found = [f for f in pool.map(fault, rows.items()) if f]
+    return sorted(p for p, kind in found if kind == "missing"), sorted(p for p, kind in found if kind == "corrupt")
+
+
+def check_images(rows: dict[str, str], fetch) -> list[str]:
+    missing, corrupt = image_faults(rows, fetch)
+    return sorted(missing + corrupt)
+
+
+def settle_images(report: VerifyReport, rows: dict[str, str], fetch, ledger: list[LedgerEntry],
+                  incident_at: datetime, images_rpo_s: float = IMAGES_RPO_S) -> None:
+    missing, corrupt = image_faults(rows, fetch)
+    acked = {e.post_id: parse_time(e.acked_at) for e in ledger}
+    recent = {pid for pid in missing
+              if pid in acked and (incident_at - acked[pid]).total_seconds() <= images_rpo_s}
+    report.images_checked = len(rows)
+    report.images_bad = sorted(corrupt + [pid for pid in missing if pid not in recent])
+    report.images_lost_within_rpo = sorted(recent)

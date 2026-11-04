@@ -46,7 +46,7 @@ def test_stop_keeps_vm_when_backup_fails(fake_tools):
 
 def test_stop_keeps_vm_when_velero_fails(fake_tools):
     fake_tools.session = {"state": "running", "cluster": "primary"}
-    fake_tools.fail_on = "velero backup create"
+    fake_tools.fail_on = "get schedules.velero.io"
     r = fake_tools.run("session-stop.sh", "primary")
     assert r.returncode == 1
     assert "destroy" not in fake_tools.calls
@@ -60,7 +60,18 @@ def test_stop_records_backups_then_destroys(fake_tools):
     assert doc["state"] == "stopped" and doc["post_count"] == 20 and doc["content_digest"] == "0123abcd"
     assert doc["full_backup"] == "20261027T000000" and doc["velero_backup"].startswith("stop-")
     calls = fake_tools.calls
-    assert calls.index("velero backup create") < calls.index("destroy")
+    assert calls.index("get schedules.velero.io hourly") < calls.index("destroy")
+
+
+def test_stop_backup_keeps_schedule_template_but_outlives_its_ttl(fake_tools):
+    fake_tools.session = {"state": "running", "cluster": "primary"}
+    r = fake_tools.run("session-stop.sh", "primary")
+    assert r.returncode == 0, r.stderr
+    backup = next(json.loads(line) for line in fake_tools.applied_yaml.splitlines() if '"kind": "Backup"' in line)
+    assert backup["metadata"]["name"].startswith("stop-")
+    assert backup["spec"]["ttl"] == "720h0m0s"
+    assert backup["spec"]["includedNamespaces"] == ["dr-api", "cert-manager"]
+    assert "--from-schedule" not in fake_tools.calls.split("session-stop")[0]
 
 
 def test_pause_fails_if_only_stopped(fake_tools):

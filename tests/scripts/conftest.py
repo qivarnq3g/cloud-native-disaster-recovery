@@ -25,10 +25,21 @@ case "$tool $*" in
     exit 3 ;;
   "az vm get-instance-view"*) echo "$FAKE_POWER_STATE" ;;
   "az vm list"*) echo 0 ;;
+  "az storage account show"*) [ -z "${FAKE_PRIMARY_GONE:-}" ] && echo drimgpriabc123 || exit 3 ;;
+  "kubectl -n velero get schedules.velero.io hourly"*)
+    echo '{"spec": {"template": {"ttl": "72h0m0s", "includedNamespaces": ["dr-api", "cert-manager"]}}}' ;;
+  "az group exists"*) echo "${FAKE_GROUP_EXISTS:-false}" ;;
+  "terraform"*"state list"*)
+    printf 'azurerm_resource_group.cluster["primary"]\r\nazurerm_resource_group.cluster["standby"]\r\n'
+    printf 'azurerm_storage_account.this["image_primary"]\r\nazurerm_storage_account.this["image_copy"]\r\n'
+    printf 'azurerm_storage_object_replication.images["copy"]\r\n' ;;
+  "az storage account or-policy list"*sourceAccount*)
+    printf 'pol-7\t/subscriptions/s/resourceGroups/rg-dr-primary/providers/Microsoft.Storage/storageAccounts/drimgpriabc123\r\n'
+    printf 'pol-8\t/subscriptions/s/resourceGroups/rg-dr-other/providers/Microsoft.Storage/storageAccounts/drimgotherabc123\r\n' ;;
   "az storage account or-policy list"*)
     printf 'pol-1\t/subscriptions/s/resourceGroups/rg-dr-standby/providers/Microsoft.Storage/storageAccounts/drimgstbabc123\r\n'
     printf 'pol-2\t/subscriptions/s/resourceGroups/rg-dr-backup/providers/Microsoft.Storage/storageAccounts/drimgcopyabc123\r\n' ;;
-  "az storage blob list"*) echo 0 ;;
+  "az storage blob list"*) printf '0\r\n' ;;
   "kubectl"*"pg_is_in_recovery()"*) echo "${FAKE_IN_RECOVERY:-f}" ;;
   "terraform"*"output -raw public_ip"*) echo 20.0.0.9 ;;
   "kubectl"*"count(*)"*) echo "${FAKE_POST_COUNT:-20}" ;;
@@ -65,6 +76,7 @@ class FakeTools:
         self.velero_backups = "hourly-a 2026-10-27T01:00:00Z\n"
         self.stubs: list[str] = []
         self.extra_env: dict[str, str] = {}
+        self.primary_gone = False
         private = root / "private"
         private.mkdir()
         (private / "ssh_ed25519").write_text("fake")
@@ -108,6 +120,7 @@ class FakeTools:
             "FAKE_IN_RECOVERY": self.in_recovery,
             "FAKE_POST_COUNT": str(self.post_count),
             "FAKE_VELERO_BACKUPS": self.velero_backups,
+            "FAKE_PRIMARY_GONE": "1" if self.primary_gone else "",
             "DR_DNS_SWITCH": (self.bin / "dns_switch").as_posix(),
             "DR_PROMOTE_TIMEOUT": "0",
             "DR_FAKE_SESSION": status.as_posix(),
