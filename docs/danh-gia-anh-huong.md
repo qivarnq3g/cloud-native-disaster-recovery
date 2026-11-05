@@ -6,9 +6,9 @@ Người viết: Huong-19. Mục tiêu RPO/RTO do Quang đưa.
 
 | Thành phần | Nếu mất hoặc ngừng thì ảnh hưởng gì | RPO | RTO | Lý do |
 |---|---|---|---|---|
-| Cơ sở dữ liệu bài viết |Người dùng không thể đọc hay đăng bài viết mới, sẽ mất dự liệu hoặc bài viết gần đây nhất. |5 phút |15 phút (lạnh)/2 phút (ấm) | |
-| Kho ảnh | Các hình ảnh đính kèm trong bài viết hoặc tài nguyên giao diện bị lỗi hiển thị, không tải được ảnh.|5 phút | 15 phút (lạnh)/2 phút (ấm)| |
-| Cấu hình triển khai |Không thể dừng lại các pod/service, dịch vụ nhưng hoàn toàn, không thể điều phối ứng dụng trên Kubernetes |1 giờ |15 phút (lạnh)/0 (sẵn ở cụm dự phòng) | |
+| Cơ sở dữ liệu bài viết |Người dùng không thể đọc hay đăng bài viết mới, sẽ mất dự liệu hoặc bài viết gần đây nhất. |5 phút |15 phút (lạnh)/2 phút (ấm) |RPO đạt 5 phút nhờ vào cơ chế nhật ký thay đổi (WAL - Write-Ahead Logging) được truyền đi với độ trễ chậm nhất mỗi 1 phút |
+| Kho ảnh | Các hình ảnh đính kèm trong bài viết hoặc tài nguyên giao diện bị lỗi hiển thị, không tải được ảnh.|5 phút | 15 phút (lạnh)/2 phút (ấm)|RPO đạt 5 phút dựa trên cơ chế tự sao chép của Azure (dù không cam kết độ trễ cố định, thực tế đo đạc ngày 24/10 ghi nhận mức p95 là 129 giây) |
+| Cấu hình triển khai |Không thể dừng lại các pod/service, dịch vụ nhưng hoàn toàn, không thể điều phối ứng dụng trên Kubernetes |1 giờ |15 phút (lạnh)/0 (sẵn ở cụm dự phòng) |RPO đạt 1 giờ do công cụ Velero thực hiện việc sao lưu định kỳ mỗi giờ, kết hợp với các file cấu hình gốc đã được quản lý và lưu trữ trực tiếp trong hệ thống Git |
 |Web |Toàn bộ hệ thống website ngừng cung cấp dịch vụ cho người dùng | |60 phút (lạnh)/10 phút (ấm) | |
 ## Chiến lược phục hồi được chọn và lý do
 2.Các lý do đạt mục tiêu RPO
