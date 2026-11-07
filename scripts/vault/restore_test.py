@@ -11,6 +11,7 @@ import sys
 import tarfile
 import tempfile
 import time
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -96,6 +97,31 @@ def _vault(sas: dict[str, str]) -> tuple[str, str]:
     raise SystemExit("DRILL_READ_SAS_JSON thiếu drvault*/vault")
 
 
+def local_source(mirror: Path) -> tuple[list[str], Callable[[str, Path], None]]:
+    from scripts.vault.offsite import latest_chain, local_packs
+
+    names = latest_chain(list(local_packs(mirror)))
+    if not names:
+        raise SystemExit(f"{mirror} không có gói nào")
+    return names, lambda name, dest: shutil.copyfile(mirror / name, dest)
+
+
+def azure_source() -> tuple[list[str], Callable[[str, Path], None]]:
+    from scripts.dr.backup_check import _container, _pick
+    from scripts.dr.session_state import read_session
+
+    sas = json.loads(os.environ["DRILL_READ_SAS_JSON"])
+    session = read_session(_container(*_pick(sas, "drbackup", "status")))
+    if session is None or not session.vault_pack:
+        raise SystemExit("session.json chưa có vault_pack")
+    server = session.vault_pack.split("/", 1)[0]
+    vault_url, vault_sas = _vault(sas)
+    names = plan_packs([b.name for b in list_blobs(vault_url, vault_sas, prefix=f"{server}/")], server)
+    if session.vault_pack not in names:
+        raise SystemExit(f"két không có gói {session.vault_pack}")
+    return names[:names.index(session.vault_pack) + 1], lambda name, dest: download(vault_url, vault_sas, name, dest)
+
+
 def _run(cmd: str, *args: str, stdin=None) -> str:
     return subprocess.run([*shlex.split(cmd), *args], check=True, capture_output=True, text=stdin is None,
                           stdin=stdin).stdout
@@ -108,32 +134,20 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--pg-restore", required=True)
     p.add_argument("--age", type=Path)
     p.add_argument("--work", type=Path)
+    p.add_argument("--from-dir", type=Path)
     a = p.parse_args(argv)
 
-    from scripts.dr.backup_check import _container, _pick
-    from scripts.dr.session_state import read_session
-
-    sas = json.loads(os.environ["DRILL_READ_SAS_JSON"])
-    session = read_session(_container(*_pick(sas, "drbackup", "status")))
-    if session is None or not session.vault_pack:
-        raise SystemExit("session.json chưa có vault_pack")
-    server = session.vault_pack.split("/", 1)[0]
-    vault_url, vault_sas = _vault(sas)
+    names, fetch = local_source(a.from_dir) if a.from_dir else azure_source()
     work = a.work or Path(tempfile.mkdtemp(prefix="vault-"))
     work.mkdir(parents=True, exist_ok=True)
     age_bin = a.age or fetch_age(work / "age", os.environ["AGE_SHA256"])
-
-    names = plan_packs([b.name for b in list_blobs(vault_url, vault_sas, prefix=f"{server}/")], server)
-    if session.vault_pack not in names:
-        raise SystemExit(f"két không có gói {session.vault_pack}")
-    names = names[:names.index(session.vault_pack) + 1]
     started = time.monotonic()
     images: dict[str, str] = {}
     dump = work / "db.dump"
     newest: Pack | None = None
     for name in names:
         sealed = work / "pack.tar.age"
-        download(vault_url, vault_sas, name, sealed)
+        fetch(name, sealed)
         tar = decrypt(age_bin, a.key, sealed)
         sealed.unlink()
         newest = read_pack(tar, dump if name == names[-1] else None)
