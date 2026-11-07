@@ -23,8 +23,10 @@ set -a; . /etc/dr-offsite/env; set +a
 restic restore latest --target /tmp/d7-offsite
 ```
 
-Chép thư mục `mirror` vừa lấy ra về laptop. Sau đó khôi phục mà không cần Azure, bằng khóa `age` của Quang:
+restic giữ nguyên đường dẫn gốc, nên các gói nằm ở `/tmp/d7-offsite/var/lib/dr-offsite/mirror/`. Chép thư mục đó về laptop (`scp -r`). Sau đó khôi phục mà không cần Azure, bằng khóa `age` của Quang:
 
 ```bash
 python -m scripts.vault.restore_test --from-dir <thư mục mirror> --key <khóa age> --age <đường dẫn age> --psql "..." --pg-restore "..."
 ```
+
+Nếu gói được đóng sau một lần chuyển sang cụm dự phòng, thêm `--incident-at <giờ sự cố ISO 8601>`. Khi đó, ảnh mất của bài tạo trong 300 s trước sự cố được tính là mất trong RPO ảnh, giống bước kiểm tra của D1-D5. Giờ tạo bài lấy từ mã UUIDv7 của bài. Xóa `/tmp/d7-offsite` trên server sau khi chép xong.
