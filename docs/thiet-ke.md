@@ -503,7 +503,7 @@ Bước đầu tiên của kế hoạch là một lần làm thử để trả l
 | Tệp | Nội dung | Khi nào có |
 |---|---|---|
 | `docs/versions.md` | Phiên bản cụ thể của mọi công cụ: Kubernetes, CNPG, Barman Cloud Plugin, Velero và plugin Azure, cert-manager, Terraform và provider azurerm, Rust và các thư viện của máy chủ, Node.js và các thư viện của trang web, Postgres, restic, age | Chốt ở bước làm thử |
-| `docs/huong-dan-tai-lap.md` | Dựng lại từ đầu, chạy diễn tập, dọn sạch tài nguyên (gồm cả cách đợi két hết hạn), ước tính chi phí | Viết dần, hoàn thiện trước vòng chính thức |
+| `docs/huong-dan-tai-lap.md` | Dựng lại từ đầu, chạy diễn tập, dọn sạch tài nguyên (gồm cả cách đợi két hết hạn), ước tính chi phí, rủi ro bảo mật còn lại | Có từ 08/11/2026 |
 | `docs/runbook.md` | Từng bước khôi phục, mẫu tin nhắn, chỗ để chìa khóa | Huong-19 viết nháp, Quang duyệt |
 | `docs/checklist-khoi-phuc.md` | Danh sách kiểm tra theo mục 5.3 | minhthw1605 |
 | `tests/` | Kiểm thử tự động cho web và các script đo, kiểm tra | Viết cùng code |
