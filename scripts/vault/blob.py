@@ -76,6 +76,6 @@ def upload_new(container_url: str, sas: str, name: str, src: Path,
             with http(request, timeout=TIMEOUT_S):
                 pass
         except urllib.error.HTTPError as e:
-            if e.code in (409, 412):
+            if e.code in (409, 412) or (e.code == 403 and e.headers.get("x-ms-error-code") == "UnauthorizedBlobOverwrite"):
                 raise BlobExists(name) from e
             raise

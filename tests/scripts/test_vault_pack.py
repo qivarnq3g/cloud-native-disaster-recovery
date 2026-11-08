@@ -122,6 +122,14 @@ def test_upload_new_raises_on_existing_name(tmp_path):
         upload_new("https://x/vault", "sig", "n", tmp_file(tmp_path), http=status(409))
 
 
+def test_upload_new_treats_worm_overwrite_refusal_as_existing(tmp_path):
+    def http(request, timeout=None):
+        raise urllib.error.HTTPError(request.full_url, 403, "x", {"x-ms-error-code": "UnauthorizedBlobOverwrite"},
+                                     io.BytesIO(b""))
+    with pytest.raises(BlobExists):
+        upload_new("https://x/vault", "sig", "n", tmp_file(tmp_path), http=http)
+
+
 def test_upload_new_reraises_other_errors(tmp_path):
     with pytest.raises(urllib.error.HTTPError):
         upload_new("https://x/vault", "sig", "n", tmp_file(tmp_path), http=status(403))

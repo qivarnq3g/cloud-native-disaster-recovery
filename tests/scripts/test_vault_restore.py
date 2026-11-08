@@ -121,3 +121,12 @@ def test_read_pack_refuses_paths_outside_images(tmp_path):
     tar = make_pack(tmp_path / "p.tar", {"../evil": b"x"}, {})
     pack = read_pack(tar, None)
     assert pack.image_hashes == {}
+
+
+def test_missing_age_checksum_is_a_usage_error(tmp_path, monkeypatch, capsys):
+    from scripts.vault.restore_test import main
+    monkeypatch.delenv("AGE_SHA256", raising=False)
+    with pytest.raises(SystemExit) as e:
+        main(["--key", str(tmp_path / "k"), "--psql", "psql", "--pg-restore", "pg_restore", "--from-dir", str(tmp_path)])
+    assert e.value.code == 2
+    assert "AGE_SHA256" in capsys.readouterr().err
