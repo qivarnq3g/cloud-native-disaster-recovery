@@ -1,0 +1,27 @@
+kind,key,usage_quantity,cost_usd
+meter,Virtual Machines | B2als v2 (giờ),31.2,1.458
+meter,Bandwidth | Intra Continent Data Transfer Out (GB),13.5,1.083
+meter,Storage | LRS List and Create Container Operations,16.4,0.820
+meter,Storage | Hot LRS Write Operations,15.1,0.756
+meter,Virtual Network | Standard IPv4 Static Public IP (giờ),136.5,0.682
+meter,Storage | P4 LRS Disk,0.1,0.344
+meter,Storage | All Other Operations,62.7,0.251
+meter,Storage | Hot Read Operations,61.7,0.247
+meter,Storage | Blob Changes,0.0,0.062
+group,rg-dr-primary,,3.167
+group,rg-dr-standby,,1.755
+group,rg-dr-backup,,0.625
+group,rg-dr-trial-primary,,0.086
+group,rg-dr-trial-standby,,0.062
+group,rg-dr-trial-japan,,0.008
+day,2026-10-29,,0.226
+day,2026-10-30,,0.139
+day,2026-10-31,,0.639
+day,2026-11-01,,0.124
+day,2026-11-02,,0.128
+day,2026-11-03,,0.630
+day,2026-11-04,,0.546
+day,2026-11-05,,0.132
+day,2026-11-06,,0.131
+day,2026-11-07,,2.854
+total,6 nhóm rg-dr-*,,5.703
