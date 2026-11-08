@@ -1,0 +1,50 @@
+NAMESPACE            NAME                                                READY   STATUS              RESTARTS   AGE
+cert-manager         pod/cert-manager-54b7dc69c4-6vddm                   1/1     Running             0          5m54s
+cert-manager         pod/cert-manager-cainjector-8677bbdb7f-kppr6        1/1     Running             0          5m54s
+cert-manager         pod/cert-manager-webhook-55b94f85b4-tvrd6           1/1     Running             0          5m54s
+cnpg-system          pod/barman-cloud-586ff89c44-xrzgf                   0/1     ContainerCreating   0          5m35s
+cnpg-system          pod/cnpg-cloudnative-pg-7b5f5d7b65-d8cnp            1/1     Running             0          5m46s
+kube-system          pod/coredns-559f6c778d-5kdvd                        1/1     Running             0          6m23s
+kube-system          pod/coredns-559f6c778d-h9xgl                        1/1     Running             0          6m23s
+kube-system          pod/etcd-primary-control-plane                      1/1     Running             0          6m32s
+kube-system          pod/kindnet-c2r6j                                   1/1     Running             0          6m23s
+kube-system          pod/kube-apiserver-primary-control-plane            1/1     Running             0          6m32s
+kube-system          pod/kube-controller-manager-primary-control-plane   1/1     Running             0          6m32s
+kube-system          pod/kube-proxy-sph7b                                1/1     Running             0          6m23s
+kube-system          pod/kube-scheduler-primary-control-plane            1/1     Running             0          6m32s
+local-path-storage   pod/local-path-provisioner-75f7fc7dc5-vjhxh         1/1     Running             0          6m23s
+velero               pod/velero-cb4b44d46-b944z                          1/1     Running             0          5m34s
+
+NAMESPACE      NAME                              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                  AGE
+cert-manager   service/cert-manager              ClusterIP   10.96.72.207    <none>        9402/TCP                 5m54s
+cert-manager   service/cert-manager-cainjector   ClusterIP   10.96.56.186    <none>        9402/TCP                 5m54s
+cert-manager   service/cert-manager-webhook      ClusterIP   10.96.16.227    <none>        443/TCP,9402/TCP         5m54s
+cnpg-system    service/barman-cloud              ClusterIP   10.96.187.40    <none>        9090/TCP                 5m35s
+cnpg-system    service/cnpg-webhook-service      ClusterIP   10.96.157.140   <none>        443/TCP                  5m47s
+default        service/kubernetes                ClusterIP   10.96.0.1       <none>        443/TCP                  6m33s
+kube-system    service/kube-dns                  ClusterIP   10.96.0.10      <none>        53/UDP,53/TCP,9153/TCP   6m32s
+velero         service/velero                    ClusterIP   10.96.197.98    <none>        8085/TCP                 5m34s
+
+NAMESPACE     NAME                        DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+kube-system   daemonset.apps/kindnet      1         1         1       1            1           kubernetes.io/os=linux   6m31s
+kube-system   daemonset.apps/kube-proxy   1         1         1       1            1           kubernetes.io/os=linux   6m32s
+
+NAMESPACE            NAME                                      READY   UP-TO-DATE   AVAILABLE   AGE
+cert-manager         deployment.apps/cert-manager              1/1     1            1           5m54s
+cert-manager         deployment.apps/cert-manager-cainjector   1/1     1            1           5m54s
+cert-manager         deployment.apps/cert-manager-webhook      1/1     1            1           5m54s
+cnpg-system          deployment.apps/barman-cloud              0/1     1            0           5m35s
+cnpg-system          deployment.apps/cnpg-cloudnative-pg       1/1     1            1           5m46s
+kube-system          deployment.apps/coredns                   2/2     2            2           6m32s
+local-path-storage   deployment.apps/local-path-provisioner    1/1     1            1           6m30s
+velero               deployment.apps/velero                    1/1     1            1           5m34s
+
+NAMESPACE            NAME                                                 DESIRED   CURRENT   READY   AGE
+cert-manager         replicaset.apps/cert-manager-54b7dc69c4              1         1         1       5m54s
+cert-manager         replicaset.apps/cert-manager-cainjector-8677bbdb7f   1         1         1       5m54s
+cert-manager         replicaset.apps/cert-manager-webhook-55b94f85b4      1         1         1       5m54s
+cnpg-system          replicaset.apps/barman-cloud-586ff89c44              1         1         0       5m35s
+cnpg-system          replicaset.apps/cnpg-cloudnative-pg-7b5f5d7b65       1         1         1       5m46s
+kube-system          replicaset.apps/coredns-559f6c778d                   2         2         2       6m23s
+local-path-storage   replicaset.apps/local-path-provisioner-75f7fc7dc5    1         1         1       6m23s
+velero               replicaset.apps/velero-cb4b44d46                     1         1         1       5m34s
