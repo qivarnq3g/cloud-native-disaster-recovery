@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 cluster,mark,time_utc
 primary,paused,2026-10-29T03:47:18Z
 primary,paused,2026-10-29T04:01:45Z
@@ -369,4 +367,3 @@ primary,full_backup_done,2026-11-07T14:48:20Z
 primary,velero_backup_done,2026-11-07T14:48:24Z
 primary,vault_done,2026-11-07T14:49:55Z
 primary,stopped,2026-11-07T14:51:55Z
->>>>>>> f8c0dfbfa1406c3240f89e90d30dd10dbee4a749

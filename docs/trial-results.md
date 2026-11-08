@@ -150,12 +150,12 @@ Ngày 07/11, chạy bằng `python -m scripts.dr.azure_drill` với `--auto-deci
 | D5-2 | đạt | 258,4 | 45,2 |
 | D5-3 | đạt | 258,1 | 6,5 |
 | D6-1 | đạt | | |
-| D7-1 | đạt (phần két khi chấm lại, phần server bạn) | | |
+| D7-1 | đạt (phần két khi chấm lại, phần máy chủ ngoài Azure) | | |
 
 - D1, D2, D3, D5 đạt cả ba lần. D4 có ba lần đạt sau hai lần không đạt: ở D4-1 và D4-2, trình kiểm tra dừng giữa chừng vì một lần đọc ảnh bị treo, nên hai lần này giữ là không đạt. D4-3 đến D4-5 chạy qua lớp bọc chỉ đọc lại ảnh khi lỗi mạng, không đổi cách chấm.
 - Mọi lần đạt đều trong mục tiêu RPO 5 phút, RTO 60 phút (lạnh) và 10 phút (ấm).
 - D6-1: khóa WORM ở chế độ Locked từ chối rút ngắn thời hạn giữ.
-- D7-1: khôi phục gói trong két trên laptop mất 1.201 s; số bài và mã băm khớp. `restore_test.py` báo thiếu 86 ảnh, đều là ảnh mất trong RPO ảnh của D5-3 mà gói chép lại; chấm theo luật RPO ảnh thì đạt. Phần server bạn chạy ngày 08/11 sau khi dựng tầng thứ ba (`infra/offsite/`): lấy gói từ restic trên server, khôi phục trên laptop không cần Azure trong 59 s, 1.026 bài, mã băm khớp, không thiếu ảnh.
+- D7-1: khôi phục gói trong két trên laptop mất 1.201 s; số bài và mã băm khớp. `restore_test.py` báo thiếu 86 ảnh, đều là ảnh mất trong RPO ảnh của D5-3 mà gói chép lại; chấm theo luật RPO ảnh thì đạt. Phần máy chủ ngoài Azure chạy ngày 08/11 sau khi dựng tầng thứ ba (`infra/offsite/`): lấy gói từ restic trên server, khôi phục trên laptop không cần Azure trong 59 s, 1.026 bài, mã băm khớp, không thiếu ảnh.
 - Lỗi mạng tạm thời tới Azure làm hỏng ba lần dựng lại hoặc dựng cụm dự phòng (trước khi phá, không tính là lần chạy) và vài lần tắt phiên ở job két; lần thử lại đều qua.
 
 ## Két

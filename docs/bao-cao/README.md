@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 # Báo cáo, slide và video
 
 Người ghép: minhthw1605.
@@ -16,5 +14,4 @@ Kịch bản video: [kich-ban-video.md](kich-ban-video.md).
 
 Slide: [slide.pptx](slide.pptx), 14 trang, số liệu lấy từ báo cáo; biểu đồ ở [hinh/](hinh/), sinh bằng `scripts/report/charts.py`.
 
-Báo cáo [bao-cao-new.docx](bao-cao-new.docx): thân báo cáo (chương 1 đến 5) 35 trang A4 khi mở bằng Word; hướng dẫn khôi phục chi tiết ở Phụ lục A, biên bản vòng thử ở Phụ lục B.
->>>>>>> f8c0dfbfa1406c3240f89e90d30dd10dbee4a749
+Báo cáo [bao-cao.docx](bao-cao.docx): thân báo cáo (chương 1 đến 5) 35 trang A4 khi mở bằng Word; hướng dẫn khôi phục chi tiết ở Phụ lục A, biên bản vòng thử ở Phụ lục B.

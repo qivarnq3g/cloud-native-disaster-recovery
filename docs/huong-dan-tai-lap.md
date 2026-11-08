@@ -152,4 +152,4 @@ Chi phí thật của toàn bộ thử nghiệm và diễn tập, lấy từ Azu
 - Mã chỉ đọc két và khóa `age` dùng cho GitHub nằm trong GitHub Secrets, nên ai có quyền quản trị kho GitHub thì đọc được bản trong két. Dữ liệu là dữ liệu giả nên nhóm chấp nhận.
 - Khóa giải mã `age` của người vận hành chỉ có một bản trên laptop. Mất laptop thì không giải mã được két; cần một bản sao cất ngoài máy.
 - Hai thành viên còn lại làm theo runbook trên máy của người vận hành, không có tài khoản Azure riêng. Ít người giữ quyền hơn, nhưng vắng người vận hành thì vẫn cần máy đó.
-- Server ngoài Azure là máy của một người bạn, nằm ngoài quyền kiểm soát của nhóm. Gói ở đó đã được mã hóa và server không giữ khóa giải mã.
+- Máy chủ ngoài Azure do một cá nhân ngoài nhóm cho mượn, nhóm không kiểm soát. Gói ở đó đã được mã hóa và máy không giữ khóa giải mã.

@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 cluster,mark,time_utc
 standby,start,2026-10-31T04:17:36Z
 standby,vm_ready,2026-10-31T04:20:00Z
@@ -63,4 +61,3 @@ standby,seed_backup_done,2026-11-07T13:35:31Z
 standby,vm_ready,2026-11-07T13:37:35Z
 standby,replica_ready,2026-11-07T13:41:11Z
 standby,api_ready,2026-11-07T13:41:47Z
->>>>>>> f8c0dfbfa1406c3240f89e90d30dd10dbee4a749

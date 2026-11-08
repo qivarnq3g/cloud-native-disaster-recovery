@@ -16,9 +16,9 @@
 - Ảnh: 3.182 ảnh trong gói; `restore_test.py` báo thiếu 86 ảnh gốc (`original/`), nên lệnh trả về `ok: false`.
 - Cả 86 ảnh thiếu có mã UUIDv7 ứng với giờ tạo 13:42:04 tới 13:43:30 UTC, nằm trong 90 s đăng bài trước giờ phá official-D5-3 (13:43:34). official-D5-3 đã tính đúng 86 ảnh này là mất trong RPO ảnh (300 s). Cụm dự phòng giữ các bài nhưng không có ảnh, và gói trong két chép lại đúng trạng thái đó.
 - Chấm theo luật RPO ảnh ở mục 5.3 thiết kế (ảnh của bài đăng trong 300 s trước sự cố được tính là mất trong RPO): 0 ảnh thiếu ngoài RPO. Kết luận chấm lại: đạt phần két.
-- Phần khôi phục từ bản ở server bạn: chạy lúc 20:05:47 UTC ngày 07/11 (03:05 ngày 08/11 giờ Việt Nam), đạt, xem mục dưới.
+- Phần khôi phục từ bản ở máy chủ ngoài Azure: chạy lúc 20:05:47 UTC ngày 07/11 (03:05 ngày 08/11 giờ Việt Nam), đạt, xem mục dưới.
 
-## Phần 2: khôi phục từ bản ở server bạn
+## Phần 2: khôi phục từ bản ở máy chủ ngoài Azure
 
 - Tầng thứ ba được dựng ngày 07/11 (`infra/offsite/`, nhánh `offsite-restic-copy`): server `quang-service` ngoài Azure kéo gói mới nhất trong két bằng mã SAS chỉ đọc, giữ bằng restic.
 - Trên server, `restic restore latest` lấy ra gói `primary-202611071412/20261107T144834Z.tar.age` (628.285.482 byte) trong 4 s, rồi chép về laptop qua Tailscale trong 221 s.

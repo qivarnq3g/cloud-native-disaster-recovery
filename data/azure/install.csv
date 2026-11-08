@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 cluster,mark,time_utc
 primary,start,2026-10-29T03:12:39Z
 primary,cert_manager_ready,2026-10-29T03:14:27Z
@@ -336,4 +334,3 @@ primary,cnpg_ready,2026-11-07T14:09:15Z
 primary,velero_ready,2026-11-07T14:10:19Z
 primary,db_ready,2026-11-07T14:11:29Z
 primary,schedules_ready,2026-11-07T14:11:30Z
->>>>>>> f8c0dfbfa1406c3240f89e90d30dd10dbee4a749

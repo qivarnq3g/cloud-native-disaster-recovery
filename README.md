@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 # Đồ án Điện toán đám mây - Nhóm 23
 
 Đề tài 23: thiết kế và kiểm chứng kế hoạch sao lưu phục hồi thảm họa cho ứng dụng cloud native.
@@ -60,4 +58,3 @@ Cả ba người đều phải hiểu toàn bộ hệ thống để trả lời 
 | Danh sách phiên bản công nghệ | [`docs/versions.md`](docs/versions.md) |
 | Hướng dẫn khôi phục và danh sách kiểm tra sau khôi phục | [`docs/runbook.md`](docs/runbook.md), [`docs/checklist-khoi-phuc.md`](docs/checklist-khoi-phuc.md) |
 | Biên bản diễn tập và kết quả tóm tắt | [`docs/dien-tap/`](docs/dien-tap/), [`docs/trial-results.md`](docs/trial-results.md) |
->>>>>>> f8c0dfbfa1406c3240f89e90d30dd10dbee4a749

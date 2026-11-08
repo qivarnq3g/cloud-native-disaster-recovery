@@ -63,9 +63,9 @@ Kết quả nào cũng là kết quả: giả thuyết bị bác bỏ thì báo 
   Nhật – Kho sao lưu ──────────────┘
   Nhật – Bản chép ảnh
   Nhật – Két chống xóa
-        │ mỗi đêm server tự kéo về
+        │ mỗi đêm máy chủ tự kéo về
         ▼
-  Server dự phòng của một người bạn (ngoài Azure, nối qua Tailscale)
+  Máy chủ ngoài Azure (bản sao off-site, nối qua Tailscale)
 
   GitHub (ngoài Azure): mã nguồn, image, kiểm tra sao lưu mỗi giờ,
   diễn tập lạnh mỗi ngày, bản thu nhỏ lặp 30 lần
@@ -147,7 +147,7 @@ RTO từng thành phần chỉ tính thời gian khôi phục thành phần đó
 - Ảnh: Azure tự chép, không cam kết độ trễ, nên phải đo (đo 24/10: p95 129 s).
 - Cấu hình: Velero sao lưu mỗi giờ, còn file cấu hình gốc đã nằm trong Git.
 
-Két và bản ở server bạn chỉ dùng khi mất kho ở Nhật hoặc mất cả tài khoản Azure. Hai nơi này không đặt mục tiêu RTO, chỉ cần chứng minh khôi phục được (D7).
+Két và bản ở máy chủ ngoài Azure chỉ dùng khi mất kho ở Nhật hoặc mất cả tài khoản Azure. Hai nơi này không đặt mục tiêu RTO, chỉ cần chứng minh khôi phục được (D7).
 
 ## 4. Sao lưu
 
@@ -203,11 +203,11 @@ Về chính sách khóa:
 - Trong lúc làm, chính sách để ở trạng thái chưa khóa cứng. Trạng thái này vẫn chặn xóa, chỉ là quản trị viên còn sửa được chính sách.
 - Trước vòng diễn tập chính thức thì khóa cứng. Sau khi khóa cứng, phải đợi hết 7 ngày mới xóa được két.
 
-**3. Server dự phòng ngoài Azure (làm thêm).** Mỗi đêm server tự kéo các gói mới trong két về, dùng mã chỉ đọc. Restic giữ 7 bản theo ngày, dùng tối đa 3 GB ổ cứng.
+**3. Máy chủ ngoài Azure (làm thêm).** Máy chủ do một cá nhân ngoài nhóm cho mượn, nhóm không kiểm soát. Mỗi đêm máy chủ tự kéo các gói mới trong két về, dùng mã chỉ đọc. Restic giữ 7 bản theo ngày, dùng tối đa 3 GB ổ cứng.
 
 Các gói đã được mã hóa bằng `age` từ trước, mà khóa giải mã không nằm trên server. Vì vậy người có quyền trên server cũng không đọc được dữ liệu.
 
-Tầng này phòng trường hợp mất cả tài khoản Azure. Server tự kéo về, vì muốn cụm Azure đẩy sang thì phải cài thêm Tailscale vào cụm.
+Tầng này phòng trường hợp mất cả tài khoản Azure. Máy chủ tự kéo về, vì muốn cụm Azure đẩy sang thì phải cài thêm Tailscale vào cụm.
 
 **Vì sao tầng 2 và 3 lưu bản xuất, không lưu WAL:**
 - Mỗi file WAL được gửi với đủ kích thước dù chỉ chứa ít dữ liệu, nên gửi mỗi phút sẽ tốn chỗ. Bản xuất chỉ vài MB.
@@ -217,11 +217,11 @@ Tầng này phòng trường hợp mất cả tài khoản Azure. Server tự k�
 
 **Mã hóa trên đường truyền:**
 - HTTPS khi làm việc với Azure và cho người dùng web.
-- Tailscale (WireGuard) khi tới server bạn.
+- Tailscale (WireGuard) khi tới máy chủ ngoài Azure.
 
 **Mã hóa lúc lưu:**
 - Azure Storage luôn tự mã hóa (AES-256).
-- Các gói trong két và ở server bạn được mã hóa thêm bằng `age`, ngay trước khi rời khỏi cụm.
+- Các gói trong két và ở máy chủ ngoài Azure được mã hóa thêm bằng `age`, ngay trước khi rời khỏi cụm.
 
 **Quyền tối thiểu.** Mỗi thành phần dùng một mã SAS riêng, chỉ đúng quyền cần:
 
@@ -230,7 +230,7 @@ Tầng này phòng trường hợp mất cả tài khoản Azure. Server tự k�
 | Web | Đọc và ghi kho ảnh |
 | CNPG và Velero | Ghi kho sao lưu |
 | Job két | Chỉ tạo mới |
-| Server bạn | Chỉ đọc két |
+| Máy chủ ngoài Azure | Chỉ đọc két |
 | Job kiểm tra trên GitHub | Chỉ liệt kê và đọc kho sao lưu |
 | Diễn tập lạnh hằng ngày trên GitHub | Chỉ đọc kho sao lưu, bản chép ảnh và két |
 
@@ -240,7 +240,7 @@ Tầng này phòng trường hợp mất cả tài khoản Azure. Server tự k�
 - mật khẩu restic;
 - các mã truy cập.
 
-Mất cả Azure vẫn còn chìa để mở bản ở server bạn. Runbook ghi chìa nào nằm ở đâu, không ghi bản thân chìa.
+Mất cả Azure vẫn còn chìa để mở bản ở máy chủ ngoài Azure. Runbook ghi chìa nào nằm ở đâu, không ghi bản thân chìa.
 
 Các mã chỉ đọc và khóa `age` dành cho GitHub được để trong mục Secrets của kho GitHub, không bao giờ nằm trong file. Đánh đổi: ai có quyền quản trị kho GitHub thì đọc được bản trong két. Dữ liệu là giả nên chấp nhận được, và báo cáo nêu điểm này.
 
@@ -335,7 +335,7 @@ Toàn bộ kết quả lưu thành CSV/JSON trong `data/<mã lần diễn tập>
 | D4 | Mất nhóm tài nguyên chính (giả lập mất vùng) | Lạnh. Chép ảnh từ bản chép ở Nhật | Xóa cả nhóm `rg-dr-primary` (cụm và kho ảnh chính) |
 | D5 | Mất nhóm tài nguyên chính (giả lập mất vùng) | Ấm | Như D4 |
 | D6 | Thử xóa két | — | Dùng khóa tài khoản để xóa và ghi đè một file trong két. Kết quả đúng là bị từ chối |
-| D7 | Khôi phục từ két và từ server bạn | — | Giải mã gói trong két rồi khôi phục vào một namespace thử. Khôi phục từ bản ở server bạn vào Postgres chạy trên laptop, để chứng minh không cần Azure. Sau đó chạy bước kiểm tra ở mục 5.3 |
+| D7 | Khôi phục từ két và từ máy chủ ngoài Azure | — | Giải mã gói trong két rồi khôi phục vào một namespace thử. Khôi phục từ bản ở máy chủ ngoài Azure vào Postgres chạy trên laptop, để chứng minh không cần Azure. Sau đó chạy bước kiểm tra ở mục 5.3 |
 
 Trình tự hai cách chuyển được vẽ ở mục 6.1.
 
@@ -527,7 +527,7 @@ Hạn nộp báo cáo là 26/11 02:00, nên coi hạn thật là 25/11.
 | 1 | 08–14/10 | Chốt hai việc ở đầu tài liệu. Làm thử (mục 8). Web, script đo, `ci` | BIA nháp, chốt mục tiêu RPO/RTO | Đọc thiết kế |
 | 2 | 15–21/10 | Bản thu nhỏ trên kind: sao lưu, D1–D3, D6 chạy tự động | Lý thuyết | Soạn checklist |
 | 3 | 22–28/10 | Azure: Terraform, cụm chính, sao lưu, `kiem-tra-sao-luu`, `dien-tap-hang-ngay` | Runbook nháp | Hoàn thiện checklist, mẫu biên bản |
-| 4 | 29/10–04/11 | Cụm dự phòng, két, server bạn. Bắt đầu vòng thử. Bắt đầu giao diện 3D | Sửa runbook theo vòng thử | Bấm giờ, biên bản |
+| 4 | 29/10–04/11 | Cụm dự phòng, két, máy chủ ngoài Azure. Bắt đầu vòng thử. Bắt đầu giao diện 3D | Sửa runbook theo vòng thử | Bấm giờ, biên bản |
 | 5 | 05–11/11 | Xong vòng thử, chạy vòng chính thức trên Azure; bản thu nhỏ lặp 30 lần chạy song song. Tiếp tục giao diện 3D | Lượt tự làm theo runbook | Lần phá không báo trước |
 | 6 | 12–18/11 | Biểu đồ, kiểm thử lại, chương kỹ thuật. Xong giao diện 3D trước khi quay video | Hoàn thiện lý thuyết, BIA | Ghép báo cáo, quay video |
 | 7 | 19–25/11 | Chạy lại D1, D3 trên bản cuối, gắn thẻ phiên bản | Đọc soát | Slide, nộp bài |
