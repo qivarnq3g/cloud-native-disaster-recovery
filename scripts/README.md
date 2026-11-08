@@ -15,6 +15,7 @@ Script dựng, tắt và kiểm tra hệ thống. Người làm: Quang.
 | `python -m scripts.dr.azure_drill <D1..D5> --run-id <id>` | Diễn tập trên Azure: phá bằng `break.sh`, đo sáu bước, kiểm tra dữ liệu, ghi `data/azure/drills/<id>/` |
 | `bash scripts/azure/break.sh <D1..D5>` | Phá cụm chính theo tình huống: xóa namespace, máy ảo hoặc cả nhóm tài nguyên |
 | `bash scripts/azure/restore-replication.sh` | Dựng lại chính sách chép ảnh sang kho dự phòng sau khi quay về cụm chính |
+| `bash scripts/demo/record.sh normal\|D1\|D3\|D6` | Quay terminal cho video demo bằng asciinema trên bản thu nhỏ đang chạy; `render.sh` xuất MP4. Workflow `demo-recording` chạy cả hai trên GitHub Actions |
 | `python -m scripts.report.charts` | Vẽ biểu đồ RTO, RPO và thời gian từng bước từ `data/` vào `docs/bao-cao/hinh/` (cần `matplotlib`) |
 | `bash scripts/azure/rebuild-primary-storage.sh` | Sau khi mất cả nhóm `rg-dr-primary` (D4, D5): dựng lại kho ảnh chính, chép ảnh từ kho dự phòng về và cấp lại SAS cho API |
 
