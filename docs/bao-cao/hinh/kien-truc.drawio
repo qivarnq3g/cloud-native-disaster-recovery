@@ -45,7 +45,7 @@
         <mxCell id="gh" value="&lt;b&gt;GitHub&lt;/b&gt;&lt;br&gt;Mã nguồn, image (GHCR)&lt;br&gt;Actions: kiểm tra sao lưu,&lt;br&gt;diễn tập lạnh, bản thu nhỏ" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontFamily=Times New Roman;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="854" y="160" width="206" height="140" as="geometry"/>
         </mxCell>
-        <mxCell id="srv" value="&lt;b&gt;Server dự phòng&lt;/b&gt;&lt;br&gt;Máy của một người bạn&lt;br&gt;Tailscale, Restic" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontFamily=Times New Roman;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="srv" value="&lt;b&gt;Máy chủ ngoài Azure&lt;/b&gt;&lt;br&gt;Bản sao off-site&lt;br&gt;Tailscale, Restic" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontFamily=Times New Roman;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="854" y="455" width="206" height="75" as="geometry"/>
         </mxCell>
 
@@ -80,7 +80,7 @@
         <mxCell id="e8" value="khôi phục" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;endFill=1;dashed=1;html=1;strokeColor=#B85450;fontFamily=Times New Roman;fontSize=16;fontColor=#B85450;labelBackgroundColor=#FFFFFF;exitX=0.928;exitY=0;entryX=0.9;entryY=1;" edge="1" parent="1" source="jp" target="sb">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="e9" value="mỗi đêm server tự kéo về (mã chỉ đọc)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;endFill=1;html=1;strokeColor=#444444;fontFamily=Times New Roman;fontSize=16;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.5;entryY=1;" edge="1" parent="1" source="vault" target="srv">
+        <mxCell id="e9" value="mỗi đêm máy chủ tự kéo về (mã chỉ đọc)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;endFill=1;html=1;strokeColor=#444444;fontFamily=Times New Roman;fontSize=16;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.5;entryY=1;" edge="1" parent="1" source="vault" target="srv">
           <mxGeometry relative="1" as="geometry">
             <Array as="points"><mxPoint x="162" y="590"/><mxPoint x="957" y="590"/></Array>
           </mxGeometry>
