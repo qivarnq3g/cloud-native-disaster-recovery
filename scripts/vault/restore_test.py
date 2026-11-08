@@ -160,6 +160,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--incident-at", type=datetime.fromisoformat,
                    help="giờ sự cố của lần chuyển gần nhất (ISO 8601); ảnh mất của bài tạo trong RPO ảnh trước đó không tính lỗi")
     a = p.parse_args(argv)
+    if not a.age and not os.environ.get("AGE_SHA256"):
+        p.error("cần --age hoặc biến môi trường AGE_SHA256 để tải và kiểm tra age")
 
     names, fetch = local_source(a.from_dir) if a.from_dir else azure_source()
     work = a.work or Path(tempfile.mkdtemp(prefix="vault-"))
