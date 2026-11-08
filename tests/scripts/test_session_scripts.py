@@ -280,6 +280,17 @@ def test_drill_read_sas_covers_vault_read_only(fake_tools):
     assert len(vault) == 1 and "--permissions rl " in vault[0]
 
 
+def test_offsite_read_sas_is_vault_read_and_list_only(fake_tools):
+    r = fake_tools.run("issue-sas.sh", "offsite-read")
+    assert r.returncode == 0, r.stderr
+    sas_calls = [l for l in fake_tools.calls.splitlines() if "generate-sas" in l]
+    assert len(sas_calls) == 1
+    assert "--account-name drvaultabc123" in sas_calls[0] and "-n vault" in sas_calls[0]
+    assert "--permissions rl " in sas_calls[0]
+    assert "gh secret" not in fake_tools.calls
+    assert fake_tools.private.joinpath("sas-offsite-read.txt").exists()
+
+
 def test_stop_keeps_vm_when_vault_job_fails(fake_tools):
     fake_tools.session = {"state": "running", "cluster": "primary"}
     fake_tools.extra_env = {"FAKE_JOB_STATUS": "/1", "DR_VAULT_TIMEOUT": "600"}

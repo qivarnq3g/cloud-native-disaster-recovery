@@ -54,6 +54,42 @@ def test_missing_image_is_named():
     assert not r.ok and r.missing_images == ["b.png"]
 
 
+def _uuid7_at(iso: str) -> str:
+    from datetime import datetime
+
+    ms = int(datetime.fromisoformat(iso).timestamp() * 1000)
+    h = f"{ms:012x}" + "7000800000000000abcd"
+    return f"original/{h[:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:32]}"
+
+
+def test_missing_image_within_image_rpo_before_incident_is_allowed():
+    from datetime import datetime
+
+    incident = datetime.fromisoformat("2026-11-07T13:43:34+00:00")
+    recent = _uuid7_at("2026-11-07T13:42:04+00:00")
+    old = _uuid7_at("2026-11-07T13:30:00+00:00")
+    r = check({"post_count": 2, "content_digest": "d", "images": [recent, old]}, 2, "d", {old},
+              incident_at=incident)
+    assert r.ok and r.missing_images == [] and r.images_lost_within_rpo == [recent]
+    r = check({"post_count": 2, "content_digest": "d", "images": [recent, old]}, 2, "d", {recent},
+              incident_at=incident)
+    assert not r.ok and r.missing_images == [old]
+
+
+def test_without_incident_every_missing_image_fails():
+    recent = _uuid7_at("2026-11-07T13:42:04+00:00")
+    r = check({"post_count": 1, "content_digest": "d", "images": [recent]}, 1, "d", set())
+    assert not r.ok and r.missing_images == [recent] and r.images_lost_within_rpo == []
+
+
+def test_non_uuid_names_are_never_excused():
+    from datetime import datetime
+
+    r = check({"post_count": 1, "content_digest": "d", "images": ["original/x"]}, 1, "d", set(),
+              incident_at=datetime.fromisoformat("2026-11-07T13:43:34+00:00"))
+    assert not r.ok and r.missing_images == ["original/x"]
+
+
 def test_all_match_is_ok():
     assert check({"post_count": 1, "content_digest": "d", "images": ["a.png"]}, 1, "d", {"a.png"}).ok
 

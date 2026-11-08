@@ -1,0 +1,18 @@
+[Unit]
+Description=Pull new DR vault packs and keep them in restic
+Wants=network-online.target tailscaled.service
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=dr-offsite
+Group=dr-offsite
+EnvironmentFile=/etc/dr-offsite/env
+ExecStart=/opt/dr-offsite/infra/offsite/offsite-backup.sh
+Nice=10
+IOSchedulingClass=idle
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/dr-offsite

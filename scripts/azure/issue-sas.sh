@@ -17,7 +17,8 @@ case "$name" in
              "$IMAGE_COPY_ACCOUNT/images" "$VAULT_ACCOUNT/vault")
     perms=rl; secret=DRILL_READ_SAS_JSON ;;
   vault-writer) targets=("$VAULT_ACCOUNT/vault"); perms=cl; secret= ;;
-  *) die 64 "cách dùng: issue-sas.sh api-images-primary|api-images-standby|cnpg-backup|check-read|drill-read|vault-writer" ;;
+  offsite-read) targets=("$VAULT_ACCOUNT/vault"); perms=rl; secret= ;;
+  *) die 64 "cách dùng: issue-sas.sh api-images-primary|api-images-standby|cnpg-backup|check-read|drill-read|vault-writer|offsite-read" ;;
 esac
 
 json="{"
