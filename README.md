@@ -46,3 +46,15 @@ Cả ba người đều phải hiểu toàn bộ hệ thống để trả lời 
 - Báo cáo 20-35 trang, nộp trên Moodle, hạn 26/11/2026 02:00.
 - Video demo 8-12 phút đăng lên YouTube.
 - Trình bày trên lớp và vấn đáp.
+
+| Đề yêu cầu | Ở đâu |
+|---|---|
+| Báo cáo kỹ thuật, slide, kịch bản và link video | [`docs/bao-cao/`](docs/bao-cao/) |
+| Sơ đồ kiến trúc, luồng dữ liệu, trình tự chuyển dự phòng | [`docs/thiet-ke.md`](docs/thiet-ke.md) mục 1 và 6.1; báo cáo chương 2 |
+| Mã nguồn, cấu hình, IaC | [`app/`](app/), [`infra/`](infra/), [`backup/`](backup/), [`scripts/`](scripts/) |
+| Kịch bản kiểm thử | [`tests/`](tests/), workflow trong [`.github/workflows/`](.github/workflows/) |
+| Dữ liệu đo thô (CSV) và script vẽ lại bảng, biểu đồ | [`data/`](data/), `python -m scripts.report.charts` |
+| Hướng dẫn tái lập, dọn tài nguyên, ước tính chi phí, rủi ro bảo mật còn lại | [`docs/huong-dan-tai-lap.md`](docs/huong-dan-tai-lap.md) |
+| Danh sách phiên bản công nghệ | [`docs/versions.md`](docs/versions.md) |
+| Hướng dẫn khôi phục và danh sách kiểm tra sau khôi phục | [`docs/runbook.md`](docs/runbook.md), [`docs/checklist-khoi-phuc.md`](docs/checklist-khoi-phuc.md) |
+| Biên bản diễn tập và kết quả tóm tắt | [`docs/dien-tap/`](docs/dien-tap/), [`docs/trial-results.md`](docs/trial-results.md) |
