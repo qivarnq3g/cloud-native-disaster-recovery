@@ -1,0 +1,7 @@
+run_id,scenario,iteration,step,started_at,ended_at,duration_s,result
+official-D4-5,D4,5,detect,2026-11-07T10:36:30.338Z,2026-11-07T10:36:58.002Z,27.7,ok
+official-D4-5,D4,5,decide,2026-11-07T10:36:58.002Z,2026-11-07T10:37:01.426Z,3.4,ok
+official-D4-5,D4,5,infra,2026-11-07T10:37:01.761Z,2026-11-07T10:39:37.574Z,155.8,ok
+official-D4-5,D4,5,restore,2026-11-07T10:39:37.959Z,2026-11-07T10:46:13.666Z,395.7,ok
+official-D4-5,D4,5,switch,2026-11-07T10:46:14.005Z,2026-11-07T10:46:26.474Z,12.5,ok
+official-D4-5,D4,5,verify,2026-11-07T10:46:26.495Z,2026-11-07T10:47:04.084Z,37.6,ok

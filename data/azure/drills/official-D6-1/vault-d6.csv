@@ -1,0 +1,6 @@
+attempt,actor,expected,outcome,http_status,error_code
+delete,account-key,refused,refused,409,BlobImmutableDueToPolicy
+overwrite,account-key,refused,refused,409,BlobImmutableDueToPolicy
+delete,vault-writer,refused,refused,403,AuthorizationPermissionMismatch
+overwrite,vault-writer,refused,refused,403,UnauthorizedBlobOverwrite
+shorten-policy,account-key,refused-after-lock,refused,,ContainerImmutabilityPolicyFailure
