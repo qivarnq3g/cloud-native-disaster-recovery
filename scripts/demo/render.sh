@@ -4,7 +4,7 @@ dir="${1:-demo}"
 shopt -s nullglob
 for cast in "$dir"/*.cast; do
   base="${cast%.cast}"
-  agg --font-family "Noto Sans Mono" --font-size 20 --idle-time-limit 5 --last-frame-duration 10 "$cast" "$base.gif"
+  agg --font-family "Noto Sans Mono,Noto Mono" --font-size 20 --idle-time-limit 5 --last-frame-duration 10 "$cast" "$base.gif"
   ffmpeg -loglevel error -y -i "$base.gif" -movflags faststart -pix_fmt yuv420p -vf "fps=15,scale=trunc(iw/2)*2:trunc(ih/2)*2" "$base.mp4"
   rm -f "$base.gif"
   echo "$base.mp4"

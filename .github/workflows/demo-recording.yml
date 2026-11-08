@@ -36,7 +36,7 @@ jobs:
           sudo mv /tmp/linux-amd64/helm /usr/local/bin/helm
           sudo curl -fsSLo /usr/local/bin/agg "https://github.com/asciinema/agg/releases/download/$AGG_VERSION/agg-x86_64-unknown-linux-gnu"
           sudo chmod +x /usr/local/bin/kind /usr/local/bin/kubectl /usr/local/bin/agg
-          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-noto-mono >/dev/null
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-noto-core fonts-noto-mono >/dev/null; fc-list | grep -i -E "NotoSansMono|NotoMono" | head -3
           kind version; agg --version; ffmpeg -version | head -1
       - uses: docker/setup-buildx-action@v3
       - name: Build image API
