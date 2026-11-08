@@ -10,7 +10,7 @@ case "$name" in
 esac
 cd "$ROOT"
 rm -f "$DEMO_DIR/$name.status"
-asciinema rec --overwrite --quiet --cols 120 --rows 34 -c "bash scripts/demo/scene.sh $name" "$DEMO_DIR/$name.cast"
+asciinema rec --overwrite --quiet --cols 140 --rows 34 -c "bash scripts/demo/scene.sh $name" "$DEMO_DIR/$name.cast"
 status="$(cat "$DEMO_DIR/$name.status" 2>/dev/null || echo 1)"
 echo "$name: exit $status"
 exit "$status"
