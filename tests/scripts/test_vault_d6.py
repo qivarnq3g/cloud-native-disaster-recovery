@@ -56,3 +56,20 @@ def test_refuses_without_vault_pack(fake_tools):
     fake_tools.session = {"state": "stopped", "cluster": "primary"}
     r = fake_tools.run("vault-d6.sh", "d6-1")
     assert r.returncode != 0 and "vault_pack" in r.stderr
+
+
+def test_unreachable_vault_fails_instead_of_counting_as_refused(fake_tools):
+    prepare(fake_tools)
+    fake_tools.extra_env = {"FAKE_HTTP_DELETE": "000", "FAKE_HTTP_PUT": "409"}
+    r = fake_tools.run("vault-d6.sh", "d6-1")
+    assert r.returncode == 1
+    assert [row["outcome"] for row in rows(fake_tools, "d6-1")][:4] == ["error", "refused", "error", "refused"]
+
+
+def test_policy_is_restored_when_script_dies_after_shortening(fake_tools):
+    prepare(fake_tools)
+    fake_tools.extra_env = {"FAKE_HTTP_DELETE": "409", "FAKE_HTTP_PUT": "409",
+                            "FAKE_FAIL_ON": "immutability-policy show", "FAKE_FAIL_AFTER": "--period 1"}
+    r = fake_tools.run("vault-d6.sh", "d6-1")
+    assert r.returncode != 0
+    assert "WORM" in r.stderr and "7" in r.stderr

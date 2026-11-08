@@ -17,7 +17,7 @@ FAKE_TOOL = r"""#!/usr/bin/env bash
 tool="$(basename "$0")"
 echo "$tool $*" >> "$FAKE_DIR/calls.log"
 [[ "$tool $*" == "kubectl"*" apply -f -"* ]] && cat >> "$FAKE_DIR/applied.yaml"
-if [ -n "${FAKE_FAIL_ON:-}" ] && [[ "$tool $*" == *"$FAKE_FAIL_ON"* ]]; then exit 1; fi
+if [ -n "${FAKE_FAIL_ON:-}" ] && [[ "$tool $*" == *"$FAKE_FAIL_ON"* ]] && { [ -z "${FAKE_FAIL_AFTER:-}" ] || grep -qF -- "$FAKE_FAIL_AFTER" "$FAKE_DIR/calls.log"; }; then exit 1; fi
 case "$tool $*" in
   "az vm show -d"*) echo 20.0.0.8 ;;
   "az vm show"*)
@@ -154,7 +154,7 @@ class FakeTools:
             env["DR_SCRIPT_DIR"] = stub_dir.as_posix()
         env.update(self.extra_env)
         return subprocess.run([BASH, (SCRIPTS / script).as_posix(), *args], env=env,
-                              capture_output=True, text=True, timeout=60)
+                              capture_output=True, text=True, encoding="utf-8", timeout=60)
 
 
 @pytest.fixture
