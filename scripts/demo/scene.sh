@@ -9,7 +9,7 @@ case "$name" in
     show "curl -s http://127.0.0.1:18080/healthz; echo" || status=$?
     show "curl -s 'http://127.0.0.1:18080/v1/posts?limit=2' | python3 -m json.tool | head -24" || status=$?
     show "kubectl --context kind-primary get scheduledbackups.postgresql.cnpg.io,backups.postgresql.cnpg.io -n dr-api" || status=$?
-    show "kubectl --context kind-primary get schedules.velero.io,backups.velero.io -n velero" || status=$?
+    show "kubectl --context kind-primary get backupstoragelocations.velero.io -n velero" || status=$?
     show "kubectl --context kind-standby get pods -n dr-api" || status=$?
     ;;
   *)
