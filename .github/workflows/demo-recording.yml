@@ -1,0 +1,75 @@
+name: demo-recording
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/demo-recording.yml
+      - scripts/demo/**
+permissions:
+  contents: read
+concurrency:
+  group: demo-recording-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  KIND_VERSION: v0.33.0
+  KUBECTL_VERSION: v1.36.5
+  HELM_VERSION: v4.3.1
+  AGG_VERSION: v1.5.0
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      RUN_PREFIX: demo${{ github.run_id }}
+      DR_KIND_DATA: ${{ github.workspace }}/results
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/kind/requirements.txt asciinema==2.4.0
+      - name: Cài kind, kubectl, Helm, agg, ffmpeg
+        run: |
+          sudo curl -fsSL --retry 6 --retry-all-errors --retry-delay 20 -o /usr/local/bin/kind "https://kind.sigs.k8s.io/dl/$KIND_VERSION/kind-linux-amd64"
+          sudo curl -fsSL --retry 6 --retry-all-errors --retry-delay 20 -o /usr/local/bin/kubectl "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl"
+          curl -fsSL --retry 6 --retry-all-errors --retry-delay 20 "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz" | tar xz -C /tmp
+          sudo mv /tmp/linux-amd64/helm /usr/local/bin/helm
+          sudo curl -fsSL --retry 6 --retry-all-errors --retry-delay 20 -o /usr/local/bin/agg "https://github.com/asciinema/agg/releases/download/$AGG_VERSION/agg-x86_64-unknown-linux-gnu"
+          sudo chmod +x /usr/local/bin/kind /usr/local/bin/kubectl /usr/local/bin/agg
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-noto-core fonts-noto-mono >/dev/null; fc-list | grep -i -E "NotoSansMono|NotoMono" | head -3
+          kind version; agg --version; ffmpeg -version | head -1
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image API
+        uses: docker/build-push-action@v6
+        with:
+          context: app/api
+          tags: dr-api:kind
+          build-args: APP_VERSION=${{ github.sha }}
+          load: true
+          cache-from: type=gha,scope=kind-mini-api
+      - name: Dựng hai cụm
+        run: for i in 1 2 3; do bash scripts/kind/up.sh && exit 0; bash scripts/kind/down.sh || true; sleep 60; done; exit 1
+      - name: Quay luồng bình thường
+        run: bash scripts/demo/record.sh normal
+      - name: Quay D6
+        continue-on-error: true
+        run: bash scripts/demo/record.sh D6
+      - name: Quay D1
+        continue-on-error: true
+        run: bash scripts/demo/record.sh D1
+      - name: Dựng lại hai cụm cho D3
+        run: for i in 1 2 3; do bash scripts/kind/down.sh || true; bash scripts/kind/up.sh && exit 0; sleep 60; done; exit 1
+      - name: Quay D3
+        continue-on-error: true
+        run: bash scripts/demo/record.sh D3
+      - name: Xuất video
+        if: always()
+        run: bash scripts/demo/render.sh demo
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: demo-recording
+          path: |
+            demo/
+            results/
+          retention-days: 90
