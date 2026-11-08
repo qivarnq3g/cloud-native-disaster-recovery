@@ -1,0 +1,63 @@
+<<<<<<< HEAD
+=======
+# Đồ án Điện toán đám mây - Nhóm 23
+
+Đề tài 23: thiết kế và kiểm chứng kế hoạch sao lưu phục hồi thảm họa cho ứng dụng cloud native.
+
+Câu hỏi nghiên cứu: kế hoạch phục hồi có thực sự đạt mục tiêu về lượng dữ liệu được phép mất (RPO) và thời gian được phép ngừng (RTO) hay không, nếu chưa từng thử khôi phục ứng dụng, cấu hình và dữ liệu?
+
+Cách làm: một web nhỏ đăng ảnh kèm mô tả (có cơ sở dữ liệu và kho ảnh) chạy trên hai cụm Kubernetes trên Azure, một cụm chính và một cụm dự phòng; bản sao lưu đặt ở khu vực Azure khác. Thiết kế chi tiết: [`docs/thiet-ke.md`](docs/thiet-ke.md). Nhóm sao lưu, cố tình phá cụm chính, khôi phục sang cụm dự phòng theo hướng dẫn, rồi đo thời gian từng bước và kiểm tra dữ liệu còn đủ hay không.
+
+## Thành viên
+
+| Thành viên | Phần phụ trách |
+|---|---|
+| Hoàng Việt Quang | Web, hai cụm Kubernetes, sao lưu, script đo và kiểm tra, diễn tập, các chương kỹ thuật |
+| Huong-19 | Lý thuyết, đánh giá ảnh hưởng, nháp hướng dẫn khôi phục, tài liệu tham khảo |
+| minhthw1605 | Danh sách kiểm tra sau khôi phục, bấm giờ và biên bản diễn tập, ghép báo cáo, slide, video |
+
+Cả ba người đều phải hiểu toàn bộ hệ thống để trả lời vấn đáp.
+
+## Cấu trúc
+
+| Thư mục / tệp | Nội dung | Người làm |
+|---|---|---|
+| `app/` | Web đăng ảnh | Quang |
+| `infra/` | Cấu hình hai cụm Kubernetes | Quang |
+| `backup/` | Cấu hình sao lưu | Quang |
+| `scripts/` | Script đo thời gian, kiểm tra dữ liệu, vẽ biểu đồ | Quang |
+| `data/` | Số liệu đo thô từ các lần diễn tập | Quang |
+| `docs/thiet-ke.md` | Thiết kế hệ thống và kế hoạch diễn tập | Quang |
+| `docs/thiet-ke-web.md` | Thiết kế web: API và trang dùng | Quang |
+| `docs/ke-hoach/` | Kế hoạch làm từng phần: chạy thử Azure, API, trang web | Quang |
+| `docs/ly-thuyet.md` | Phần lý thuyết | Huong-19 |
+| `docs/danh-gia-anh-huong.md` | Đánh giá ảnh hưởng khi web ngừng | Huong-19 |
+| `docs/runbook.md` | Hướng dẫn khôi phục | Huong-19 viết nháp, Quang duyệt |
+| `docs/checklist-khoi-phuc.md` | Danh sách kiểm tra sau khôi phục | minhthw1605 |
+| `docs/dien-tap/` | Biên bản từng lần diễn tập | minhthw1605 |
+| `docs/bao-cao/` | Báo cáo, slide, link video | minhthw1605 ghép |
+
+## Quy ước
+
+- Mỗi người tự commit phần của mình. Đề yêu cầu kho có lịch sử đóng góp của cả ba thành viên.
+- Không đưa mật khẩu, khóa, tệp cấu hình chứa bí mật hay dữ liệu cá nhân vào kho.
+- Bản nghiệm thu được gắn thẻ phiên bản (tag).
+
+## Sản phẩm nộp
+
+- Báo cáo 20-35 trang, nộp trên Moodle, hạn 26/11/2026 02:00.
+- Video demo 8-12 phút đăng lên YouTube.
+- Trình bày trên lớp và vấn đáp.
+
+| Đề yêu cầu | Ở đâu |
+|---|---|
+| Báo cáo kỹ thuật, slide, kịch bản và link video | [`docs/bao-cao/`](docs/bao-cao/) |
+| Sơ đồ kiến trúc, luồng dữ liệu, trình tự chuyển dự phòng | [`docs/thiet-ke.md`](docs/thiet-ke.md) mục 1 và 6.1; báo cáo chương 2 |
+| Mã nguồn, cấu hình, IaC | [`app/`](app/), [`infra/`](infra/), [`backup/`](backup/), [`scripts/`](scripts/) |
+| Kịch bản kiểm thử | [`tests/`](tests/), workflow trong [`.github/workflows/`](.github/workflows/) |
+| Dữ liệu đo thô (CSV) và script vẽ lại bảng, biểu đồ | [`data/`](data/), `python -m scripts.report.charts` |
+| Hướng dẫn tái lập, dọn tài nguyên, ước tính chi phí, rủi ro bảo mật còn lại | [`docs/huong-dan-tai-lap.md`](docs/huong-dan-tai-lap.md) |
+| Danh sách phiên bản công nghệ | [`docs/versions.md`](docs/versions.md) |
+| Hướng dẫn khôi phục và danh sách kiểm tra sau khôi phục | [`docs/runbook.md`](docs/runbook.md), [`docs/checklist-khoi-phuc.md`](docs/checklist-khoi-phuc.md) |
+| Biên bản diễn tập và kết quả tóm tắt | [`docs/dien-tap/`](docs/dien-tap/), [`docs/trial-results.md`](docs/trial-results.md) |
+>>>>>>> f8c0dfbfa1406c3240f89e90d30dd10dbee4a749
