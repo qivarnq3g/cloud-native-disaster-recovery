@@ -11,6 +11,7 @@ Hạ tầng thật trên Azure for Students và bản thu nhỏ trên kind. Ngư
 | `k8s/overlays/azure/` | API trên cụm thật, có Ingress và chứng chỉ Let's Encrypt |
 | `k8s/drill/` | Cụm kind và mẫu khôi phục cho diễn tập hằng ngày trên máy GitHub |
 | `kind/` | Bản thu nhỏ hai cụm kind (diễn tập D1, D2, D3, D6) |
+| `offsite/` | Tầng thứ ba: server ngoài Azure tự kéo gói trong két về mỗi đêm và giữ bằng restic, xem `offsite/README.md` |
 | `trial/` | Bằng chứng của buổi chạy thử 24/10, giữ nguyên |
 
 Bật và tắt cụm bằng script trong `scripts/azure/`, xem `scripts/README.md`.

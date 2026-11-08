@@ -16,17 +16,6 @@ case "$SCENARIO" in
 esac
 PREFIX="${RUN_PREFIX:-local}"
 
-diagnose() {
-  local dir="$DATA_DIR/logs/$1"; mkdir -p "$dir"
-  for c in primary standby; do
-    kind get clusters 2>/dev/null | grep -qx "$c" || continue
-    k "$c" get all,clusters.postgresql.cnpg.io,backups.velero.io,restores.velero.io -A > "$dir/$c-objects.txt" 2>&1 || true
-    for p in $(k "$c" -n dr-api get pods -o name 2>/dev/null); do
-      k "$c" -n dr-api logs "$p" --all-containers --tail=200 > "$dir/$c-${p#pod/}.log" 2>&1 || true
-    done
-  done
-}
-
 once() {
   local iteration="$1" run_id
   run_id="$PREFIX-$SCENARIO-$iteration-$(date -u +%Y%m%d%H%M%S)"

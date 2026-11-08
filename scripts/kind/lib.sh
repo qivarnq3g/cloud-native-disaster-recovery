@@ -28,6 +28,23 @@ port_of() { if [ "$1" = primary ]; then echo "$PRIMARY_PORT"; else echo "$STANDB
 
 cred() { "$PYTHON" -m scripts.kind.store get "$STATE_DIR" "$1" "$2"; }
 
+diagnose() {
+  local dir="$DATA_DIR/logs/$1" ns pod; mkdir -p "$dir"
+  for c in primary standby; do
+    kind get clusters 2>/dev/null | grep -qx "$c" || continue
+    k "$c" get all,clusters.postgresql.cnpg.io,backups.velero.io,restores.velero.io -A > "$dir/$c-objects.txt" 2>&1 || true
+    k "$c" get events -A --sort-by=.lastTimestamp > "$dir/$c-events.txt" 2>&1 || true
+    k "$c" get pods -A --no-headers 2>/dev/null \
+      | awk '$4 != "Completed" { split($3, r, "/"); if (r[1] != r[2]) print $1, $2 }' \
+      | while read -r ns pod; do
+          k "$c" -n "$ns" describe pod "$pod" > "$dir/$c-describe-$ns-$pod.txt" 2>&1 || true
+        done
+    for p in $(k "$c" -n dr-api get pods -o name 2>/dev/null); do
+      k "$c" -n dr-api logs "$p" --all-containers --tail=200 > "$dir/$c-${p#pod/}.log" 2>&1 || true
+    done
+  done
+}
+
 timed() {
   local cluster="$1" step="$2"; shift 2
   local t0 t1 s0 s1

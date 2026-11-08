@@ -1,0 +1,10 @@
+[Unit]
+Description=Nightly pull of DR vault packs
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 Asia/Ho_Chi_Minh
+RandomizedDelaySec=20min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -126,6 +126,38 @@ Ngày 31/10 tám lần và ngày 04/11 bốn lần, chạy bằng `python -m scr
 - Cuối buổi, `session-stop.sh standby` tắt phiên với 1.100 bài, bản `stop-202610311225`; không còn máy ảo nào.
 - Cuối buổi 04/11, `session-stop.sh standby` tắt phiên với 1.073 bài, bản `stop-202611040252` (giữ 720 giờ), rồi `rebuild-primary-storage.sh` dựng lại kho ảnh chính (2.084 ảnh, 278 s) để phiên sau bật thẳng `session-start.sh primary main`; không còn máy ảo nào.
 
+## Vòng chính thức
+
+Ngày 07/11, chạy bằng `python -m scripts.dr.azure_drill` với `--auto-decide`, tải 1 bài/giây, bộ mẫu 1.026 bài, commit `850ac35`. Mọi lần đều được báo trước; lần không báo trước và lần do thành viên khác chạy (mục 5.4 thiết kế) chưa làm. Biên bản từng lần trong `docs/dien-tap/official-<tình huống>-<lần>.md`, số đo trong `data/azure/drills/official-*/`.
+
+| Lần | Kết quả | RTO (s) | RPO (s) |
+|---|---|---|---|
+| D1-1 | đạt | 73,8 | 3,0 |
+| D1-2 | đạt | 74,1 | 3,5 |
+| D1-3 | đạt | 74,6 | 2,6 |
+| D2-1 | đạt | 481,1 | 4,8 |
+| D2-2 | đạt | 470,9 | 46,3 |
+| D2-3 | đạt | 579,3 | 49,1 |
+| D3-1 | đạt | 265,2 | 8,4 |
+| D3-2 | đạt | 265,7 | 18,5 |
+| D3-3 | đạt | 256,1 | 5,8 |
+| D4-1 | không đạt | | |
+| D4-2 | không đạt | | |
+| D4-3 | đạt | 608,2 | 46,9 |
+| D4-4 | đạt | 645,5 | 47,3 |
+| D4-5 | đạt | 596,1 | 50,9 |
+| D5-1 | đạt | 265,7 | 19,8 |
+| D5-2 | đạt | 258,4 | 45,2 |
+| D5-3 | đạt | 258,1 | 6,5 |
+| D6-1 | đạt | | |
+| D7-1 | đạt (phần két khi chấm lại, phần server bạn) | | |
+
+- D1, D2, D3, D5 đạt cả ba lần. D4 có ba lần đạt sau hai lần không đạt: ở D4-1 và D4-2, trình kiểm tra dừng giữa chừng vì một lần đọc ảnh bị treo, nên hai lần này giữ là không đạt. D4-3 đến D4-5 chạy qua lớp bọc chỉ đọc lại ảnh khi lỗi mạng, không đổi cách chấm.
+- Mọi lần đạt đều trong mục tiêu RPO 5 phút, RTO 60 phút (lạnh) và 10 phút (ấm).
+- D6-1: khóa WORM ở chế độ Locked từ chối rút ngắn thời hạn giữ.
+- D7-1: khôi phục gói trong két trên laptop mất 1.201 s; số bài và mã băm khớp. `restore_test.py` báo thiếu 86 ảnh, đều là ảnh mất trong RPO ảnh của D5-3 mà gói chép lại; chấm theo luật RPO ảnh thì đạt. Phần server bạn chạy ngày 08/11 sau khi dựng tầng thứ ba (`infra/offsite/`): lấy gói từ restic trên server, khôi phục trên laptop không cần Azure trong 59 s, 1.026 bài, mã băm khớp, không thiếu ảnh.
+- Lỗi mạng tạm thời tới Azure làm hỏng ba lần dựng lại hoặc dựng cụm dự phòng (trước khi phá, không tính là lần chạy) và vài lần tắt phiên ở job két; lần thử lại đều qua.
+
 ## Két
 
 Ngày 04/11, chạy trên nhánh `vault-age`.

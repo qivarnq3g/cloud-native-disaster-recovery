@@ -51,7 +51,7 @@ Sau khi chuyển sang `standby`, đưa hệ thống về trạng thái ban đầ
 2. `bash scripts/azure/session-stop.sh standby` (lấy bản đầy đủ và bản Velero rồi xóa máy dự phòng).
    Nếu cả nhóm `rg-dr-primary` đã mất (D4, D5), chạy thêm `bash scripts/azure/rebuild-primary-storage.sh` khi `az group exists -n rg-dr-primary` đã trả `false`. Script bỏ các tài nguyên đã mất khỏi trạng thái Terraform, gỡ chính sách chép ảnh còn sót ở kho đích, dựng lại nhóm, kho ảnh chính và chính sách chép ảnh, chép toàn bộ ảnh từ kho dự phòng về kho chính mới, rồi cấp lại SAS cho API. Kho mới có khóa mới nên người có quyền GitHub chạy thêm `bash scripts/azure/issue-sas.sh check-read` để cập nhật secret của backup-check.
 3. `bash scripts/azure/session-start.sh primary main`.
-4. `bash scripts/azure/restore-replication.sh`: dựng lại chính sách chép ảnh sang kho dự phòng. Chỉ chạy sau bước 3; chạy khi cụm dự phòng đang phục vụ sẽ làm kho ảnh dự phòng thành chỉ đọc.
+4. `bash scripts/azure/restore-replication.sh`: dựng lại chính sách chép ảnh sang kho dự phòng. Chỉ chạy sau bước 3; chạy khi cụm dự phòng đang phục vụ sẽ làm kho ảnh dự phòng thành chỉ đọc. Bỏ qua bước này nếu bước 2 đã chạy `rebuild-primary-storage.sh`: script đó đã dựng chính sách, chạy lại sẽ gỡ chính sách ở kho nguồn mà còn sót ở kho đích và báo lỗi `a resource with the ID ... already exists`.
 5. `bash scripts/azure/reset-seed.sh primary`: đưa cơ sở dữ liệu về bộ mẫu 1.026 bài và làm mới sổ ghi bài.
 6. Với tình huống chuyển ấm, thêm `bash scripts/azure/standby-up.sh main`.
 
@@ -74,3 +74,4 @@ Khóa và mã bí mật nằm trong `~/.dr/` trên máy người chạy, không 
 | 04/11/2026 | trial-D4-1 | Chép ảnh từ kho bản sao chỉ chờ các ảnh đang chép dở, không chờ mọi ảnh ở kho đích |
 | 04/11/2026 | trial-D4-2 | Chuyển lạnh gỡ chính sách chép ảnh của kho dự phòng trước khi chép ảnh từ kho bản sao |
 | 04/11/2026 | trial-D4-3 | Kiểm tra tính ảnh thiếu của bài đăng trong 5 phút trước sự cố là mất trong RPO ảnh; thêm `rebuild-primary-storage.sh` vào bước dựng lại sau khi mất cả nhóm `rg-dr-primary` |
+| 07/11/2026 | official-D4-1 | Sau `rebuild-primary-storage.sh` bỏ qua `restore-replication.sh` khi dựng lại trạng thái ban đầu |
