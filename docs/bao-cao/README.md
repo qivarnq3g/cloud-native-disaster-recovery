@@ -8,7 +8,7 @@ Người ghép: minhthw1605.
 - Video demo 8-12 phút đăng lên YouTube, có kịch bản và phân công rõ; phải cho thấy cả lúc chạy bình thường và ít nhất một tình huống lỗi. Ghi link video vào đây và vào báo cáo.
 - Slide trình bày trên lớp.
 
-Link video:
+Link video: https://youtu.be/iPRazYU_bQM
 
 Kịch bản video: [kich-ban-video.md](kich-ban-video.md).
 
