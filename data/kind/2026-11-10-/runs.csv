@@ -1,0 +1,2 @@
+run_id,scenario,iteration,runner,cpus,mem_total_mb,seed_posts,incident_at,detected_at,service_restored_at,verified_at,rto_s,posts_acked,posts_restored,posts_missing,posts_missing_beyond_rpo,posts_holes,posts_extra,rpo_s,digest_match,content_digest,images_checked,images_bad,functional_ok,result
+local-D1-1-20261110124713,D1,1,LAPTOP-DHADALDH,12,7794,1000,2026-11-10T12:48:52.400Z,2026-11-10T12:49:08.413Z,2026-11-10T12:49:49.145Z,2026-11-10T12:49:51.924Z,59.5,1096,1096,0,0,0,0,0.0,true,124d3be77c80d9902863da204a2eaa11,1096,0,true,pass
