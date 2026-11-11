@@ -81,6 +81,14 @@ def test_restore_namespace_skips_cnpg_objects_and_targets_time(fake_tools):
     assert fake_tools.session_doc()["server_name"] != "primary-202610300100"
 
 
+def test_restore_namespace_latest_replays_all_archived_wal(fake_tools):
+    fake_tools.session = WARM_SESSION
+    r = fake_tools.run("restore-namespace.sh", "r1", "latest")
+    assert r.returncode == 0, r.stderr
+    assert "recoveryTarget" not in fake_tools.applied_yaml
+    assert "serverName: primary-202610300100" in fake_tools.applied_yaml
+
+
 def test_restore_namespace_uses_newest_velero_backup_of_this_session(fake_tools):
     fake_tools.session = WARM_SESSION
     fake_tools.velero_backups = ("hourly-new 2026-10-27T02:00:00Z\nhourly-old 2026-10-26T23:00:00Z\n"
