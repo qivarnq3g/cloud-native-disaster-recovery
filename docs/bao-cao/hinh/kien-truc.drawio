@@ -28,7 +28,7 @@
         <mxCell id="pri" value="&lt;b&gt;Cụm chính&lt;/b&gt;&lt;br&gt;k3s trên máy ảo B2als v2&lt;br&gt;API, Postgres (CNPG), Velero&lt;br&gt;Kho ảnh chính" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontFamily=Times New Roman;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="74" y="170" width="306" height="120" as="geometry"/>
         </mxCell>
-        <mxCell id="sb" value="&lt;b&gt;Cụm dự phòng&lt;/b&gt;&lt;br&gt;Cách lạnh: chỉ dựng khi có sự cố&lt;br&gt;Cách ấm: chạy sẵn, nhận dữ liệu liên tục&lt;br&gt;Kho ảnh dự phòng" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontFamily=Times New Roman;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="sb" value="&lt;b&gt;Cụm dự phòng&lt;/b&gt;&lt;br&gt;Cách nguội: chỉ dựng khi có sự cố&lt;br&gt;Cách ấm: chạy sẵn, nhận dữ liệu liên tục&lt;br&gt;Kho ảnh dự phòng" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontFamily=Times New Roman;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="410" y="170" width="330" height="120" as="geometry"/>
         </mxCell>
 
@@ -42,7 +42,7 @@
           <mxGeometry x="530" y="455" width="210" height="75" as="geometry"/>
         </mxCell>
 
-        <mxCell id="gh" value="&lt;b&gt;GitHub&lt;/b&gt;&lt;br&gt;Mã nguồn, image (GHCR)&lt;br&gt;Actions: kiểm tra sao lưu,&lt;br&gt;diễn tập lạnh, bản thu nhỏ" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontFamily=Times New Roman;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="gh" value="&lt;b&gt;GitHub&lt;/b&gt;&lt;br&gt;Mã nguồn, image (GHCR)&lt;br&gt;Actions: kiểm tra sao lưu,&lt;br&gt;diễn tập nguội, bản thu nhỏ" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontFamily=Times New Roman;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="854" y="160" width="206" height="140" as="geometry"/>
         </mxCell>
         <mxCell id="srv" value="&lt;b&gt;Máy chủ ngoài Azure&lt;/b&gt;&lt;br&gt;Bản sao off-site&lt;br&gt;Tailscale, Restic" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontFamily=Times New Roman;fontSize=18;" vertex="1" parent="1">
