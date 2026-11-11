@@ -1,217 +1,151 @@
-# Lời thuyết trình theo video
+# Bài thuyết trình đề tài 23, nói cùng video
 
-Video: https://youtu.be/iPRazYU_bQM (10 phút 30 giây, không có tiếng). Mỗi đoạn ghi mốc thời gian trong video, cảnh đang chiếu và lời nói. Lời được viết vừa với thời lượng nếu nói khoảng 3 tiếng mỗi giây. Chỗ ghi "(dừng)" thì để video tự chạy. Dòng "Hiểu" giải thích ý cho người nói, không đọc ra.
+Video: https://youtu.be/iPRazYU_bQM (10 phút 30 giây, không tiếng), chạy liền một mạch, không cần dừng.
 
-Đọc số: 55,7 s đọc là "năm mươi lăm phẩy bảy giây". RTO (thời gian khôi phục) và RPO (lượng dữ liệu được phép mất) đọc nguyên chữ cái: "a-ti-ô", "a-pi-ô".
+## Khác gì bản đọc theo video
 
-Phân công:
+Bản đọc cũ tả lại màn hình: "Đây là lúc sự cố", "Velero báo sẵn sàng". Người xem tự thấy những điều đó rồi.
 
-- Thư: 0:00-0:45 và 8:30-10:00
-- Hương: 0:45-2:15 và 10:00-10:30
-- Quang: 2:15-8:30
+Bản này nói điều màn hình không nói được: vì sao làm vậy, điều đó chứng minh gì, và người nghe nên nhớ gì. Mỗi phần có ba nhịp:
+
+1. Câu hỏi hoặc vấn đề, để người nghe tò mò.
+2. Video cho thấy câu trả lời; người nói chỉ vào chỗ quan trọng.
+3. Câu chốt: "điều này có nghĩa là...".
+
+Mắt nhìn người nghe, không nhìn màn hình. Chỉ liếc màn hình khi nói "các bạn để ý...".
+
+Thời lượng mỗi đoạn tính theo tốc độ nói khoảng 3 tiếng mỗi giây. Nói chậm hơn cũng được: bỏ bớt câu trong ngoặc vuông.
+
+## Trước khi bấm chạy video (Thư, khoảng 30 giây, không tính giờ video)
+
+"Em chào thầy và các bạn. Em xin hỏi một câu: trường mình có nội quy phòng cháy, nhưng nếu chưa bao giờ diễn tập, thì khi cháy thật, mọi người có thoát ra kịp không? Chưa ai biết. Hệ thống trên mây cũng vậy. Công ty nào cũng có kế hoạch khôi phục khi sập, nhưng kế hoạch đó có dùng được không thì phải thử mới biết. Nhóm 23 đã thử. Mời thầy và các bạn xem."
 
 ## Thư: mở đầu (0:00-0:45)
 
-0:00-0:08 · Tên đề tài
+0:00-0:22 · Tên đề tài, câu hỏi nghiên cứu
 
-"Nhóm 23 xin trình bày đề tài: diễn tập khôi phục sau thảm họa cho một web đăng ảnh chạy trên Azure."
+"Đề tài của nhóm là diễn tập khôi phục cho một trang web đăng ảnh trên Azure. Câu hỏi rất đơn giản: kế hoạch viết trên giấy, khi sự cố thật xảy ra, có cứu được web kịp không? Nhóm không đoán. Nhóm phá thật, rồi bấm giờ."
 
-0:08-0:22 · Câu hỏi nghiên cứu
+0:22-0:45 · Ba con số
 
-"Câu hỏi của nhóm là: kế hoạch khôi phục viết trên giấy có dùng được khi gặp sự cố thật không? Giống nội quy phòng cháy, chưa diễn tập thì chưa biết. Nên nhóm dựng hệ thống, phá thật, rồi bấm giờ."
+"Muốn biết kịp hay không thì phải có thước đo. Nhóm dùng hai thước đo. Thứ nhất, web sập bao lâu thì phải chạy lại, gọi là RTO. Thứ hai, được phép mất bao nhiêu dữ liệu, gọi là RPO. Các bạn để ý ba con số trên màn hình: sáu mươi phút, mười phút, năm phút. Đây là ba mục tiêu mà cả bài sẽ kiểm tra."
 
-0:22-0:45 · Ba con số phải đạt
+## Hương: thiết kế (0:45-2:15)
 
-"Nhóm đặt ba con số. RTO là thời gian web được phép ngừng. Nếu dựng máy mới từ bản sao lưu, gọi là dự phòng nguội, tối đa sáu mươi phút. Nếu chuyển sang máy dự phòng đang chạy sẵn, gọi là dự phòng ấm, tối đa mười phút. Còn RPO, lượng dữ liệu được phép mất, tối đa năm phút."
+0:45-1:03 · Bảng ảnh hưởng
 
-Hiểu: RPO là phần mất, từ lần lưu cuối đến lúc sự cố. RTO là thời gian chờ, từ lúc sự cố đến lúc chạy lại.
-
-## Hương: phân tích và thiết kế (0:45-2:15)
-
-0:45-1:03 · Bảng ảnh hưởng khi web ngừng
-
-"Trước khi đặt mục tiêu, nhóm xem mất phần nào thì hỏng gì. Mất cơ sở dữ liệu thì không đọc, không đăng được bài. Mất kho ảnh thì bài hiện mà ảnh lỗi. Cả trang ngừng thì người dùng không vào được."
+"Nhưng những con số đó từ đâu ra? Nhóm hỏi: mất phần nào thì hỏng gì? Mất cơ sở dữ liệu là nặng nhất, vì không ai đọc hay đăng bài được nữa. Nên phần này được bảo vệ kỹ nhất."
 
 1:03-1:25 · Kiến trúc
 
-"Ứng dụng chạy trên một cụm máy chủ ở Hàn Quốc. Bản sao được cất ở ba nơi: kho sao lưu ở Nhật, một két chống xóa cũng ở Nhật, và một máy chủ nằm ngoài Azure. Mất một nơi thì vẫn còn hai nơi."
-
-Hiểu: cụm là nhóm máy chạy Kubernetes, phần mềm tự chạy và quản lý ứng dụng. Ở đây cụm chỉ có một máy ảo.
+"Nguyên tắc của nhóm là: đừng để trứng trong một giỏ. Web chạy ở Hàn Quốc, nhưng bản sao được cất ở ba nơi khác nhau. Các bạn để ý: mỗi nơi chống một loại sự cố khác nhau, nên mất một nơi thì vẫn còn hai."
 
 1:25-1:47 · Sao lưu mỗi phút, két chống xóa
 
-"Cơ sở dữ liệu ghi mọi thay đổi vào một nhật ký, gọi là WAL, và gửi nhật ký sang Nhật ít nhất mỗi phút. Dữ liệu còn được cất vào két chống xóa: bảy ngày không ai xóa hay sửa được, kể cả quản trị viên."
+"Vì sao RPO chỉ năm phút? Vì mọi thay đổi trong cơ sở dữ liệu được gửi sang Nhật ít nhất mỗi phút. Còn nếu kẻ gian chiếm được tài khoản và muốn xóa hết bản sao? Nhóm có một két mà bảy ngày không ai xóa được, kể cả quản trị viên."
 
-Hiểu: két là một kho lưu trữ tệp của Azure bật khóa WORM (ghi một lần, chỉ đọc). Không phải server.
+1:47-2:15 · Bảy kịch bản
 
-1:47-2:15 · Bảy kịch bản và năm bước đo
+"Rồi nhóm tự hỏi: hệ thống có thể hỏng theo những kiểu nào? Nhóm liệt kê bảy kiểu, từ nhẹ đến nặng: lỡ tay xóa nhầm, cháy một máy, mất cả khu, kẻ gian phá két, và mất cả tài khoản Azure. Mỗi kiểu được bấm giờ qua năm bước, để biết chậm ở đâu. Bây giờ, Quang sẽ cho thầy và các bạn xem nhóm phá thật."
 
-"Nhóm viết bảy kịch bản diễn tập, từ nhẹ đến nặng: xóa nhầm ứng dụng, mất máy chủ, mất cả nhóm tài nguyên, thử phá két, và mất cả tài khoản Azure. Thời gian được bấm qua năm bước: phát hiện, quyết định, dựng hạ tầng, khôi phục dữ liệu và đổi tên miền. Xong thì đếm bài và so từng ảnh."
+## Quang: phá thật (2:15-8:30)
 
-Hiểu: D1 xóa nhầm; D2, D3 mất máy chủ (nguội, ấm); D4, D5 mất cả nhóm tài nguyên, tức cả máy chủ lẫn kho ảnh (nguội, ấm); D6 phá két; D7 mất tài khoản Azure.
+### Hệ thống trước khi phá (2:15-3:30)
 
-## Quang: chạy thử trên một máy (2:15-8:30)
+2:15-2:41 · Hệ thống đang chạy
 
-### Hệ thống đang chạy (2:15-3:30)
+"Trước khi phá, phải chắc là hệ thống đang khỏe. Đây là bản chạy thử trên một máy, cùng ứng dụng và cùng cách sao lưu như trên Azure. [Nhóm dùng bản này vì nó nhanh và miễn phí, chạy được ba mươi lần mỗi kịch bản.] Các bạn để ý dòng ok: web đang chạy bình thường."
 
-2:15-2:23 · Tiêu đề "Hệ thống đang chạy"
+2:43-3:15 · Dữ liệu và sao lưu
 
-"Đây là bản chạy thử trên một máy, cùng ứng dụng và cùng cách sao lưu như trên Azure."
+"Trong web đã có một nghìn bài kèm ảnh. Đây là thứ nhóm phải giữ. Các dòng tiếp theo cho thấy bản sao lưu đã sẵn sàng: dữ liệu đã được chụp đầy đủ, và mọi thay đổi mới được gửi đi mỗi phút. Nghĩa là nếu sập ngay bây giờ, nhóm mất nhiều nhất khoảng một phút dữ liệu."
 
-Hiểu: bản chạy thử dùng kind, một Kubernetes chạy gọn trong một máy, chạy trên máy của GitHub. Nhanh và miễn phí nên chạy được 30 lần mỗi kịch bản.
+3:17-3:30 · Cụm dự phòng
 
-2:23-2:31 · Chú thích "Cụm chính"
+"Và đây là máy dự phòng, đang chạy sẵn và nhận dữ liệu liên tục. Các bạn nhớ nó, lát nữa nó sẽ cứu cả hệ thống."
 
-"Cụm chính đang chạy cả ứng dụng lẫn cơ sở dữ liệu."
+### D1: lỡ tay xóa nhầm (3:30-6:00)
 
-2:33-2:41 · Chú thích "/healthz"
+3:30-3:45 · Tiêu đề
 
-"Gọi trang kiểm tra sức khỏe healthz, hệ thống trả về ok."
+"Sự cố đầu tiên là sự cố hay gặp nhất ngoài đời: con người lỡ tay. Người vận hành gõ nhầm một lệnh và xóa mất toàn bộ ứng dụng."
 
-Hiểu: healthz là một địa chỉ của web chỉ để hỏi "còn sống không". Trả ok là web đang chạy.
+3:45-4:09 · Trước sự cố, sự cố
 
-2:43-2:52 · Chú thích "Dữ liệu"
+"Để giống thật, trong lúc phá vẫn có người dùng đăng bài, mỗi giây một bài. Và đây, ứng dụng bị xóa. [Lúc này, với người dùng, web đã biến mất.]"
 
-"Dữ liệu đã có sẵn một nghìn bài, mỗi bài kèm ảnh."
+4:10-4:35 · Phát hiện, khôi phục
 
-2:54-3:04 · Chú thích "CNPG"
+"Mười hai giây sau, hệ thống tự phát hiện. Sau đó nó làm hai việc: dựng lại cấu hình của ứng dụng, rồi lấy bản chụp đầy đủ và ghi tiếp các thay đổi, đến sát giây trước sự cố. [Giống như chép lại cuốn sổ từ bản photo, rồi viết thêm những dòng mới.]"
 
-"CNPG, công cụ quản lý cơ sở dữ liệu, đã sao lưu đầy đủ. Nhật ký WAL gửi đi ít nhất mỗi phút, nên sập thì chỉ mất tối đa khoảng một phút."
+4:36-4:57 · Kiểm tra
 
-3:06-3:15 · Chú thích "Velero"
-
-"Velero, công cụ sao lưu cấu hình của ứng dụng, báo kho sao lưu sẵn sàng."
-
-Hiểu: CNPG lo phần dữ liệu (bài viết). Velero lo phần cấu hình, tức các tệp mô tả ứng dụng chạy thế nào.
-
-3:17-3:30 · Chú thích "Cụm dự phòng"
-
-"Còn cụm dự phòng đang chạy sẵn một bản sao cơ sở dữ liệu, nhận dữ liệu liên tục, dùng cho dự phòng ấm ở phần sau."
-
-### D1: xóa nhầm namespace (3:30-6:00)
-
-3:30-3:45 · Tiêu đề "Xóa nhầm namespace"
-
-"Kịch bản đầu tiên, D1: người vận hành xóa nhầm namespace, tức cả ngăn chứa ứng dụng. Công cụ vừa đăng bài, vừa phá, vừa bấm giờ."
-
-Hiểu: namespace giống một thư mục trong cụm, chứa web, API và cơ sở dữ liệu. Xóa nó là mất cả ứng dụng nhưng máy vẫn còn.
-
-3:45-4:00 · Chú thích "Trước sự cố"
-
-"Trước sự cố, công cụ đăng một bài mỗi giây trong chín mươi giây, như có người dùng thật. Phần này tua nhanh."
-
-4:02-4:09 · Chú thích "Sự cố"
-
-"Đây là lúc sự cố: cả namespace bị xóa."
-
-4:10-4:19 · Chú thích "Phát hiện", "Velero"
-
-"Mười hai giây sau, healthz hỏng năm lần liền: sự cố được phát hiện. Velero dựng lại cấu hình."
-
-4:19-4:35 · Chú thích "CNPG"
-
-"CNPG dựng lại cơ sở dữ liệu từ bản sao lưu đầy đủ, rồi chạy lại nhật ký WAL đến sát lúc sự cố."
-
-Hiểu: bản đầy đủ giống ảnh chụp cuốn sổ lúc trước; WAL là các dòng ghi thêm sau đó. Chép bản đầy đủ rồi ghi tiếp các dòng là về đúng lúc trước sự cố.
-
-4:36-4:47 · Chú thích "Kiểm tra"
-
-"Sau đó kiểm tra: đếm bài, so nội dung, so từng ảnh bằng mã băm, và đăng thử một bài mới."
-
-Hiểu: mã băm giống dấu vân tay của tệp. Ảnh hỏng dù một chút thì mã băm khác.
-
-4:47-4:57 · Chú thích "Đạt"
-
-"Kết quả đạt: không thiếu bài nào, mọi ảnh còn nguyên."
+"Nhưng chạy lại thôi thì chưa đủ. Câu hỏi quan trọng là: dữ liệu có còn đúng không? Nên công cụ đếm từng bài, so từng ảnh, và đăng thử một bài mới."
 
 4:59-5:19 · Kết quả 1096/1096
 
-"Một nghìn không trăm chín mươi sáu bài còn nguyên, không mất dữ liệu nào." (dừng)
+"Kết quả: một nghìn không trăm chín mươi sáu bài, không thiếu bài nào, không hỏng ảnh nào."
 
-5:19-5:45 · Ba thẻ RTO
+5:19-6:00 · Ba thẻ RTO
 
-"Lần quay này RTO là năm mươi lăm phẩy bảy giây. Ba mươi lần chạy thử có trung vị năm mươi sáu phẩy chín giây. Trên Azure, trung vị là bảy mươi tư phẩy một giây. Nghĩa là D1 khôi phục trong khoảng một phút, lần nào cũng gần như nhau." (dừng đến 6:00)
+"Và mất bao lâu? Năm mươi lăm giây. Một lần nhanh có thể là may mắn, nên nhóm chạy ba mươi lần: lần nào cũng khoảng một phút. Trên Azure thật cũng chỉ khoảng một phút mười lăm giây. Điều này có nghĩa là: lỡ tay xóa nhầm, người dùng chỉ thấy web gián đoạn khoảng một phút."
 
-Hiểu: trung vị là số đứng giữa khi xếp các lần từ nhanh đến chậm. Dùng trung vị vì một lần quá chậm không kéo lệch kết quả.
+### D3: cháy máy, dùng dự phòng ấm (6:00-7:45)
 
-### D3: mất cụm chính, dự phòng ấm (6:00-7:45)
+6:00-6:32 · Cụm chính sập
 
-6:00-6:18 · Cảnh 3D "Cụm chính sập"
+"Nhưng nếu không phải lỡ tay, mà là cả máy chủ biến mất thì sao? Máy, ổ đĩa, cấu hình, tất cả. Lúc này máy dự phòng lúc nãy vào cuộc. Nó đã chạy sẵn và có sẵn dữ liệu, nên không cần dựng gì cả, chỉ cần cho nó lên làm máy chính."
 
-"Kịch bản thứ hai, D3: mất hẳn cụm chính. Máy chủ, ổ đĩa, cấu hình đều mất."
+6:32-6:58 · Sự cố, nâng cụm
 
-6:18-6:32 · Tiêu đề "Mất cụm chính"
+"Vẫn có người dùng đăng bài. Máy chính mất. Năm giây sau đã phát hiện, và máy dự phòng được nâng lên làm chính."
 
-"Cụm dự phòng đã chạy sẵn bản sao cơ sở dữ liệu, nên chỉ cần nâng nó lên làm chính. Đây là dự phòng ấm."
+6:59-7:08 · RPO, đạt
 
-6:32-6:42 · Chú thích "Trước sự cố"
+"Các bạn để ý: lần này có mất ba mươi sáu bài cuối, vì chưa kịp chép sang. Nhưng đó chỉ là vài chục giây, vẫn trong mức năm phút cho phép."
 
-"Vẫn đăng một bài mỗi giây trong chín mươi giây, phần này tua nhanh."
+7:08-7:45 · Kết quả, so với Azure
 
-6:44-6:52 · Chú thích "Sự cố", "Phát hiện"
+"Chỉ khoảng mười lăm giây, web đã chạy lại trên máy dự phòng. Trên Azure thật lâu hơn, khoảng bốn phút rưỡi, vì phải chờ kho ảnh, khởi động lại và đổi địa chỉ web. Nhưng vẫn dưới mục tiêu mười phút. Đây là cái giá của sự nhanh: phải trả tiền cho một máy chạy sẵn suốt ngày đêm."
 
-"Cụm chính mất hẳn. Năm giây sau đã phát hiện."
+### D6: kẻ gian phá két (7:45-8:30)
 
-6:53-6:58 · Chú thích "Nâng cụm"
+7:45-7:57 · Tiêu đề
 
-"Cơ sở dữ liệu ở cụm dự phòng được nâng lên làm chính."
+"Kịch bản cuối của phần này đáng sợ nhất: kẻ gian, hay mã độc tống tiền, chiếm được quyền cao nhất và muốn xóa sạch bản sao lưu, để nạn nhân không còn đường lui."
 
-6:59-7:08 · Chú thích "RPO", "Đạt"
+7:58-8:28 · Bị từ chối
 
-"Ba mươi sáu bài cuối chưa kịp chép sang, vẫn trong mức năm phút. RTO mười bốn phẩy tám giây, ảnh không hỏng."
-
-Hiểu: bản sao ở cụm dự phòng chạy chậm hơn bản chính vài giây, nên mấy bài cuối chưa kịp sang. Mất 36 bài trong vài chục giây vẫn dưới mức 5 phút cho phép.
-
-7:08-7:25 · Cảnh 3D "Cụm dự phòng lên thay"
-
-"Như vậy chỉ sau khoảng mười lăm giây, web đã chạy lại trên cụm dự phòng, không hỏng ảnh nào."
-
-7:25-7:45 · So sánh với Azure
-
-"Ở bản chạy thử, trung vị là mười ba phẩy bảy giây. Trên Azure là hai trăm sáu mươi lăm giây, phần lớn ở bước khôi phục dữ liệu, khoảng hai trăm mười lăm giây, còn lại là phát hiện và đổi tên miền."
-
-Hiểu: trên Azure chậm hơn vì phải gỡ chính sách chép ảnh, chờ kho ảnh nhận ghi, khởi động lại API và đổi tên miền thật. Bản chạy thử không có mấy bước đó, nên không so trực tiếp.
-
-### D6: thử phá két (7:45-8:30)
-
-7:45-7:57 · Tiêu đề "Thử phá két"
-
-"Kịch bản D6: thử phá két chống xóa. Két khóa bảy ngày. Nhóm bỏ một gói sao lưu vào rồi dùng cả khóa quản trị để phá."
-
-7:58-8:13 · Năm dòng "bị từ chối"
-
-"Xóa phiên bản: bị từ chối. Bỏ qua khóa quản trị: bị từ chối. Rút ngắn thời hạn khóa: bị từ chối. Xóa bằng khóa ghi, xóa cả két: đều bị từ chối."
-
-8:14-8:28 · Chú thích "Ghi đè", "Đạt"
-
-"Ghi đè thì chỉ tạo ra phiên bản mới, bản gốc vẫn nguyên. Không cách nào làm mất bản gốc."
-
-Hiểu: D6 chứng minh kẻ gian có chiếm được tài khoản, hay mã độc tống tiền muốn xóa bản sao, thì bản trong két vẫn còn.
+"Nhóm thử mọi cách: xóa, bỏ qua khóa, rút ngắn thời hạn, xóa cả két. Các bạn thấy đấy: tất cả đều bị từ chối. Ghi đè cũng chỉ tạo ra bản mới, bản gốc vẫn còn. Nghĩa là dù mất quyền quản trị, dữ liệu vẫn an toàn. Tiếp theo, Thư sẽ trình bày kết quả trên Azure thật."
 
 ## Thư: kết quả trên Azure (8:30-10:00)
 
-8:30-8:52 · Bảy lần hỏng ở vòng thử
+8:30-8:52 · Vòng thử
 
-"Tiếp theo là kết quả trên Azure. Ở vòng thử, bảy trên mười hai lần không đạt. Mỗi lần lộ ra một lỗi thật, như lấy nhầm bản sao lưu cũ, máy ảo bị kẹt, hay cài đặt cũ chặn chép ảnh. Lỗi nào cũng được sửa trước vòng chính thức."
+"Đây là phần nhóm thấy quan trọng nhất. Lần đầu chạy trên Azure, bảy trên mười hai lần thất bại. Kế hoạch đọc thì thấy ổn, nhưng chạy thật thì máy ảo bị kẹt, hay một cài đặt cũ còn sót chặn việc chép ảnh. Những lỗi này không ai thấy được nếu chỉ đọc giấy."
 
-8:52-9:16 · Vòng chính thức 15 trên 17 lần đạt
+8:52-9:16 · Vòng chính thức
 
-"Sau khi sửa, vòng chính thức đạt mười lăm trên mười bảy lần. Dự phòng nguội lâu nhất khoảng mười một phút, mục tiêu sáu mươi phút. Dự phòng ấm lâu nhất khoảng bốn phút rưỡi, mục tiêu mười phút. Hai lần không đạt là do công cụ kiểm tra bị treo, không phải do khôi phục."
+"Nhóm sửa từng lỗi rồi chạy lại. Lần này mười lăm trên mười bảy lần đạt. Dựng máy mới lâu nhất khoảng mười một phút, mục tiêu là sáu mươi. Dùng máy dự phòng lâu nhất khoảng bốn phút rưỡi, mục tiêu là mười. [Hai lần không đạt là do công cụ kiểm tra bị treo, nhưng nhóm vẫn tính là không đạt.]"
 
 9:16-9:38 · Điểm nghẽn
 
-"Chia theo từng bước thì chậm nhất là khôi phục dữ liệu. Ở D4, riêng bước này mất hơn bảy phút trên tổng mười phút, chủ yếu là chép ảnh từ Nhật. Dự phòng ấm bỏ được bước dựng máy, nhưng vẫn còn khoảng ba phút rưỡi khôi phục."
+"Vậy chậm ở đâu? Biểu đồ cho thấy: phần lớn thời gian là khôi phục dữ liệu, nhất là chép ảnh từ Nhật về. Muốn nhanh hơn thì phải cải tiến đúng bước này, chứ không phải bước khác."
 
 9:38-10:00 · Két và máy chủ ngoài Azure
 
-"Két từ chối mọi cách xóa. Khi mất cả tài khoản Azure, máy chủ bên ngoài vẫn khôi phục được một nghìn không trăm hai mươi sáu bài trong năm mươi chín giây. Ở bản chạy thử, cả một trăm mười chín lần đều đạt."
+"Và trường hợp tệ nhất, mất cả tài khoản Azure? Nhóm vẫn lấy được dữ liệu từ máy chủ bên ngoài, khôi phục đủ một nghìn không trăm hai mươi sáu bài trong chưa đầy một phút."
 
 ## Hương: chi phí và kết luận (10:00-10:30)
 
-10:00-10:16 · Chi phí, nguội hay ấm
+10:00-10:16 · Chi phí
 
-"Toàn bộ thử nghiệm tốn năm phẩy bảy đô la. Dự phòng nguội tốn khoảng một đô mỗi tháng và đã đạt mục tiêu. Dự phòng ấm tốn khoảng bốn mươi bốn đô mỗi tháng."
+"Cuối cùng là tiền. Cả thử nghiệm chỉ tốn năm phẩy bảy đô. Dựng máy mới khi cần tốn khoảng một đô mỗi tháng, máy dự phòng chạy sẵn tốn khoảng bốn mươi bốn đô. Với web nhỏ như của nhóm, cách rẻ đã đạt mục tiêu, nên không cần trả thêm."
 
 10:16-10:30 · Kết luận
 
-"Kết luận: kế hoạch chỉ đạt mục tiêu sau khi đã diễn tập và sửa lỗi. Bước tiếp theo là diễn tập không báo trước. Cảm ơn thầy và các bạn đã lắng nghe."
+"Quay lại câu hỏi ban đầu: kế hoạch trên giấy có cứu được web không? Câu trả lời của nhóm là: chưa, cho đến khi diễn tập và sửa lỗi. Cảm ơn thầy và các bạn đã lắng nghe."
+
+## Sau video (Hương hoặc Quang, 10 giây)
+
+"Nhóm em xin hết phần trình bày, mời thầy và các bạn đặt câu hỏi."
