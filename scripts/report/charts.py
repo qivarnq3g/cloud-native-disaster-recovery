@@ -11,9 +11,9 @@ ROOT = Path(__file__).resolve().parents[2]
 SCENARIOS = ["D1", "D2", "D3", "D4", "D5"]
 LABELS = {
     "D1": "D1 xóa namespace",
-    "D2": "D2 mất cụm, lạnh",
+    "D2": "D2 mất cụm, nguội",
     "D3": "D3 mất cụm, ấm",
-    "D4": "D4 mất nhóm, lạnh",
+    "D4": "D4 mất nhóm, nguội",
     "D5": "D5 mất nhóm, ấm",
 }
 STEPS = ["detect", "decide", "infra", "restore", "switch"]
@@ -124,7 +124,7 @@ def render(out: Path, kind_folder: Path) -> list[Path]:
 
     fig, (a, b) = plt.subplots(1, 2, figsize=(7.4, 3.6), sharey=True, gridspec_kw={"wspace": 0.08})
     _strip(a, [(label(sc), [float(r["rto_s"]) for r in ok[sc]]) for sc in SCENARIOS], "RTO (giây)",
-           (600, "mục tiêu cách ấm 600 s"))
+           (600, "mục tiêu dự phòng ấm 600 s"))
     a.set_xlim(0, 700)
     _strip(b, [(label(sc), [float(r["rpo_s"]) for r in ok[sc]]) for sc in SCENARIOS], "RPO (giây)",
            (300, "mục tiêu RPO 300 s"))

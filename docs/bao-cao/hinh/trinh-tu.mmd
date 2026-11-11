@@ -1,0 +1,22 @@
+%%{init: {"theme":"neutral","themeVariables":{"fontFamily":"Times New Roman","fontSize":"22px"},"sequence":{"mirrorActors":false,"messageFontSize":22,"actorFontSize":22,"noteFontSize":22,"actorMargin":20,"width":120,"boxMargin":6,"messageMargin":30}}}%%
+sequenceDiagram
+    participant D as Script đo
+    participant Q as Người trực
+    participant S as Cụm dự phòng
+    participant B as Kho sao lưu ở Nhật
+    participant N as DNS của API
+    D->>Q: 5 lần gọi /healthz lỗi liên tiếp (phát hiện)
+    Q->>Q: Quyết định cách khôi phục, ghi giờ
+    alt Dự phòng ấm (cụm dự phòng đang chạy)
+        Q->>S: Nâng cụm bản sao Postgres thành cụm chính
+        Q->>S: Gỡ chính sách chép ảnh, chờ kho ảnh dự phòng nhận ghi
+        Q->>S: Tạo lịch sao lưu, khởi động lại API
+    else Dự phòng nguội (chưa có cụm dự phòng)
+        Q->>S: Terraform dựng máy ảo, cài k3s và phần mềm
+        S->>B: Velero khôi phục cấu hình và chứng chỉ
+        S->>B: CNPG dựng cơ sở dữ liệu từ bản đầy đủ và WAL
+        S->>B: Chép ảnh từ bản chép ở Nhật (khi kho ảnh chính đã mất)
+    end
+    Q->>N: Đổi bản ghi A của api.dr.qivarn.id.vn sang cụm mới
+    D->>N: API trả lời thành công (hết RTO)
+    D->>S: Kiểm tra số bài, mã băm, ảnh, đăng bài mới
