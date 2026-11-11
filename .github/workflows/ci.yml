@@ -105,7 +105,7 @@ jobs:
           dev/setup.sh
           docker compose --profile api up -d --no-build api
           until curl -fsS http://127.0.0.1:8080/healthz >/dev/null 2>&1; do sleep 1; done
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install chromium
       - run: npm run e2e
       - run: npm run lighthouse
       - uses: actions/upload-artifact@v5
