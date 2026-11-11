@@ -12,6 +12,6 @@ Link video: https://youtu.be/iPRazYU_bQM
 
 Kịch bản video: [kich-ban-video.md](kich-ban-video.md).
 
-Slide trình bày: bản Canva của nhóm, https://www.canva.com/design/DAHaZG0Gu2U/bvRa2ob3yEQTQykx70NlRQ/view. Biểu đồ của báo cáo ở [hinh/](hinh/), sinh bằng `scripts/report/charts.py`.
+Slide trình bày: bản Canva của nhóm, https://www.canva.com/design/DAHalYk4XpM/-IFevy7-a-TovcQ0UpPvKQ/view. Biểu đồ của báo cáo ở [hinh/](hinh/), sinh bằng `scripts/report/charts.py`.
 
 Báo cáo [bao-cao.docx](bao-cao.docx), viết lại ngày 11/11/2026: thân báo cáo (mở đầu đến chương 5) 27 trang A4 khi mở bằng Word; runbook sau diễn tập và danh sách kiểm tra ở Phụ lục A, biên bản vòng thử ở Phụ lục B. Mọi số liệu lấy từ `data/` và `docs/dien-tap/`.
