@@ -2,7 +2,6 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<script>try{if(localStorage.getItem("entered-view")==="1"&&!/[?&]intro/.test(location.search))location.replace("/view/")}catch(e){}</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="description" content="Bản xem thử trang giới thiệu đồ án khôi phục sau thảm hoạ của Nhóm 23.">
@@ -59,7 +58,6 @@ canvas.drag{cursor:grabbing}
 .eyebrow{font-size:clamp(17px,1.9vw,21px);font-weight:600;color:var(--grey);margin-bottom:12px}
 h1,h2{text-wrap:balance;font-size:clamp(40px,6.2vw,80px);font-weight:600;line-height:1.05;letter-spacing:-.03em}
 .lede{text-wrap:balance;max-width:640px;margin:20px auto 0;font-size:clamp(17px,1.8vw,21px);font-weight:500;line-height:1.42;color:var(--grey)}
-.lede strong{color:var(--fg);font-weight:600}
 .actions{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin-top:34px}
 .btn{display:inline-flex;align-items:center;height:50px;padding:0 28px;font-size:17px;font-weight:500;text-decoration:none;color:var(--fg);cursor:pointer;transition:transform .35s var(--ease)}
 .btn:hover{transform:scale(1.03)}
@@ -108,15 +106,15 @@ footer b{color:#d2d2d7;font-weight:500}
     <div class="scrim"></div>
     <div class="copy">
       <div class="step"><p class="eyebrow">Đồ án Điện toán đám mây</p><h1>Ảnh của bạn.<br>Luôn còn đó.</h1>
-        <p class="lede">Hai cụm máy chủ ở <strong>Hàn Quốc</strong>. Một két sao lưu ở <strong>Nhật Bản</strong>.</p></div>
+        <p class="lede">Hai cụm máy chủ ở Hàn Quốc. Một két sao lưu ở Nhật Bản.</p></div>
       <div class="step"><p class="eyebrow">Sao lưu</p><h2>Mọi ảnh đều có bản sao.<br>Ở một nước khác.</h2>
-        <p class="lede">Dữ liệu được chép sang <strong>két chỉ ghi</strong>: ghi vào được, nhưng không ai xoá hay sửa được.</p></div>
+        <p class="lede">Dữ liệu được chép sang két chỉ ghi: ghi vào được, nhưng không ai xoá hay sửa được.</p></div>
       <div class="step"><p class="eyebrow">Sự cố</p><h2>Cụm chính sập.</h2>
-        <p class="lede">Máy chủ, ổ đĩa, cấu hình. <strong>Mất sạch.</strong></p></div>
+        <p class="lede">Máy chủ, ổ đĩa, cấu hình. Mất sạch.</p></div>
       <div class="step"><p class="eyebrow">Khôi phục</p><h2>Cụm dự phòng lên thay.<br>Không mất một ảnh.</h2>
-        <p class="lede">Dữ liệu từ két được <strong>khôi phục về cụm dự phòng</strong>, web chạy lại như cũ.</p></div>
+        <p class="lede">Dữ liệu từ két được khôi phục về cụm dự phòng, web chạy lại như cũ.</p></div>
       <div class="step cta"><p class="eyebrow">Thử ngay</p><h2>Xem ảnh của cả nhóm.</h2>
-        <p class="lede">Đăng một tấm, rồi xem nó <strong>sống sót</strong> qua lần phá cụm tiếp theo.</p>
+        <p class="lede">Đăng một tấm, rồi xem nó sống sót qua lần phá cụm tiếp theo.</p>
         <div class="actions"><a class="btn glass tint" id="enter-view" href="/view/" aria-disabled="true" title="Trang dùng đang được làm">Vào xem · sắp có</a><a class="btn glass" href="#" data-go="0">Xem lại từ đầu</a></div></div>
     </div>
     <div class="label glass dim" data-bend="14" data-blur="10"><span class="dot"></span><i>Cụm chính</i><span class="rg">Hàn Quốc</span><span class="st"></span></div>
@@ -127,7 +125,7 @@ footer b{color:#d2d2d7;font-weight:500}
   </div>
 </section>
 
-<footer><b>Ảnh Nhóm 23</b> · Đồ án môn Điện toán đám mây · UTH, học kỳ I 2026–2027<br>Bản xem thử cho nhóm · cảnh 3D dựng hoàn toàn bằng code</footer>
+<footer><b>Ảnh Nhóm 23</b> · Đồ án môn Điện toán đám mây · UTH, học kỳ I 2026-2027<br>Bản xem thử cho nhóm · cảnh 3D dựng hoàn toàn bằng code</footer>
 
 <script type="module">
 import * as THREE from 'three';
@@ -1160,7 +1158,6 @@ requestAnimationFrame(frame);
   const a = document.getElementById('enter-view');
   a.addEventListener('click', (e) => {
     if (a.getAttribute('aria-disabled') === 'true') { e.preventDefault(); return; }
-    try { localStorage.setItem('entered-view', '1'); } catch (_) {}
   });
   fetch('/ready.json', { cache: 'no-store' }).then((r) => r.json()).then((d) => {
     if (!d.ready) return;

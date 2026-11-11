@@ -143,15 +143,13 @@ Hai lớp này độc lập: quên bật chế độ chỉ đọc khi dùng mã 
 - Astro xuất trang tĩnh; trang dùng là một đảo Svelte. TanStack Svelte Query lo tải, lưu đệm và thử lại.
 - Code gọi API sinh từ `/openapi.json` bằng `openapi-typescript`, gọi bằng `openapi-fetch`.
 - Phông Be Vietnam Pro, nền đen, các nút và thanh bằng kính lỏng giống trang giới thiệu (dùng lại `glass.js`). Trang dùng không tải Three.js.
-- `/` là trang giới thiệu, giữ nguyên bản đang chạy ở `dr-preview`, thêm hai việc:
-  - một đoạn script nhỏ đặt đầu trang: ai đã bấm "Vào xem" thì chuyển ngay sang `/view` trước khi cảnh 3D bắt đầu tải, trừ khi địa chỉ có `?intro`;
-  - nút "Vào xem" mở `/view` và ghi nhớ lựa chọn.
+- `/` là trang giới thiệu, giữ nguyên bản đang chạy ở `dr-preview`; nút "Vào xem" mở `/view`. Mở `/` luôn hiện trang giới thiệu, kể cả khi đã từng vào `/view` (bỏ việc tự chuyển sang `/view` ngày 11/11).
 - `/view` là trang dùng. Một bài mở bằng `/view?post={id}`: GitHub Pages không có định tuyến phía máy chủ, nên dùng tham số thay cho đường dẫn con.
 - Mọi đọc ghi `localStorage` đều bọc `try/catch`; không có `localStorage` thì trang vẫn chạy, chỉ không nhớ được.
 
 ### 3.2 Trang dùng
 
-- **Thanh trên** bằng kính: tên trang, nhãn trạng thái, nút "Đăng ảnh" (ẩn khi `/healthz` báo `read_only: true`), đường dẫn "Giới thiệu" (`/?intro`).
+- **Thanh trên** bằng kính: tên trang, nhãn trạng thái, nút "Đăng ảnh" (ẩn khi `/healthz` báo `read_only: true`), đường dẫn "Giới thiệu" (`/`).
 - **Lưới ảnh:** xếp hàng đều theo tỉ lệ thật của ảnh, không cắt; chiều cao hàng khoảng 240 px trên máy tính, khoảng 2 ảnh mỗi hàng trên điện thoại. Dùng `width` và `height` để dựng khung xám đúng kích thước trước khi ảnh tải, nên trang không nhảy. Tiêu đề màu xám dưới ảnh. Ảnh nhỏ tải dần khi cuộn tới; cuộn gần cuối thì tải trang tiếp theo.
 - **Xem một bài:** hộp thoại `<dialog>` toàn màn hình với ảnh gốc, tiêu đề, mô tả, giờ đăng. Phím mũi tên hoặc vuốt để sang bài khác; ảnh gốc của bài kề bên được tải trước. Esc hoặc nút Quay lại của trình duyệt để đóng; địa chỉ đổi theo bài nên gửi được cho người khác.
 - **Đăng ảnh:**
