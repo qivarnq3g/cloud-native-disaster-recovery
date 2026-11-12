@@ -14,7 +14,7 @@ latest_session_backup() {
 }
 
 restore() {
-  local target="$1" source_server server name deadline backup
+  local target="$1" source_server server name deadline backup target_expr
   source_server="$(session get server_name)"
   [ -n "$source_server" ] || die 5 "session.json chưa có server_name để khôi phục"
   server="primary-$(date -u +%Y%m%d%H%M)"
@@ -25,8 +25,9 @@ restore() {
   kubectl create namespace dr-api --dry-run=client -o yaml | kubectl apply -f - >/dev/null
   velero restore create "$name" --from-backup "$backup" --include-namespaces dr-api --include-resources "$resources" \
     --selector 'app.kubernetes.io/managed-by notin (cloudnative-pg)' --wait || die 1 "Velero khôi phục $name lỗi"
-  sed -e "s|__SERVER__|$server|g" -e "s|__SOURCE_SERVER__|$source_server|g" \
-    -e "s|^      source: previous\$|      source: previous\n      recoveryTarget:\n        targetTime: \"$target\"|" \
+  target_expr="s|^      source: previous\$|      source: previous\n      recoveryTarget:\n        targetTime: \"$target\"|"
+  [ "$target" != latest ] || target_expr=""
+  sed -e "s|__SERVER__|$server|g" -e "s|__SOURCE_SERVER__|$source_server|g" -e "$target_expr" \
     "$platform/db-recover.yaml.tpl" | kubectl apply -f - >/dev/null || die 1 "không tạo được db"
   kubectl -n dr-api wait --for=condition=Ready clusters.postgresql.cnpg.io/db --timeout=900s >/dev/null \
     || die 1 "db chưa Ready sau 15 phút"
@@ -43,7 +44,7 @@ restore() {
 if [ "${1:-}" = --restore ]; then restore "$2"; exit 0; fi
 
 run_id="${1:-}"; target="${2:-}"
-[[ "$target" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] \
-  || die 64 "cách dùng: restore-namespace.sh <run_id> <target_time dạng 2026-10-30T01:02:03Z>"
+[[ "$target" = latest || "$target" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] \
+  || die 64 "cách dùng: restore-namespace.sh <run_id> <latest | target_time dạng 2026-10-30T01:02:03Z>"
 run_step "$run_id" restore bash "$0" --restore "$target"
 echo "đã khôi phục namespace dr-api tới $target"
