@@ -36,3 +36,4 @@ checked_at,state,session_file,wal_age,velero_age,image_replication,sas_expiry,st
 2026-11-11T18:40:02Z,running,ok,fail,ok,ok,ok,skip
 2026-11-12T01:30:12Z,running,ok,fail,ok,ok,ok,skip
 2026-11-12T09:46:27Z,running,ok,fail,ok,ok,ok,skip
+2026-11-12T18:16:01Z,running,ok,fail,fail,ok,ok,skip
